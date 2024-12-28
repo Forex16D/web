@@ -1,0 +1,19 @@
+<form [formGroup]="credentialForm" (ngSubmit)="login()">
+  <label for="email">Email</label>
+  <input id="email" formControlName="email" type="email" />
+  <div *ngIf="credentialForm.get('email')?.invalid && credentialForm.get('email')?.touched">
+    <span *ngIf="credentialForm.get('email')?.errors?.['required']">Email is required</span>
+    <span *ngIf="credentialForm.get('email')?.errors?.['email']">Invalid email address</span>
+  </div>
+  <br>
+  <label for="password">Password</label>
+  <input id="password" formControlName="password" type="password" />
+  <div *ngIf="credentialForm.get('password')?.invalid && credentialForm.get('password')?.touched">
+    <span *ngIf="credentialForm.get('password')?.errors?.['required']">Password is required</span>
+    <span *ngIf="credentialForm.get('password')?.errors?.['minlength']">
+      Password must be at least 6 characters
+    </span>
+  </div>
+  <br>
+  <button type="submit" [disabled]="credentialForm.invalid">Login</button>
+</form>
