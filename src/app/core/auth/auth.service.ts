@@ -1,14 +1,16 @@
 // import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject } from 'rxjs';
-import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private authStateSubject = new BehaviorSubject<boolean>(this.isAuthenticated());
-  authState$ = this.authStateSubject.asObservable();
+  private authStateSignal = signal(this.isAuthenticated());
+  get authState() {
+    return this.authStateSignal();
+  }
+
   private readonly apiUrl = 'https://api.example.com/auth';
 
   // constructor(private http: HttpClient) {}
@@ -25,21 +27,21 @@ export class AuthService {
   constructor(@Inject(PLATFORM_ID) private platformId: object) {
     if (isPlatformBrowser(this.platformId)) {
       const token = localStorage.getItem('authToken');
-      this.authStateSubject.next(!!token);
+      this.authStateSignal.set(!!token);
     }
   }
 
   login(): void {
     if (isPlatformBrowser(this.platformId)){
       localStorage.setItem('authToken', 'thisisauth')
-      this.authStateSubject.next(true);
+      this.authStateSignal.set(true);
     }
-  } 
-  
+  }
+
   logout(): void {
     if (isPlatformBrowser(this.platformId)){
       localStorage.removeItem('authToken');
-      this.authStateSubject.next(false);
+      this.authStateSignal.set(false);
     }
   }
 

@@ -7,7 +7,7 @@ import {
 import express from 'express';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-
+import cookieParser from 'cookie-parser';
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
 const browserDistFolder = resolve(serverDistFolder, '../browser');
 
@@ -35,6 +35,7 @@ app.use(
     index: false,
     redirect: false,
   }),
+  cookieParser()
 );
 
 /**
@@ -47,6 +48,15 @@ app.use('/**', (req, res, next) => {
       response ? writeResponseToNodeResponse(response, res) : next(),
     )
     .catch(next);
+});
+
+app.get('*', (req, res) => {
+  const theme = req.cookies['app-theme'] || 'e';
+
+  res.render('index', { 
+    req,
+    theme: theme
+  });
 });
 
 /**
