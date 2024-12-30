@@ -24,7 +24,7 @@ import { ThemeService } from './core/services/theme.service';
   `,
   styleUrls: ['./app.component.css'],
 })
-export class AppComponent {
+export class AppComponent {   
   title = 'forex16d';
   isAuth = signal(false);
   isBrowser: boolean;
@@ -32,14 +32,9 @@ export class AppComponent {
   constructor(private authService: AuthService, 
     private router: Router, 
     private platformService : PlatformService,
-    private themeService: ThemeService,
   ) {
     this.isBrowser = this.platformService.isBrowser();
     this.isAuth.set(authService.authState);
-  }
-  
-  ngOnInit(): void {
-    this.themeService.loadTheme();
   }
 
   logout(): void {

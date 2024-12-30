@@ -1,4 +1,3 @@
-import { isPlatformBrowser } from '@angular/common';
 import { Injectable } from '@angular/core';
 import { PlatformService } from './platform.service';
 
@@ -15,13 +14,24 @@ export class ThemeService {
   private readonly themeKey = 'app-theme';
   private currentTheme: Theme = Theme.Light;
 
-  constructor (private platformService: PlatformService) {
+  constructor(private platformService: PlatformService) {
     this.loadTheme();
+  }
+
+  private getCookie(name: string): string | null {
+    const matches = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+    return matches ? decodeURIComponent(matches[1]) : null;
+  }
+
+  private setCookie(name: string, value: string, days: number): void {
+    const expires = new Date();
+    expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+    document.cookie = `${name}=${encodeURIComponent(value)};expires=${expires.toUTCString()};path=/`;
   }
 
   loadTheme(): void {
     if (this.platformService.isBrowser()) {
-      const storedTheme = localStorage.getItem(this.themeKey) as Theme;
+      const storedTheme = this.getCookie(this.themeKey) as Theme;
       this.currentTheme = storedTheme || Theme.Light;
       this.applyTheme();
     }
@@ -38,7 +48,7 @@ export class ThemeService {
 
   public toggleTheme(): void {
     this.currentTheme = this.currentTheme === Theme.Light ? Theme.Dark : Theme.Light;
-    localStorage.setItem(this.themeKey, this.currentTheme);
+    this.setCookie(this.themeKey, this.currentTheme, 365); // Store in cookie for 1 year
     this.applyTheme();
   }
 }

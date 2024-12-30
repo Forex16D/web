@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
-import { ButtonModule } from 'primeng/button'
 import { ThemeService } from '../../core/services/theme.service';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import {MatButtonModule} from '@angular/material/button'; 
 
 @Component({
   selector: 'app-dashboard',
-  imports: [ButtonModule],
+  imports: [MatSlideToggleModule, MatButtonModule],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
