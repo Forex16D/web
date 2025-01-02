@@ -9,19 +9,7 @@ import { ThemeService } from './core/services/theme.service';
 @Component({
   selector: 'app-root',
   imports: [RouterOutlet, NgIf, RouterLink],
-  template: `
-  <ng-container *ngIf="isBrowser; else ssrPlaceholder">
-    <a routerLink="/">Home</a>
-    |
-    <a routerLink="/dashboard">Dashboard</a>
-    <router-outlet></router-outlet>
-    <button *ngIf="isAuth" (click)="logout()">Logout</button>
-  </ng-container>
-  <ng-template #ssrPlaceholder>   
-    <div class="loading-spinner">Loading...</div>
-  </ng-template>
-
-  `,
+  templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
 })
 export class AppComponent {   

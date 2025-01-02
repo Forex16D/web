@@ -1,19 +1,31 @@
-<form [formGroup]="credentialForm" (ngSubmit)="login()">
-  <label for="email">Email</label>
-  <input id="email" formControlName="email" type="email" />
-  <div *ngIf="credentialForm.get('email')?.invalid && credentialForm.get('email')?.touched">
-    <span *ngIf="credentialForm.get('email')?.errors?.['required']">Email is required</span>
-    <span *ngIf="credentialForm.get('email')?.errors?.['email']">Invalid email address</span>
-  </div>
-  <br>
-  <label for="password">Password</label>
-  <input id="password" formControlName="password" type="password" />
-  <div *ngIf="credentialForm.get('password')?.invalid && credentialForm.get('password')?.touched">
-    <span *ngIf="credentialForm.get('password')?.errors?.['required']">Password is required</span>
-    <span *ngIf="credentialForm.get('password')?.errors?.['minlength']">
-      Password must be at least 6 characters
-    </span>
-  </div>
-  <br>
-  <button type="submit" [disabled]="credentialForm.invalid">Login</button>
+<form [formGroup]="credentialForm" (ngSubmit)="login()" class="vertical-form">
+  <app-logo size="48px"></app-logo>
+  <h1>Login</h1>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Email</mat-label>
+    <input
+      type="email"
+      matInput
+      placeholder="Ex. pat@example.com"
+      formControlName="email"
+    />
+    <mat-error *ngIf="submitted && credentialForm.get('email')?.invalid">
+      Please enter a valid email address
+    </mat-error>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Password</mat-label>
+    <input
+      type="password"
+      matInput
+      placeholder="Enter password"
+      formControlName="password"
+    />
+    <mat-error *ngIf="submitted && credentialForm.get('password')?.invalid">
+      Password must be at least 6 characters long
+    </mat-error>
+  </mat-form-field>
+  <button mat-flat-button type="submit">Log in</button>
 </form>
