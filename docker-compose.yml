@@ -2,6 +2,28 @@
 version: '3.8'
 
 services:
+  client:
+    build:
+      context: ./client
+      dockerfile: ./Dockerfile
+    container_name: "client"
+    ports:
+      - "80:4200"
+    volumes:
+      - ./client:/app
+      - node_modules:/app/node_modules
+    command: npm start
+
+  server:
+    build:
+      context: ./server
+      dockerfile: ./Dockerfile
+    container_name: "server"
+    ports:
+      - "4090:3000"
+    volumes:
+      - ./server:/app
+    command: "python main.py"
 
   mongo:
     image: mongo
@@ -24,4 +46,5 @@ services:
       ME_CONFIG_BASICAUTH: false
 
 volumes:
+  node_modules:
   mongodb_data:
