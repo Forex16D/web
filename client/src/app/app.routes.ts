@@ -4,6 +4,7 @@ import { LoginComponent } from './pages/login/login.component';
 import { authGuard } from './core/auth/auth.guard';
 import { authRedirectGuard } from './core/auth/auth-redirect.guard';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
+import { RegisterComponent } from './pages/register/register.component';
 
 export const routes: Routes = [
   {
@@ -15,6 +16,10 @@ export const routes: Routes = [
     path: 'login',
     component: LoginComponent,
     canActivate: [authRedirectGuard]
+  },
+  {
+    path: 'register',
+    component: RegisterComponent,
   },
   {
     path: 'dashboard',

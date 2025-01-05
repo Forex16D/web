@@ -1,7 +1,7 @@
 import { Component, Inject, PLATFORM_ID, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from './core/auth/auth.service';
-import { NgIf, isPlatformBrowser } from '@angular/common';
+import { NgIf } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { PlatformService } from './core/services/platform.service';
 import { ThemeService } from './core/services/theme.service';

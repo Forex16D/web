@@ -1,0 +1,29 @@
+<div class="form-box pt-8">
+  <app-logo size="48px"></app-logo>
+  <h1 class="w-5/6 text-3xl mt-5 mb-3">Register</h1>
+  <form [formGroup]="credentialForm" (ngSubmit)="register()" class="flex flex-col items-center w-full gap-2">
+    <div class="flex flex-col w-5/6">
+      <label for="email">Email</label>
+      <input id="email" type="email" pInputText placeholder="Ex. pat@example.com" formControlName="email" />
+      <p-message *ngIf="submitted && credentialForm.get('email')?.invalid" severity="error"
+        text="Please enter a valid email address"></p-message>
+    </div>
+
+    <div class="flex flex-col w-5/6">
+      <label for="password">Password</label>
+      <p-password id="password" type="password" [feedback]="false" placeholder="Password" [style]="{'width':'100%'}"
+        [inputStyle]="{'width':'100%'}" [toggleMask]="true" formControlName="password" />
+      <p-message *ngIf="submitted && credentialForm.get('password')?.invalid" severity="error"
+        text="Password must be at least 6 characters long"></p-message>
+    </div>
+
+    <div class="flex flex-col w-5/6">
+      <label for="confirm-password">Confirm Password</label>
+      <p-password id="confirm-password" type="password" [feedback]="false" placeholder="Confirm Password"
+        [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}" [toggleMask]="true" formControlName="confirmPassword" />
+      <p-message *ngIf="submitted && confirmPasswordError" severity="error" [text]="confirmPasswordError">
+      </p-message>
+    </div>
+    <button pButton type="submit" label="Register" class="w-5/6"></button>
+  </form>
+</div>

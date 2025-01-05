@@ -1,21 +1,34 @@
 import { Component, signal } from '@angular/core';
-import {MatFormFieldModule} from '@angular/material/form-field'; 
-import {MatButtonModule} from '@angular/material/button';
-import {MatInputModule} from '@angular/material/input';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
-import { FormBuilder, FormGroup, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormControl, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { NgIf } from '@angular/common';
 import { LogoComponent } from '../../components/logo/logo.component';
+import { ButtonModule } from 'primeng/button';
+import { PasswordModule } from 'primeng/password';
+import { MessageModule } from 'primeng/message';
+import { InputTextModule } from 'primeng/inputtext';
+import { CheckboxModule } from 'primeng/checkbox';
+import { ApiService } from '../../core/services/api.service';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css'],
   standalone: true,
-  imports: [ReactiveFormsModule, NgIf, MatFormFieldModule, MatInputModule, LogoComponent, MatButtonModule],
+  imports: [
+    ReactiveFormsModule, 
+    NgIf, 
+    LogoComponent, 
+    ButtonModule,
+    FormsModule,
+    PasswordModule,
+    InputTextModule,
+    MessageModule,
+    CheckboxModule,
+    RouterLink,
+  ],
 })
-
 
 export class LoginComponent {
   credentialForm: FormGroup;
@@ -33,11 +46,12 @@ export class LoginComponent {
     private router: Router,
     private route: ActivatedRoute,
     private fb: FormBuilder,
+    private apiService: ApiService
   ) {
     
     this.credentialForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
+      password: '',
     });
   }
 
@@ -56,12 +70,27 @@ export class LoginComponent {
       return;
     }
 
-    if (this.credentialForm.value.email && this.credentialForm.value.password) {
-      this.authService.login()
-      console.log('Form Values:', this.credentialForm.value);
-      this.credentialForm.reset()
-      const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
-      this.router.navigateByUrl(returnUrl);
+    if (this.credentialForm.valid) {
+      const data = {
+        email: this.credentialForm.value.email,
+        password: this.credentialForm.value.password,
+      };
+    
+      console.log('Form Values:', data);
+    
+      this.apiService.postData('v1/login', data).subscribe({
+        next: (response) => {
+          console.log('Login Successful:', response);
+
+          const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+          this.router.navigateByUrl(returnUrl);
+        },
+        error: (error) => {
+          console.error('Login Failed:', error);
+        },
+      });
+    } else {
+      console.error('Invalid form submission');
     }
   }
 }
