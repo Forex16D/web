@@ -20,7 +20,7 @@ services:
       dockerfile: ./Dockerfile
     container_name: "server"
     ports:
-      - "4090:3000"
+      - "5000:5000"
     volumes:
       - ./server:/app
     command: "python main.py"
