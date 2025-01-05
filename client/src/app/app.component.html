@@ -1,11 +1,13 @@
 <ng-container *ngIf="isBrowser; else ssrPlaceholder">
-  <div>
+  <div *ngIf="showNavbar">
     <a routerLink="/">Home</a>
     |
     <a routerLink="/dashboard">Dashboard</a>
   </div>
   <router-outlet></router-outlet>
-  <button *ngIf="isAuth" (click)="logout()">Logout</button>
+  <div *ngIf="authService.authState">
+    <button (click)="logout()">Logout</button>
+  </div>
 </ng-container>
 <ng-template #ssrPlaceholder>   
   <div class="loading-spinner">Loading...</div>

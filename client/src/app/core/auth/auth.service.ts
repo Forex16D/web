@@ -1,44 +1,61 @@
-import { Injectable, signal, OnInit } from '@angular/core';
-import { PlatformService } from '../services/platform.service';
+import { Injectable, Inject, PLATFORM_ID, signal, OnInit } from '@angular/core';
+import { ApiService } from '../services/api.service';
+import { isPlatformBrowser } from '@angular/common';
+import { Observable, tap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
-export class AuthService implements OnInit {
-  private authStateSignal = signal(false);
+
+export class AuthService {
+  private authStateSignal = signal(this.isAuthenticated());
+
+  get authState1() {
+    return this.authStateSignal
+  }
+
   get authState() {
     return this.authStateSignal();
   }
 
-  constructor(private platformService: PlatformService) {}
-
-  ngOnInit(): void {
-    if (this.platformService.isBrowser()) {
-      const token = localStorage.getItem('authToken');
-      this.authStateSignal.set(!!token);
-    }
+  constructor(@Inject(PLATFORM_ID) private platformId: object, private apiService: ApiService) {
+    this.authStateSignal.set(this.isAuthenticated())
   }
 
   register(): void {
     console.log('registered');
   }
 
-  login(): void {
-    if (this.platformService.isBrowser()){
-      localStorage.setItem('authToken', 'thisisauth');
-      this.authStateSignal.set(true);
+  login(email: string, password: string): Observable<any> {
+    if (isPlatformBrowser(this.platformId)) {
+      const data = { email, password };
+      return this.apiService.postData('v1/login', data).pipe(
+        tap((response) => {
+          if (response.token) {
+            localStorage.setItem('authToken', response.token);
+            this.authStateSignal.set(true);
+          } else {
+            console.error('Login response did not contain a token');
+            this.authStateSignal.set(false); 
+          }
+        })
+      );
+    } else {
+      return new Observable(observer => {
+        observer.error('Login can only be performed in a browser environment');
+      });
     }
   }
 
   logout(): void {
-    if (this.platformService.isBrowser()){
+    if (isPlatformBrowser(this.platformId)){
       localStorage.removeItem('authToken');
       this.authStateSignal.set(false);
     }
   }
 
   isAuthenticated(): boolean {
-    if (this.platformService.isBrowser()) {
+    if (isPlatformBrowser(this.platformId)) {
       return !!localStorage.getItem('authToken');
     }
     return false;

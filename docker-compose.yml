@@ -12,7 +12,7 @@ services:
     volumes:
       - ./client:/app
       - node_modules:/app/node_modules
-    command: "ng serve --host 0.0.0.0 --port 4200"
+    command: "ng serve --host 0.0.0.0 --port 4200 --poll 1"
 
   server:
     build:
