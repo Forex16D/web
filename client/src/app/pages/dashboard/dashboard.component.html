@@ -1,10 +1,26 @@
-<h1 class="text-3xl w-4/6">Dashboard</h1>
-<main class="flex flex-1 flex-col items-center w-full">
-  <section class="flex-1 rounded-3xl outline p-8 w-4/6 mx-auto mt-5 mb-40">
-    <h2 class="text-2xl font-semibold">Left Section</h2>
-  </section>
+<h1 class="text-3xl w-4/6 font-bold">Dashboard</h1>
+<main class="flex flex-1 flex-col items-center mx-auto">
+  <div class="flex-1 rounded-xl outline outline-2 outline-gray-1000 p-8 w-full mx-auto mt-5 mb-12">
+    <h2 class="text-2xl font-semibold">Top Section</h2>
+  </div>
 
-  <section class="flex-1 rounded-3xl outline p-8 w-4/6 mx-auto">
-    <h2 class="text-2xl font-semibold">Right Section</h2>
-  </section>
-</main>
+  <!-- <div class="flex max-w-7xl mx-auto">
+    <div class="flex flex-wrap mx-auto justify-center gap-4">
+      <app-portfolio-card />
+      <app-portfolio-card />
+      <app-portfolio-card />
+      <app-portfolio-card />
+      <app-portfolio-card />
+    </div>
+  </div>
+</main> -->
+
+<div class="mx-auto px-4">
+  <div class="grid ml:grid-cols-2 xl:grid-cols-3 gap-4">
+    <app-portfolio-card />
+    <app-portfolio-card />
+    <app-portfolio-card />
+    <app-portfolio-card />
+    <app-portfolio-card />
+  </div>
+</div>

@@ -16,6 +16,5 @@
   width: 450px;
   height: 650px;
   margin: 60px auto 10px auto;
-  background-color: var(--foreground-color);
   border-radius: 25px;
 }

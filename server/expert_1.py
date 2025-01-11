@@ -67,3 +67,43 @@ class ForexTradingEnv(gym.Env):
 
   def render(self, mode="human"):
     print(f"Step: {self.current_step}, Balance: {self.balance}, Position Size: {self.position_size}, Profit: {self.profit}")
+    
+if __name__ == "__main__":
+  # Load dummy forex data
+
+  data = pd.DataFrame({
+      "OPEN": np.random.rand(1000) + 1.1,
+      "HIGH": np.random.rand(1000) + 1.2,
+      "LOW": np.random.rand(1000) + 1.0,
+      "CLOSE": np.random.rand(1000) + 1.15,
+      "VOLUME": np.random.randint(100, 200, 1000),
+  })
+
+  # data = pd.read_csv('EURUSD_H1.csv', delimiter='\t')
+  # data.columns = [col.replace('<', '').replace('>', '') for col in data.columns]
+  # data = data.drop(["DATE","TIME"],axis=1)
+  # print(data)
+
+  # Wrap the environment
+  env = DummyVecEnv([lambda: ForexTradingEnv(data)])
+
+  # Initialize the PPO model
+  model = PPO("MlpPolicy", env, verbose=1)
+
+  # Train the model
+  model.learn(total_timesteps=10000)
+
+  # Save the model
+  # model.save("ppo_forex_trader")
+
+  # model = PPO.load("ppo_forex_trader")
+
+  # Test the model
+  env = ForexTradingEnv(data)  # Use the base environment for testing
+  obs = env.reset()
+  for _ in range(500):
+    action, _states = model.predict(obs)
+    obs, reward, done, info = env.step(action)
+    env.render()
+    if done:
+      break
