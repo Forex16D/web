@@ -1,4 +1,4 @@
-import { Injectable, Inject, PLATFORM_ID, signal, OnInit } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID, signal } from '@angular/core';
 import { ApiService } from '../services/api.service';
 import { isPlatformBrowser } from '@angular/common';
 import { Observable, tap } from 'rxjs';
