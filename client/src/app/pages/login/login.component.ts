@@ -9,6 +9,7 @@ import { PasswordModule } from 'primeng/password';
 import { MessageModule } from 'primeng/message';
 import { InputTextModule } from 'primeng/inputtext';
 import { CheckboxModule } from 'primeng/checkbox';
+import { FocusTrapModule } from 'primeng/focustrap';
 
 @Component({
   selector: 'app-login',
@@ -26,6 +27,7 @@ import { CheckboxModule } from 'primeng/checkbox';
     MessageModule,
     CheckboxModule,
     RouterLink,
+    FocusTrapModule
   ],
 })
 

@@ -9,6 +9,7 @@ import { PasswordModule } from 'primeng/password';
 import { MessageModule } from 'primeng/message';
 import { InputTextModule } from 'primeng/inputtext';
 import { CheckboxModule } from 'primeng/checkbox';
+import { FocusTrapModule } from 'primeng/focustrap';
 
 @Component({
   selector: 'app-register',
@@ -22,6 +23,7 @@ import { CheckboxModule } from 'primeng/checkbox';
     InputTextModule,
     MessageModule,
     CheckboxModule,
+    FocusTrapModule
   ],
   templateUrl: './register.component.html',
   styleUrl: './register.component.css'

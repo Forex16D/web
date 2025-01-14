@@ -12,10 +12,32 @@ import { ButtonModule } from 'primeng/button';
   styleUrl: './dashboard.component.css'
 })
 export class DashboardComponent {
-  vcr = viewChild('container', {read: ViewContainerRef});
+  vcr = viewChild('container', { read: ViewContainerRef });
   isHidden = true;
   components = [PortfolioCardComponent, PortfolioCardComponent, PortfolioCardComponent, PortfolioCardComponent]
-  constructor(private themeService: ThemeService) {}
+  portfolioDataArray =  [
+    {
+      credential: { name: 'John Doe', login: '334067889' },
+      data: { pnl: '200', winrate: '85', roi: '10', balance: '1500.25' },
+    },
+    {
+      credential: { name: 'Jane Doe', login: '44528976' },
+      data: { pnl: '-102', winrate: '8', roi: '-10', balance: '1500000' },
+    },
+    {
+      credential: { name: 'Chris Lee', login: '66548884' },
+    },
+  ];
+
+  
+  defaultData = {
+    pnl: '',
+    winrate: '',
+    roi: '',
+    balance: '',
+  };
+
+  constructor(private themeService: ThemeService) { }
 
   createComponent(): void {
     this.vcr()?.createComponent(PortfolioCardComponent);
