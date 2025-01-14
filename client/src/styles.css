@@ -7,6 +7,8 @@
   --foreground-color: #2B3139;
   --background-color: #181A20;
   --white: #ffffff;
+  --p-drawer-background: rgba(43, 49, 57, 0.5) !important;
+  --p-drawer-border-color: rgba(43, 49, 57, 0.5) !important;
 }
 
 html, body { 
@@ -24,4 +26,9 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 button {
   align-self: center;
   margin-top: 16px;
+}
+
+.p-drawer {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }

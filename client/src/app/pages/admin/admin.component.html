@@ -1,4 +1,40 @@
-<app-admin-sidebar></app-admin-sidebar>
-<main class="ml-60">
+<p-drawer [(visible)]="sideBarVisible" header="Menu" aria-label="Main Navigation">
+  <ul class="space-y-4">
+    <li class="relative group">
+      <a href="#" class="flex items-center space-x-3 py-2 px-4 text-lg text-white hover:text-green-400">
+        <div
+          class="absolute left-0 bottom-0 w-1 h-0 bg-green-400 transition-all duration-300 group-hover:h-full group-hover:bottom-0">
+        </div>
+        <i class="pi pi-users"></i>
+        <span class="flex-grow">Users</span>
+      </a>
+    </li>
+    <li class="relative group">
+      <a href="#" class="flex items-center space-x-3 py-2 px-4 text-lg text-white hover:text-green-400">
+        <div
+          class="absolute left-0 bottom-0 w-1 h-0 bg-green-400 transition-all duration-300 group-hover:h-full group-hover:bottom-0">
+        </div>
+        <i class="pi pi-microchip-ai"></i>
+        <span class="flex-grow">Models</span>
+      </a>
+    </li>
+    <li class="relative group">
+      <a href="#" class="flex items-center space-x-3 py-2 px-4 text-lg text-white hover:text-green-400">
+        <div
+          class="absolute left-0 bottom-0 w-1 h-0 bg-green-400 transition-all duration-300 group-hover:h-full group-hover:bottom-0">
+        </div>
+        <i class="pi pi-chart-bar"></i>
+        <span class="flex-grow">Report</span>
+      </a>
+    </li>
+  </ul>
+</p-drawer>
+
+
+
+
+
+
+<main class="">
   <p>admin works!</p>
 </main>

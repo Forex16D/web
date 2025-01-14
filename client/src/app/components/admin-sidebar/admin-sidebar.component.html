@@ -1,11 +1,37 @@
-<!-- <p-sidebar [visible]="true"> -->
-<div class="w-full h-full px-2.5 py-3 bg-gray-1000">
-  <header routerLink="/" class="cursor-pointer">
-    <app-logo></app-logo>
-  </header>
-  
-  <p>Users</p>
-  <p>Models</p>
-  <p>Report</p>
-</div>
-<!-- </p-sidebar> -->
+<p-drawer [(visible)]="visible" header="Menu" aria-label="Main Navigation">
+  <nav class="w-full h-full flex flex-col justify-between">
+    <ul class="flex flex-col gap-4">
+      <li class="nav-item">
+        <div class="flex items-center gap-2">
+          <i class="pi pi-users" aria-hidden="true"></i>
+          <p>Users</p>
+        </div>
+        <p-divider></p-divider>
+      </li>
+      <li class="nav-item">
+        <div class="flex items-center gap-2">
+          <i class="pi pi-microchip-ai" aria-hidden="true"></i>
+          <p>Models</p>
+        </div>
+        <p-divider></p-divider>
+      </li>
+      <li class="nav-item">
+        <div class="flex items-center gap-2">
+          <i class="pi pi-chart-bar" aria-hidden="true"></i>
+          <p>Report</p>
+        </div>
+        <p-divider></p-divider>
+      </li>
+    </ul>
+    
+    <footer>
+      <p-divider></p-divider>
+      <div class="flex items-center gap-4">
+        <i class="pi pi-sign-out text-red-400" aria-hidden="true"></i>
+        <p class="text-red-400">Log out</p>
+      </div>
+    </footer>
+  </nav>
+</p-drawer>
+
+<button (click)="visible = true">switch</button>
