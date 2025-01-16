@@ -1,39 +1,40 @@
-<p-drawer [(visible)]="sideBarVisible" header="Menu" aria-label="Main Navigation">
+<!-- <p-drawer [(visible)]="sideBarVisible" header="Menu" aria-label="Main Navigation">
+</p-drawer> -->
+<nav class="w-60 h-screen bottom-1 bg-gray-1200 bg-opacity-50 backdrop-blur fixed">
+  <header class="flex flex-row items-center mb-8 gap-4">
+    <i class="w-14 h-14 flex justify-center items-center pi pi-bars bg-green-400" style="font-size: 1.5rem"></i>
+    <app-logo></app-logo>
+  </header>
   <ul class="space-y-4">
     <li class="relative group">
-      <a href="#" class="flex items-center space-x-3 py-2 px-4 text-lg text-white hover:text-green-400">
+      <a href="#" class="flex items-center space-x-3 py-2 pl-2 text-lg text-white hover:text-green-400">
         <div
           class="absolute left-0 bottom-0 w-1 h-0 bg-green-400 transition-all duration-300 group-hover:h-full group-hover:bottom-0">
         </div>
-        <i class="pi pi-users"></i>
-        <span class="flex-grow">Users</span>
+        <i class="pi pi-users" style="font-size: 1.5rem"></i>
+        <span class="flex-grow pl-2">Users</span>
       </a>
     </li>
     <li class="relative group">
-      <a href="#" class="flex items-center space-x-3 py-2 px-4 text-lg text-white hover:text-green-400">
+      <a href="#" class="flex items-center space-x-3 py-2 pl-2 text-lg text-white hover:text-green-400">
         <div
           class="absolute left-0 bottom-0 w-1 h-0 bg-green-400 transition-all duration-300 group-hover:h-full group-hover:bottom-0">
         </div>
-        <i class="pi pi-microchip-ai"></i>
+        <i class="pi pi-microchip-ai" style="font-size: 1.5rem"></i>
         <span class="flex-grow">Models</span>
       </a>
     </li>
     <li class="relative group">
-      <a href="#" class="flex items-center space-x-3 py-2 px-4 text-lg text-white hover:text-green-400">
+      <a href="#" class="flex items-center space-x-3 py-2 pl-2 text-lg text-white hover:text-green-400">
         <div
           class="absolute left-0 bottom-0 w-1 h-0 bg-green-400 transition-all duration-300 group-hover:h-full group-hover:bottom-0">
         </div>
-        <i class="pi pi-chart-bar"></i>
+        <i class="pi pi-chart-bar" style="font-size: 1.5rem"></i>
         <span class="flex-grow">Report</span>
       </a>
     </li>
   </ul>
-</p-drawer>
-
-
-
-
-
+</nav>
 
 <main class="">
   <p>admin works!</p>

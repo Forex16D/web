@@ -15,6 +15,7 @@ module.exports = {
         customBlue: '#4B9CD3',
         customGreen: '#A8D08D',
         gray: {
+          1200: '#24292E',
           1000: '#2B3139',
           800: '#1f2937',
           600: '#4b5563',

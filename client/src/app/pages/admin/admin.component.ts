@@ -3,10 +3,11 @@ import { AdminSidebarComponent } from '../../components/admin-sidebar/admin-side
 import { DrawerModule } from 'primeng/drawer';
 import { DividerModule } from 'primeng/divider';
 import { MenuModule } from 'primeng/menu';
+import { LogoComponent } from '../../components/logo/logo.component';
 
 @Component({
   selector: 'app-admin',
-  imports: [AdminSidebarComponent, DrawerModule, DividerModule, MenuModule],
+  imports: [AdminSidebarComponent, DrawerModule, DividerModule, MenuModule, LogoComponent],
   templateUrl: './admin.component.html',
   styleUrl: './admin.component.css'
 })
