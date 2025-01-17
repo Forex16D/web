@@ -1,16 +1,15 @@
-import { Component, ViewEncapsulation } from '@angular/core';
-import { LogoComponent } from '../logo/logo.component';
-import { RouterLink } from '@angular/router';
-import { DrawerModule } from 'primeng/drawer';
+import { Component } from '@angular/core';
+import { LogoComponent } from '../../components/logo/logo.component';
+import { NgClass } from '@angular/common';
 import { DividerModule } from 'primeng/divider';
 
 @Component({
   selector: 'app-admin-sidebar',
-  imports: [LogoComponent, RouterLink, DrawerModule, DividerModule],
+  imports: [LogoComponent, NgClass, DividerModule],
   templateUrl: './admin-sidebar.component.html',
   styleUrl: './admin-sidebar.component.css',
-  encapsulation: ViewEncapsulation.None,
 })
-export class AdminSidebarComponent {
-  visible = false;
-}
+  export class AdminSidebarComponent {
+    isVisible = true;
+    isMouseOver = false;
+  }

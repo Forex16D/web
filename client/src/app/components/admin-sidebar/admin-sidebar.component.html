@@ -1,37 +1,77 @@
-<p-drawer [(visible)]="visible" header="Menu" aria-label="Main Navigation">
-  <nav class="w-full h-full flex flex-col justify-between">
-    <ul class="flex flex-col gap-4">
-      <li class="nav-item">
-        <div class="flex items-center gap-2">
-          <i class="pi pi-users" aria-hidden="true"></i>
-          <p>Users</p>
-        </div>
-        <p-divider></p-divider>
+<nav
+  class="flex flex-col justify-between h-4/6 pb-4 bg-gray-1200 bg-opacity-50 backdrop-blur rounded-r-xl fixed transition-all duration-300 overflow-hidden"
+  [ngClass]="{'w-48':isVisible, 'w-14':!isVisible}"
+  [style.transform]="!isMouseOver && !isVisible ? 'translateX(-2rem)' : ''" (mouseenter)="isMouseOver = true"
+  (mouseleave)="isMouseOver = false">
+
+  <!-- Sidebar Header -->
+  <div>
+    <header class="flex flex-row w-full h-14 items-center mb-8 gap-4 bg-green-400">
+      <i class="min-w-14 h-14 flex justify-center items-center pi pi-bars bg-green-400 cursor-pointer"
+        style="font-size: 1.25rem" (click)="isVisible = !isVisible" [attr.aria-expanded]="isVisible">
+      </i>
+      <div class="transition-opacity duration-300 overflow-hidden flex-shrink-0">
+        <h1 class="text-2xl font-bold">Menu</h1>
+        <!-- <app-logo></app-logo> -->
+      </div>
+    </header>
+
+    <!-- Sidebar Menu -->
+    <ul class="space-y-4">
+      <!-- Menu Item: Users -->
+      <li class="relative group">
+        <a href="#" class="flex items-center space-x-3 py-2 text-base text-white hover:text-green-400">
+          <div class="flex flex-shrink-0 w-14 items-center justify-center">
+            <div
+              class="absolute left-0 bottom-0 w-1 h-0 bg-green-400 transition-all duration-300 group-hover:h-full group-hover:bottom-0">
+            </div>
+            <i class="pi pi-users" style="font-size: 1.25rem"></i>
+          </div>
+          <span class="flex-grow pl-2">Users</span>
+        </a>
       </li>
-      <li class="nav-item">
-        <div class="flex items-center gap-2">
-          <i class="pi pi-microchip-ai" aria-hidden="true"></i>
-          <p>Models</p>
-        </div>
-        <p-divider></p-divider>
+
+      <!-- Menu Item: Models -->
+      <li class="relative group">
+        <a href="#" class="flex items-center space-x-3 py-2 text-base text-white hover:text-green-400">
+          <div class="flex flex-shrink-0 w-14 items-center justify-center">
+            <div
+              class="absolute left-0 bottom-0 w-1 h-0 bg-green-400 transition-all duration-300 group-hover:h-full group-hover:bottom-0">
+            </div>
+            <i class="pi pi-microchip-ai" style="font-size: 1.25rem"></i>
+          </div>
+          <span class="flex-grow pl-2">Models</span>
+        </a>
       </li>
-      <li class="nav-item">
-        <div class="flex items-center gap-2">
-          <i class="pi pi-chart-bar" aria-hidden="true"></i>
-          <p>Report</p>
-        </div>
-        <p-divider></p-divider>
+
+      <!-- Menu Item: Report -->
+      <li class="relative group">
+        <a href="#" class="flex items-center space-x-3 py-2 text-base text-white hover:text-green-400">
+          <div class="flex flex-shrink-0 w-14 items-center justify-center">
+            <div
+              class="absolute left-0 bottom-0 w-1 h-0 bg-green-400 transition-all duration-300 group-hover:h-full group-hover:bottom-0">
+            </div>
+            <i class="pi pi-chart-bar" style="font-size: 1.25rem"></i>
+          </div>
+          <span class="flex-grow pl-2">Report</span>
+        </a>
       </li>
     </ul>
-    
-    <footer>
-      <p-divider></p-divider>
-      <div class="flex items-center gap-4">
-        <i class="pi pi-sign-out text-red-400" aria-hidden="true"></i>
-        <p class="text-red-400">Log out</p>
-      </div>
-    </footer>
-  </nav>
-</p-drawer>
+  </div>
 
-<button (click)="visible = true">switch</button>
+  <!-- Menu Item: Log out -->
+  <div>
+    <p-divider></p-divider>
+    <li class="relative group">
+      <a href="#" class="flex items-center space-x-3 py-2 text-base text-white hover:text-red-400">
+        <div class="flex flex-shrink-0 w-14 items-center justify-center">
+          <div
+            class="absolute left-0 bottom-0 w-1 h-0 bg-red-400 transition-all duration-300 group-hover:h-full group-hover:bottom-0">
+          </div>
+          <i class="pi pi-sign-out" style="font-size: 1.25rem"></i>
+        </div>
+        <span class="flex-grow flex-shrink-0 pl-2">Log out</span>
+      </a>
+    </li>
+  </div>
+</nav>
