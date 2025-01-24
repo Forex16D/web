@@ -10,6 +10,13 @@ module.exports = {
       xl: '1280px',
     },
     extend: {
+      fontSize: {
+        'headline1': ['56px', { lineHeight: '64px', fontWeight: '800' }],
+        'headline2': ['48px', { lineHeight: '56px', fontWeight: '700' }],
+        'headline3': ['40px', { lineHeight: '48px', fontWeight: '600' }],
+        'headline4': ['32px', { lineHeight: '40px', fontWeight: '500' }],
+        'subtitle1': ['24px', { lineHeight: '32px', fontWeight: '400' }],
+      },
       colors: {
         customFg: '#2B3139',
         customBlue: '#4B9CD3',

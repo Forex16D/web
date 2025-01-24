@@ -23,11 +23,6 @@ html, body {
 
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
-button {
-  align-self: center;
-  margin-top: 16px;
-}
-
 .p-drawer {
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);

@@ -4,10 +4,11 @@ import { AuthService } from './core/auth/auth.service';
 import { NgIf } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { PlatformService } from './core/services/platform.service';
+import { LogoComponent } from './components/logo/logo.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, NgIf, RouterLink],
+  imports: [RouterOutlet, NgIf, RouterLink, LogoComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
 })

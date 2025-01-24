@@ -1,6 +1,6 @@
-<main class="flex flex-1 flex-col items-center w-full max-w-7xl mx-auto px-4">
+<div class="flex flex-1 flex-col items-center w-full max-w-7xl mx-auto px-4">
   <div class="w-full">
-    <h1 class="text-3xl w-4/6 font-bold">Dashboard</h1>
+    <h1 class="text-3xl font-bold"><i class="fas fa-tachometer-alt text-green-400"></i> Dashboard</h1>
     <!-- <div class="flex rounded-xl outline outline-2 outline-gray-1000 p-4 w-full min-h-80 mx-auto mt-5 mb-12">
       <div>
         <h2 class="text-xl">
@@ -13,9 +13,9 @@
     </div> -->
   </div>
   
-  <button pButton (click)="createComponent()">Button</button>
+  <!-- <button pButton (click)="createComponent()">Button</button> -->
   <div class="w-full mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-    <ng-container #container></ng-container>
+    <ng-container #container />
     <div *ngFor="let portfolio of portfolioDataArray">
       <app-portfolio-card 
       [credential]="portfolio.credential"
@@ -23,3 +23,4 @@
     </app-portfolio-card>
     </div>
   </div>
+</div>
