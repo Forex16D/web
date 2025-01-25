@@ -27,7 +27,6 @@ services:
 
   mongo:
     image: mongo
-    restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
@@ -36,7 +35,6 @@ services:
 
   mongo-express:
     image: mongo-express
-    restart: always
     ports:
       - 8081:8081
     environment:
@@ -55,7 +53,6 @@ services:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
-    restart: unless-stopped
 volumes:
   node_modules:
   mongodb_data:

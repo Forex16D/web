@@ -4,10 +4,11 @@ import { PortfolioCardComponent } from '../../components/portfolio-card/portfoli
 import { NgFor, NgComponentOutlet } from '@angular/common';
 import { ViewContainerRef } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
+import { BotCardComponent } from '../../components/bot-card/bot-card.component';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [ButtonModule, PortfolioCardComponent, NgFor, NgComponentOutlet],
+  imports: [ButtonModule, PortfolioCardComponent, NgFor, NgComponentOutlet, BotCardComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })

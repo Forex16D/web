@@ -19,8 +19,8 @@
     <!-- Sidebar Menu -->
     <ul class="space-y-4">
       <!-- Menu Item: Users -->
-      <li class="relative group">
-        <a href="#" class="flex items-center space-x-3 py-2 text-base text-white hover:text-green-400">
+      <li class="relative group" (click)="updateQueryParams('users')">
+        <a class="flex items-center space-x-3 py-2 text-base text-white hover:text-green-400">
           <div class="flex flex-shrink-0 w-14 items-center justify-center">
             <div
               class="absolute left-0 bottom-0 w-1 h-0 bg-green-400 transition-all duration-300 group-hover:h-full group-hover:bottom-0">
@@ -32,8 +32,8 @@
       </li>
 
       <!-- Menu Item: Models -->
-      <li class="relative group">
-        <a href="#" class="flex items-center space-x-3 py-2 text-base text-white hover:text-green-400">
+      <li class="relative group" (click)="updateQueryParams('models')">
+        <a class="flex items-center space-x-3 py-2 text-base text-white hover:text-green-400">
           <div class="flex flex-shrink-0 w-14 items-center justify-center">
             <div
               class="absolute left-0 bottom-0 w-1 h-0 bg-green-400 transition-all duration-300 group-hover:h-full group-hover:bottom-0">
@@ -45,8 +45,8 @@
       </li>
 
       <!-- Menu Item: Report -->
-      <li class="relative group">
-        <a href="#" class="flex items-center space-x-3 py-2 text-base text-white hover:text-green-400">
+      <li class="relative group" (click)="updateQueryParams('report')">
+        <a class="flex items-center space-x-3 py-2 text-base text-white hover:text-green-400">
           <div class="flex flex-shrink-0 w-14 items-center justify-center">
             <div
               class="absolute left-0 bottom-0 w-1 h-0 bg-green-400 transition-all duration-300 group-hover:h-full group-hover:bottom-0">

@@ -2,3 +2,4 @@ flask
 flask-cors
 pyjwt
 python-dotenv
+psycopg2
