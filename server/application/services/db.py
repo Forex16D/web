@@ -21,7 +21,7 @@ class DatabasePool:
           database="forex16d",
           user="admin",
           password="admin",
-          host="127.0.0.1",
+          host="postgres",
           port=5432,
         )
         print("Connection pool created successfully.")

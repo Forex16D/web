@@ -1,10 +1,11 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS 
-from routes.login import login
 from psycopg2.extras import RealDictCursor
 import psycopg2
-from services.middleware import token_required
-from services.db import DatabasePool
+
+from application.routes.login import login
+from application.services.middleware import token_required
+from application.services.db import DatabasePool
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}}) 
@@ -34,7 +35,7 @@ def get_users():
 
   try:
     cursor = conn.cursor(cursor_factory=RealDictCursor)
-    cursor.execute("SELECT * FROM users LIMIT %s OFFSET %s", (limit, offset))
+    cursor.execute("SELECT * FROM users")
     user = cursor.fetchall()
     
     cursor.execute("SELECT COUNT(*) FROM users")
