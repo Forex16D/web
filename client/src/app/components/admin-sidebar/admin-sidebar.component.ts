@@ -1,12 +1,12 @@
 import { Component } from '@angular/core';
 import { LogoComponent } from '../../components/logo/logo.component';
-import { NgClass, NgStyle } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { DividerModule } from 'primeng/divider';
 import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-admin-sidebar',
-  imports: [LogoComponent, NgClass, DividerModule, NgStyle],
+  imports: [LogoComponent, NgClass, DividerModule],
   templateUrl: './admin-sidebar.component.html',
   styleUrl: './admin-sidebar.component.css',
   standalone: true,

@@ -1,13 +1,12 @@
 import { Component, Input } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
-import { SafeCurrencyPipe } from '../../shared/pipes/safe-currency.pipe';
 import { CurrencyPipe } from '@angular/common';
 import { NgClass } from '@angular/common';
 import { TagModule } from 'primeng/tag';
 
 @Component({
   selector: 'app-portfolio-card',
-  imports: [ButtonModule, SafeCurrencyPipe, CurrencyPipe, NgClass, TagModule],
+  imports: [ButtonModule, NgClass, TagModule],
   templateUrl: './portfolio-card.component.html',
   styleUrl: './portfolio-card.component.css',
   providers: [CurrencyPipe]

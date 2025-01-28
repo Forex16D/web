@@ -1,14 +1,14 @@
 import { Component, viewChild} from '@angular/core';
 import { ThemeService } from '../../core/services/theme.service';
 import { PortfolioCardComponent } from '../../components/portfolio-card/portfolio-card.component';
-import { NgFor, NgComponentOutlet } from '@angular/common';
+import { NgFor } from '@angular/common';
 import { ViewContainerRef } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { BotCardComponent } from '../../components/bot-card/bot-card.component';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [ButtonModule, PortfolioCardComponent, NgFor, NgComponentOutlet, BotCardComponent],
+  imports: [ButtonModule, PortfolioCardComponent, NgFor, BotCardComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
@@ -30,7 +30,6 @@ export class DashboardComponent {
     },
   ];
 
-  
   defaultData = {
     pnl: '',
     winrate: '',

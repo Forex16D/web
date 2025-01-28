@@ -7,6 +7,7 @@ import { RegisterComponent } from './pages/register/register.component';
 import { AdminComponent } from './pages/admin/admin.component';
 import { adminAuthGuard } from './core/auth/admin-auth.guard';
 import { HomeComponent } from './pages/home/home.component';
+import { BotComponent } from './pages/bot/bot.component';
 
 export const routes: Routes = [
   {
@@ -33,4 +34,8 @@ export const routes: Routes = [
     component: AdminComponent,
     canActivate: [adminAuthGuard]
   },
+  {
+    path: 'bot',
+    component: BotComponent,
+  }
 ];
