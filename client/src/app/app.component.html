@@ -1,9 +1,7 @@
 <ng-container *ngIf="isBrowser; else ssrPlaceholder">
   <div *ngIf="showNavbar" class="flex items-center justify-between w-full px-4">
-    <app-logo></app-logo>
+    <a routerLink="/"><app-logo></app-logo></a>
     <ul>
-      <a routerLink="/">Home</a>
-      |
       <a routerLink="/dashboard">Dashboard</a>
     </ul>
   </div>

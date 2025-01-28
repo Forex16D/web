@@ -4,10 +4,11 @@ import { TagModule } from 'primeng/tag';
 import { ChartModule } from 'primeng/chart';
 import { CurrencyPipe } from '@angular/common';
 import { NgClass } from '@angular/common';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-bot-card',
-  imports: [ButtonModule, TagModule, ChartModule, NgClass],
+  imports: [ButtonModule, TagModule, ChartModule, NgClass, RouterLink],
   templateUrl: './bot-card.component.html',
   styleUrl: './bot-card.component.css',
   providers: [CurrencyPipe],

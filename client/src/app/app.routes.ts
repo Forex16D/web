@@ -8,6 +8,7 @@ import { AdminComponent } from './pages/admin/admin.component';
 import { adminAuthGuard } from './core/auth/admin-auth.guard';
 import { HomeComponent } from './pages/home/home.component';
 import { BotComponent } from './pages/bot/bot.component';
+import { BotDetailComponent } from './pages/bot-detail/bot-detail.component';
 
 export const routes: Routes = [
   {
@@ -37,5 +38,9 @@ export const routes: Routes = [
   {
     path: 'bot',
     component: BotComponent,
+  },
+  {
+    path: 'bot/detail/:id',
+    component: BotDetailComponent
   }
 ];

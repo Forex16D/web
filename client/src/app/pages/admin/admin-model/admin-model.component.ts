@@ -7,8 +7,7 @@ import { InputIconModule } from 'primeng/inputicon';
 import { SplitButtonModule } from 'primeng/splitbutton';
 import { InputTextModule } from 'primeng/inputtext';
 import { CheckboxModule } from 'primeng/checkbox';
-import { FormsModule } from '@angular/forms';
-import { JsonPipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';;
 import { FileUploadModule } from 'primeng/fileupload';
 
 @Component({
@@ -23,7 +22,6 @@ import { FileUploadModule } from 'primeng/fileupload';
     InputTextModule,
     CheckboxModule,
     FormsModule,
-    JsonPipe,
     FileUploadModule,
   ],
   templateUrl: './admin-model.component.html',
@@ -35,11 +33,12 @@ export class AdminModelComponent {
 
   firstElement: number = 0;
   rowsPerPage: number = 10;
+  expandedRows: { [key: string]: boolean } = {};
 
   constructor() {
     this.models = [
-      { id: 0, name: 'John Doe', isOverdue: false },
-      { id: 1, name: 'John Doe', isOverdue: false },
+      { id: 0, name: 'Trend follower XAUUSD 1.2', price: 100.2, winrate: 0.5 },
+      { id: 1, name: 'Scalper USDJPY 1.0', price: 0.00, winrate: 0.41},
     ];
     this.loadUsers(this.firstElement, this.rowsPerPage)
   }
@@ -57,4 +56,46 @@ export class AdminModelComponent {
   loadUsers(firstElement: number, size: number) {
     console.log(`Fetching ${firstElement}-${firstElement + size - 1}`);
   }
+
+  expandAll() {
+    this.expandedRows = this.models.reduce((acc, model) => {
+      acc[model.id] = true;
+      return acc;
+    }, {});
+  }
+
+  collapseAll() {
+    this.expandedRows = {};
+  }
+
+  debugButton(model: any, expanded: boolean) {
+    console.log('Button clicked!');
+    console.log('Model:', model);
+    console.log('Is Expanded:', expanded);
+    console.log('Expanded Rows State:', this.expandedRows);
+  
+    const rowKey = model.id;
+    if (this.expandedRows[rowKey]) {
+      console.log(`Collapsing row with ID: ${rowKey}`);
+      delete this.expandedRows[rowKey];
+    } else {
+      console.log(`Expanding row with ID: ${rowKey}`);
+      this.expandedRows[rowKey] = true;
+    }
+  }
+  
+  toggleRow(model: any) {
+    const rowKey = model.id;
+  
+    if (this.expandedRows[rowKey]) {
+      delete this.expandedRows[rowKey];
+      console.log(`Collapsing row with ID: ${rowKey}`);
+    } else {
+      this.expandedRows[rowKey] = true;
+      console.log(`Expanding row with ID: ${rowKey}`);
+    }
+  
+    console.log('Updated Expanded Rows:', this.expandedRows);
+  }
+
 }
