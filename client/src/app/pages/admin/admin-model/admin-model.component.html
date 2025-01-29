@@ -33,7 +33,7 @@
   <ng-template #body let-model let-expanded="expanded">
     <tr>
       <td style="width: 1rem">
-        <p-button type="button" pRipple [pRowToggler]="model" [text]="true" [rounded]="true" [plain]="true"
+        <p-button pRipple [pRowToggler]="model" [text]="true" [rounded]="true" [plain]="true"
           [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'" />
       </td>
       <td>{{ model.id }}</td>
@@ -46,7 +46,7 @@
     </tr>
   </ng-template>
 
-  <ng-template #rowexpansion let-model>
+  <ng-template #expandedrow let-model>
     <tr>
       <td colspan="5">
         <div class="p-4">

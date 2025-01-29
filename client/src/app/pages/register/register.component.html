@@ -1,6 +1,6 @@
 <div class="form-box pt-8 bg-gray-1000">
   <app-logo size="48px"></app-logo>
-  <h1 class="w-5/6 text-3xl mt-5 mb-3">Register</h1>
+  <h1 class="w-5/6 text-headline4 mt-5 mb-3">Register</h1>
   <form pFocusTrap [formGroup]="credentialForm" (ngSubmit)="register()" class="flex flex-col items-center w-full gap-2">
     <div class="flex flex-col w-5/6">
       <label for="email">Email</label>
@@ -24,6 +24,6 @@
       <p-message *ngIf="submitted && confirmPasswordError" severity="error" [text]="confirmPasswordError">
       </p-message>
     </div>
-    <button pButton type="submit" label="Register" class="w-5/6"></button>
+    <p-button type="submit" label="Register" class="w-5/6"></p-button>
   </form>
 </div>

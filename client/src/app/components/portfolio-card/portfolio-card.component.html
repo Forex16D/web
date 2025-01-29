@@ -1,27 +1,38 @@
-<div class="p-4 rounded-lg shadow-lg border border-gray-1000 text-white w-full flex flex-col justify-between items-start">
-  <div class="flex items-center justify-between w-full border-b border-gray-600 pb-2 mb-4">
+<div class="p-6 rounded-xl shadow-xl border border-gray-800 text-white w-full flex flex-col gap-6">
+  <!-- Status Section -->
+  <div class="flex items-center justify-between w-full border-b border-gray-700 pb-3">
     <p-tag severity="danger" [rounded]="true">Disconnected</p-tag>
+    <span class="text-sm text-gray-400">Last Updated: 11/11/1987</span>
   </div>
-  <div class="flex w-full justify-between">
-    <div class="text-left">
-      <h1 class="text-2xl font-semibold mb-1">{{credential.name}}</h1>
-      <p class="text-sm text-gray-400">{{credential.login}}</p>
+
+  <!-- User Info & Performance -->
+  <div class="flex justify-between w-full gap-6">
+    <!-- Credential Info -->
+    <div class="flex flex-col gap-2">
+      <h1 class="text-xl font-semibold">{{ credential.name }}</h1>
+      <p class="text-sm text-gray-400">{{ credential.login }}</p>
     </div>
-    <div>
-      <h3 class="text-lg font-medium">Monthly PnL</h3>
-      <p class="text-lg font-bold" [ngClass]="pnlTextColor">
+    <!-- Performance Metrics -->
+    <div class="text-right">
+      <h3 class="text-base font-medium">Monthly PnL</h3>
+      <p class="text-xl font-bold" [ngClass]="pnlTextColor">
         {{ pnlFormatted }}
       </p>
-      <div class="text-sm text-gray-400 mt-2">
-        <p>Win rate {{ winrateFormatted }}</p>
-        <p>ROI {{ roiFormatted }}</p>
+      <div class="text-sm text-gray-500 mt-2">
+        <p>Win Rate: <span class="text-gray-300">{{ winrateFormatted }}</span></p>
+        <p>ROI: <span class="text-gray-300">{{ roiFormatted }}</span></p>
       </div>
     </div>
   </div>
-  <div class="mt-4">
-    <h2 class="text-xl font-semibold">Current balance</h2>
-    <p class="text-3xl font-bold mt-1">{{ balanceFormatted }}</p>
+
+  <!-- Current Balance -->
+  <div>
+    <h2 class="text-lg font-semibold text-gray-300">Current Balance</h2>
+    <p class="text-2xl font-bold mt-1">{{ balanceFormatted }}</p>
   </div>
-  <button pButton type="button" label="View"
-    class="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white text-sm px-4 py-2 rounded shadow-sm"></button>
+
+  <!-- Button -->
+  <p-button type="button" label="View"
+    class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-3 rounded-lg shadow-lg transition-all duration-300">
+  </p-button>
 </div>
