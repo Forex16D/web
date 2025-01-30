@@ -6,7 +6,7 @@ services:
     build:
       context: ./client
       dockerfile: ./Dockerfile
-    container_name: "client"
+    container_name: "forex16d-client"
     ports:
       - "80:4200"
     volumes:
@@ -18,7 +18,7 @@ services:
     build:
       context: ./server
       dockerfile: ./Dockerfile
-    container_name: "server"
+    container_name: "forex16d-server"
     ports:
       - "5000:5000"
     volumes:
@@ -44,7 +44,7 @@ services:
       ME_CONFIG_BASICAUTH: false
   postgres:
     image: postgres:latest
-    container_name: postgres
+    container_name: forex16d-postgres
     environment:
       POSTGRES_DB: forex16d
       POSTGRES_USER: admin
