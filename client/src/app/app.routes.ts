@@ -10,6 +10,7 @@ import { HomeComponent } from './pages/home/home.component';
 import { BotComponent } from './pages/bot/bot.component';
 import { BotDetailComponent } from './pages/bot-detail/bot-detail.component';
 import { PriceChartComponent } from './pages/price-chart/price-chart.component';
+import { PortfolioDetailComponent } from './pages/portfolio-detail/portfolio-detail.component';
 
 export const routes: Routes = [
   {
@@ -47,5 +48,9 @@ export const routes: Routes = [
   {
     path: 'price-chart',
     component: PriceChartComponent,
+  },
+  {
+    path: 'portfolio/:id',
+    component: PortfolioDetailComponent,
   }
 ];

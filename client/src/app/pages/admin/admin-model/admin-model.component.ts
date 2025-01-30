@@ -9,6 +9,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { CheckboxModule } from 'primeng/checkbox';
 import { FormsModule } from '@angular/forms';;
 import { FileUploadModule } from 'primeng/fileupload';
+import { RippleModule } from 'primeng/ripple';
 
 @Component({
   selector: 'app-admin-model',
@@ -23,6 +24,7 @@ import { FileUploadModule } from 'primeng/fileupload';
     CheckboxModule,
     FormsModule,
     FileUploadModule,
+    RippleModule,
   ],
   templateUrl: './admin-model.component.html',
   styleUrl: './admin-model.component.css'

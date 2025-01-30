@@ -2,6 +2,6 @@
 <main class="px-12">
   <app-admin-user *ngIf="view == 'users'" />
   <app-admin-model *ngIf="view=='models'">models</app-admin-model>
-  <div *ngIf="view=='report'">report</div>
+  <app-admin-report *ngIf="view=='report'">report</app-admin-report>
 </main>
 <app-admin-sidebar></app-admin-sidebar>

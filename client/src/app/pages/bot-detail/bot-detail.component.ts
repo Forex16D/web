@@ -1,15 +1,16 @@
 import { Component } from '@angular/core';
-import { EChartsCoreOption } from 'echarts/core';
-import { NgxEchartsModule, provideEchartsCore, NgxEchartsDirective } from 'ngx-echarts';
-import { BarChart } from 'echarts/charts';
-import { LineChart } from 'echarts/charts';
-import { GridComponent } from 'echarts/components';
-import { CanvasRenderer } from 'echarts/renderers';
 import { PriceChartComponent } from '../price-chart/price-chart.component';
 import { NgClass } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
+
+import { BarChart } from 'echarts/charts';
+import { LineChart } from 'echarts/charts';
+import { EChartsCoreOption } from 'echarts/core';
+import { GridComponent } from 'echarts/components';
+import { CanvasRenderer } from 'echarts/renderers';
+import { NgxEchartsModule, provideEchartsCore, NgxEchartsDirective } from 'ngx-echarts';
 
 import * as echarts from 'echarts/core';
 echarts.use([BarChart, LineChart, GridComponent, CanvasRenderer]);

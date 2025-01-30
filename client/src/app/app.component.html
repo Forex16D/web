@@ -1,8 +1,16 @@
 <ng-container *ngIf="isBrowser; else ssrPlaceholder">
-  <div *ngIf="showNavbar" class="flex items-center justify-between w-full px-4">
+  <div *ngIf="showNavbar" class="flex justify-between items-center w-full px-4">
     <a routerLink="/"><app-logo></app-logo></a>
-    <ul>
-      <a routerLink="/dashboard">Dashboard</a>
+    <ul class="flex flex-row gap-4">
+      <li>
+        <a routerLink="/dashboard">Dashboard</a>
+      </li>
+      <li>
+        <a routerLink="/bot">Bot</a>
+      </li>
+      <li>
+        <a routerLink="/admin">Admin</a>
+      </li>
     </ul>
   </div>
   <router-outlet></router-outlet>
