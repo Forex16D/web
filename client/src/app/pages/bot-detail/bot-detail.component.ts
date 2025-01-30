@@ -8,13 +8,23 @@ import { CanvasRenderer } from 'echarts/renderers';
 import { PriceChartComponent } from '../price-chart/price-chart.component';
 import { NgClass } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
+import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
 
 import * as echarts from 'echarts/core';
 echarts.use([BarChart, LineChart, GridComponent, CanvasRenderer]);
 
 @Component({
   selector: 'app-bot-detail',
-  imports: [NgxEchartsDirective, NgxEchartsModule, PriceChartComponent, NgClass, ButtonModule],
+  imports: [
+    NgxEchartsDirective,
+    NgxEchartsModule,
+    PriceChartComponent,
+    NgClass,
+    ButtonModule,
+    DialogModule,
+    InputTextModule,
+  ],
   templateUrl: './bot-detail.component.html',
   styleUrl: './bot-detail.component.css',
   providers: [
@@ -23,6 +33,12 @@ echarts.use([BarChart, LineChart, GridComponent, CanvasRenderer]);
 })
 
 export class BotDetailComponent {
+  visible = false;
+
+  showDialog(): void {
+    this.visible = !this.visible;
+  }
+
   data = {
     backtest: "126D",
     start_balance: "1000",
@@ -41,9 +57,9 @@ export class BotDetailComponent {
   barChart: EChartsCoreOption = {
     grid: {
       left: '5%',
-      right: '5%',  
-      top: '10%',  
-      bottom: '10%', 
+      right: '5%',
+      top: '10%',
+      bottom: '10%',
       containLabel: true,
     },
     xAxis: {
@@ -55,7 +71,7 @@ export class BotDetailComponent {
     },
     series: [
       {
-        data: this.barData.map((value) => ({  
+        data: this.barData.map((value) => ({
           value: value,
           itemStyle: {
             color: value > 0 ? '#22c55e' : '#ef4444',
@@ -70,9 +86,9 @@ export class BotDetailComponent {
   lineChart: EChartsCoreOption = {
     grid: {
       left: '5%',
-      right: '5%',  
-      top: '10%',  
-      bottom: '10%', 
+      right: '5%',
+      top: '10%',
+      bottom: '10%',
       containLabel: true,
     },
     xAxis: {

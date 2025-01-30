@@ -3,31 +3,31 @@
     <div class="flex flex-row justify-between gap-4">
       <div class="grid grid-cols-3 w-full gap-4">
         <div class="flex flex-col space-y-2">
-          <h1 class="text-17 font-medium">Strategy : Fibo And Volume Profile XAUUSD</h1>
+          <h1 class="text-xl font-medium">Expert : Scalper XAUUSD 1.2</h1>
         </div>
         <div class="space-y-2">
           <div class="flex flex-row space-x-2">
-            <div class="text-third min-w-[120px]">Timeframe</div>
+            <div class="text-gray-400 min-w-[120px]">Timeframe</div>
             <div>4h</div>
           </div>
           <div class="flex flex-row space-x-2">
-            <div class="text-third min-w-[120px]">Currency</div>
+            <div class="text-gray-400 min-w-[120px]">Currency</div>
             <div>XAUUSD</div>
           </div>
         </div>
         <div class="flex flex-row space-x-2">
-          <div class="text-third min-w-[120px]">Min Size</div>
+          <div class="text-gray-400 min-w-[120px]">Min Size</div>
           <div>0.01</div>
         </div>
       </div>
-      <p-button label="copy trade"></p-button>
+      <button pButton label="copy trade" (click)="showDialog()"></button>
     </div>
     <!-- First Row -->
     <div class="flex flex-col xl:flex-row gap-4">
       <!-- Recent Trades -->
       <div class="w-full xl:w-4/6">
         <div class="flex flex-col h-full p-6 rounded-lg shadow-lg border border-gray-700 text-white">
-          <h2 class="text-xl font-semibold mb-4">Recent Trades</h2>
+          <h2 class="text-xl font-medium mb-4">Recent Trades</h2>
           <div class="overflow-x-auto">
             <!-- <table class="w-full text-left table-auto">
               <thead>
@@ -55,6 +55,9 @@
       <!-- Bar Chart -->
       <div class="w-full">
         <div class="flex flex-col h-full p-6 rounded-lg shadow-lg border border-gray-700 ">
+          <h2 class="text-xl font-medium">
+            PNL
+          </h2>
           <div echarts [options]="barChart" class="w-full xl:max-w-[622px]" style="height: 200px;"></div>
         </div>
       </div>
@@ -66,7 +69,7 @@
       <div class="w-full lg:w-4/6">
         <div class="flex flex-col h-full p-6 rounded-lg shadow-lg border border-gray-700 text-white">
           <div class="mb-6">
-            <h2 class="text-xl font-semibold">
+            <h2 class="text-xl font-medium">
               Performance Backtest
             </h2>
           </div>
@@ -118,9 +121,27 @@
       <!-- Line Chart -->
       <div class="w-full">
         <div class="flex flex-col h-full p-6 rounded-lg shadow-lg border border-gray-700 ">
+          <h2 class="text-xl font-medium">
+            ROI
+          </h2>
           <div echarts [options]="lineChart" class="w-full" style="height: 200px;"></div>
         </div>
       </div>
     </div>
   </div>
+  <p-dialog header="Copy trade" [modal]="true" [(visible)]="visible" [style]="{ width: '25rem' }">
+    <span class="p-text-secondary block mb-8">Scalper XAUUSD 1.2</span>
+    <div class="flex items-center gap-4 mb-4">
+      <label for="username" class="font-semibold w-24">Username</label>
+      <input pInputText id="username" class="flex-auto" autocomplete="off" />
+    </div>
+    <div class="flex items-center gap-4 mb-8">
+      <label for="email" class="font-semibold w-24">Email</label>
+      <input pInputText id="email" class="flex-auto" autocomplete="off" />
+    </div>
+    <div class="flex justify-end gap-2">
+      <p-button label="Cancel" severity="secondary" (click)="visible = false" />
+      <p-button label="Save" (click)="visible = false" />
+    </div>
+  </p-dialog>
 </div>

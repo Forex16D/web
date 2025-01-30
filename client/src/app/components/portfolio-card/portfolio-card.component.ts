@@ -3,10 +3,11 @@ import { ButtonModule } from 'primeng/button';
 import { CurrencyPipe } from '@angular/common';
 import { NgClass } from '@angular/common';
 import { TagModule } from 'primeng/tag';
+import { MenuModule } from 'primeng/menu';
 
 @Component({
   selector: 'app-portfolio-card',
-  imports: [ButtonModule, NgClass, TagModule],
+  imports: [ButtonModule, NgClass, TagModule, MenuModule],
   templateUrl: './portfolio-card.component.html',
   styleUrl: './portfolio-card.component.css',
   providers: [CurrencyPipe]
@@ -29,6 +30,12 @@ export class PortfolioCardComponent {
   roiFormatted: string = '-';
   balanceFormatted: string = '-';
   pnlTextColor: string = 'text-white';
+
+  menuItems = [
+    { label: 'Option 1', icon: 'pi pi-check' },
+    { label: 'Edit', icon: 'pi pi-cog' },
+    { label: 'Delete', icon: 'pi pi-trash' }
+  ];
 
   constructor(private currency: CurrencyPipe) { }
 
