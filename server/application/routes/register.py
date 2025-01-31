@@ -24,7 +24,7 @@ def register(request, db_pool, hasher):
     cursor.close()
     
     if user:
-      return jsonify({"message": "Email already exists"}), 400 
+      return jsonify({"error": "Email already exists"}), 400 
     else:
       cursor = conn.cursor()
       cursor.execute("""
@@ -36,9 +36,6 @@ def register(request, db_pool, hasher):
 
       return jsonify({"message": "User registered successfully!"}), 201
   except Exception as e:
-      print(e)
       return jsonify({"error": str(e)}), 500
   finally:
       db_pool.release_connection(conn)
-
-  

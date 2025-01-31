@@ -24,7 +24,7 @@ def create_app(container: AppContainer):
 
   @app.route("/v1/login", methods=['POST'])
   def handle_login():
-    return login(request, container.db_pool)
+    return login(request, container.db_pool, container.hasher)
   
   @app.route("/v1/register", methods=['POST'])
   def handle_register():

@@ -94,7 +94,7 @@ export class RegisterComponent {
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
-            detail: error.error.message
+            detail: error.error.error
           });
         }
       });
