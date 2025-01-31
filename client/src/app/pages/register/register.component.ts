@@ -10,23 +10,27 @@ import { MessageModule } from 'primeng/message';
 import { InputTextModule } from 'primeng/inputtext';
 import { CheckboxModule } from 'primeng/checkbox';
 import { FocusTrapModule } from 'primeng/focustrap';
+import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
 
 @Component({
   selector: 'app-register',
   imports: [
-    ReactiveFormsModule, 
-    NgIf, 
-    LogoComponent, 
+    ReactiveFormsModule,
+    NgIf,
+    LogoComponent,
     ButtonModule,
     FormsModule,
     PasswordModule,
     InputTextModule,
-    MessageModule,
     CheckboxModule,
-    FocusTrapModule
+    FocusTrapModule,
+    ToastModule,
+    MessageModule,
   ],
   templateUrl: './register.component.html',
-  styleUrl: './register.component.css'
+  styleUrl: './register.component.css',
+  providers: [MessageService],
 })
 export class RegisterComponent {
   credentialForm: FormGroup;
@@ -35,8 +39,10 @@ export class RegisterComponent {
   constructor(
     private authService: AuthService,
     private fb: FormBuilder,
+    private router: Router,
+    private messageService: MessageService,
   ) {
-    
+
     this.credentialForm = this.fb.group(
       {
         email: ['', [Validators.required, Validators.email]],
@@ -46,7 +52,7 @@ export class RegisterComponent {
       { validator: this.passwordMatchValidator }
     );
   }
-  
+
   passwordMatchValidator(control: AbstractControl): { [key: string]: boolean } | null {
     const password = control.get('password')?.value;
     const confirmPassword = control.get('confirmPassword')?.value;
@@ -71,11 +77,28 @@ export class RegisterComponent {
       this.credentialForm.markAllAsTouched();
       return;
     }
-    if (this.credentialForm.value.email && this.credentialForm.value.password && this.credentialForm.value.confirmPassword) {
-      this.authService.register();
-      console.log('Form Values:', this.credentialForm.value);
+    if (this.credentialForm.valid) {
+      const { email, password, confirmPassword } = this.credentialForm.value;
+
+      this.authService.register(email as string, password as string, confirmPassword as string).subscribe({
+        next: (_) => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'Register Successful'
+          });
+          this.router.navigateByUrl('/login');
+        },
+        error: (error) => {
+          console.error('Register Failed:', error)
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: error.error.message
+          });
+        }
+      });
       this.credentialForm.markAsUntouched();
-      // this.credentialForm.reset();
     }
   }
 }

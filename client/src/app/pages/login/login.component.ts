@@ -10,6 +10,8 @@ import { MessageModule } from 'primeng/message';
 import { InputTextModule } from 'primeng/inputtext';
 import { CheckboxModule } from 'primeng/checkbox';
 import { FocusTrapModule } from 'primeng/focustrap';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-login',
@@ -27,8 +29,10 @@ import { FocusTrapModule } from 'primeng/focustrap';
     MessageModule,
     CheckboxModule,
     RouterLink,
-    FocusTrapModule
+    FocusTrapModule,
+    ToastModule
   ],
+  providers: [MessageService],
 })
 
 export class LoginComponent {
@@ -51,6 +55,7 @@ export class LoginComponent {
     private authService: AuthService,
     private router: Router,
     private route: ActivatedRoute,
+    private messageService: MessageService,
   ) { }
 
   get email() {
@@ -78,7 +83,12 @@ export class LoginComponent {
           this.router.navigateByUrl(returnUrl);
         },
         error: (error) => {
-          console.error('Login Failed:', error);
+          console.error('Login Failed:', error.error.message);
+          this.messageService.add({
+            severity: "error",
+            summary: "Error",
+            detail: error.error.message
+          })
         }
       });
     } else {

@@ -3,3 +3,4 @@ flask-cors
 pyjwt
 python-dotenv
 psycopg2-binary
+argon2-cffi

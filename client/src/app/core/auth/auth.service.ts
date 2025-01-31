@@ -22,8 +22,15 @@ export class AuthService {
     this.authStateSignal.set(this.isAuthenticated())
   }
 
-  register(): void {
-    console.log('registered');
+  register(email: string, password: string, confirmPassword: string): Observable<any> {
+    if (isPlatformBrowser(this.platformId)) {
+      const data = { email, password, confirmPassword };
+      return this.apiService.postData('v1/register', data)
+    } else {
+      return new Observable(observer => {
+        observer.error('Register can only be performed in a browser environment');
+      });
+    }
   }
 
   login(email: string, password: string): Observable<any> {
