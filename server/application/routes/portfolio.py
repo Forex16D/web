@@ -1,16 +1,14 @@
-from flask import jsonify
-from psycopg2.extras import RealDictCursor
-import jwt
-import datetime
-import uuid
-import os
+from flask import request, Blueprint, g
+from application.services.middleware import token_required
+from application.services.portfolio import *
 
-def get_portfolios_by_user(user_id, current_user):
-  
-  return
+portfolio_routes = Blueprint("portfolio_routes", __name__)
 
-def manage_portfolio(portfolio_id, current_user):
-  pass
-  
-def get_all_portfolios(request, db_pool):
-  conn = db_pool.get_connection()
+@portfolio_routes.route("/v1/portfolios/<user_id>", methods=["GET"])
+def get_portfolios_by_user_route(user_id):
+  return get_portfolios_by_user(g.db_pool, user_id)
+
+@portfolio_routes.route("/v1/portfolios/<portfolio_id>", methods=["GET"])
+@token_required
+def get_portfolios_by_id_route(current_user_id):
+  return 200
