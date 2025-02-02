@@ -11,7 +11,7 @@ import { FormsModule } from '@angular/forms';
 import { JsonPipe } from '@angular/common';
 import { FileUploadModule } from 'primeng/fileupload';
 import { Router, ActivatedRoute } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { ApiService } from '../../../core/services/api.service';
 
 interface UserResponse {
   users: any[];
@@ -47,9 +47,9 @@ export class AdminUserComponent {
   constructor(
     private router: Router,
     private activatedRoute: ActivatedRoute,
-    private http: HttpClient
+    private apiService: ApiService,
   ) {
-    
+
     this.loadUsers(1, 100);
     this.activatedRoute.queryParams.subscribe((params) => {
       const page = params['page'] ? parseInt(params['page'], 10) : 1;
@@ -77,7 +77,7 @@ export class AdminUserComponent {
   loadUsers(page: number, limit: number) {
     console.log(`Fetching users for page ${page} with limit ${limit}`);
     console.log('First:', (this.page() - 1) * this.limit())
-    this.http.get<UserResponse>(`http://127.0.0.1:5000/v1/users?page=${page}&limit=${limit}`).subscribe({
+    this.apiService.get<UserResponse>(`/v1/users?page=${page}&limit=${limit}`).subscribe({
       next: (response) => {
 
         this.users.set(response.users);

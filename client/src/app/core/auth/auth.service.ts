@@ -1,31 +1,38 @@
 import { Injectable, Inject, PLATFORM_ID, signal } from '@angular/core';
 import { ApiService } from '../services/api.service';
 import { isPlatformBrowser } from '@angular/common';
-import { Observable, tap } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { tap, map, catchError } from 'rxjs/operators';
+
+interface LoginResponse {
+  token: string;
+}
+
+interface AuthResponse {
+  authentication: boolean;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 
 export class AuthService {
-  private authStateSignal = signal(this.isAuthenticated());
-
-  get authState1() {
-    return this.authStateSignal
-  }
+  private authStateSignal = signal(false);
 
   get authState() {
     return this.authStateSignal();
   }
 
   constructor(@Inject(PLATFORM_ID) private platformId: object, private apiService: ApiService) {
-    this.authStateSignal.set(this.isAuthenticated())
+    this.isAuthenticated().subscribe((isAuth) => {
+      this.authStateSignal.set(isAuth);
+    });
   }
 
   register(email: string, password: string, confirmPassword: string): Observable<any> {
     if (isPlatformBrowser(this.platformId)) {
       const data = { email, password, confirmPassword };
-      return this.apiService.postData('v1/register', data)
+      return this.apiService.post('v1/register', data);
     } else {
       return new Observable(observer => {
         observer.error('Register can only be performed in a browser environment');
@@ -33,39 +40,53 @@ export class AuthService {
     }
   }
 
-  login(email: string, password: string): Observable<any> {
+  login(email: string, password: string): Observable<LoginResponse> {
     if (isPlatformBrowser(this.platformId)) {
       const data = { email, password };
-      return this.apiService.postData('v1/login', data).pipe(
-        tap((response) => {
+      return this.apiService.post<LoginResponse>('v1/login', data).pipe(
+        tap((response: LoginResponse) => {
           if (response.token) {
             localStorage.setItem('authToken', response.token);
             this.authStateSignal.set(true);
           } else {
             console.error('Login response did not contain a token');
-            this.authStateSignal.set(false); 
+            this.authStateSignal.set(false);
           }
         })
       );
     } else {
-      return new Observable(observer => {
+      return new Observable((observer) => {
         observer.error('Login can only be performed in a browser environment');
       });
     }
   }
 
   logout(): void {
-    if (isPlatformBrowser(this.platformId)){
+    if (isPlatformBrowser(this.platformId)) {
       localStorage.removeItem('authToken');
       this.authStateSignal.set(false);
     }
   }
 
-  isAuthenticated(): boolean {
+  isAuthenticated(): Observable<boolean> {
     if (isPlatformBrowser(this.platformId)) {
-      return !!localStorage.getItem('authToken');
+      return this.apiService.get<AuthResponse>('v1/auth').pipe(
+        tap((response: AuthResponse) => {
+          if (response.authentication) {
+            this.authStateSignal.set(true);
+          } else {
+            this.authStateSignal.set(false);
+          }
+        }),
+        map((response: AuthResponse) => response.authentication),
+        catchError((error) => {
+          console.error('Error checking authentication:', error);
+          this.authStateSignal.set(false);
+          return of(false);
+        })
+      );
     }
-    return false;
+    return of(false);
   }
 
   getToken(): string | null {
