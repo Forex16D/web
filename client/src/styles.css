@@ -9,19 +9,25 @@
   --white: #ffffff;
   --p-drawer-background: rgba(43, 49, 57, 0.5) !important;
   --p-drawer-border-color: rgba(43, 49, 57, 0.5) !important;
+  --p-toolbar-background: rgba(0, 0, 0, 0) !important;
+  --p-toolbar-border-color: #1f2937 !important;
 }
 
-html, body { 
+html,
+body {
   margin: 0;
   padding: 0;
   width: 100%;
   height: 100%;
   box-sizing: border-box;
-  height: 100%; 
+  height: 100%;
   background-color: var(--background-color);
 }
 
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
 
 .p-drawer {
   backdrop-filter: blur(10px);

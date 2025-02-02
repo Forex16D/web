@@ -6,11 +6,14 @@ import { ViewContainerRef } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { BotCardComponent } from '../../components/bot-card/bot-card.component';
 import { NgClass } from '@angular/common';
-
+import { ToolbarModule } from 'primeng/toolbar';
 import { BarChart } from 'echarts/charts';
 import { EChartsCoreOption } from 'echarts/core';
 import { GridComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
+import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
+
 import { NgxEchartsModule, provideEchartsCore, NgxEchartsDirective } from 'ngx-echarts';
 
 import * as echarts from 'echarts/core';
@@ -26,6 +29,9 @@ echarts.use([BarChart, GridComponent, CanvasRenderer]);
     NgClass,
     NgxEchartsDirective,
     NgxEchartsModule,
+    ToolbarModule,
+    DialogModule,
+    InputTextModule,
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
@@ -35,7 +41,9 @@ echarts.use([BarChart, GridComponent, CanvasRenderer]);
 })
 export class DashboardComponent {
   vcr = viewChild('container', { read: ViewContainerRef });
-  isHidden = true;
+  isBalanceVisible = false;
+  isDialogVisible = false;
+
   components = [PortfolioCardComponent, PortfolioCardComponent, PortfolioCardComponent, PortfolioCardComponent]
   portfolioDataArray = [
     {
@@ -98,7 +106,11 @@ export class DashboardComponent {
     this.themeService.toggleTheme();
   }
 
-  toggleVisibility(): void {
-    this.isHidden = !this.isHidden;
+  toggleBalance(): void {
+    this.isBalanceVisible = !this.isBalanceVisible;
+  }
+
+  showDialog(): void {
+    this.isDialogVisible = true;
   }
 }

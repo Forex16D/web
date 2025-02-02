@@ -83,11 +83,11 @@ export class LoginComponent {
           this.router.navigateByUrl(returnUrl);
         },
         error: (error) => {
-          console.error('Login Failed:', error.error.error);
+          console.error('Login Failed:', error.error.message);
           this.messageService.add({
-            severity: "error",
-            summary: "Error",
-            detail: error.error.error
+            severity: 'error',
+            summary: 'Error',
+            detail: error.error.message
           })
         }
       });

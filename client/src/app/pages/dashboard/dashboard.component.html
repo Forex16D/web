@@ -2,12 +2,12 @@
   <div class="w-full mb-2">
     <h1 class="text-headline4 font-medium"><i class="fas fa-tachometer-alt text-green-400"></i> Dashboard</h1>
     <div
-      class="flex flex-col md:flex-row justify-between rounded-xl shadow-xl border border-gray-800 p-4 w-full min-h-80 gap-10 mx-auto mt-5 mb-12">
+      class="flex flex-col md:flex-row justify-between rounded-md shadow-xl border border-gray-800 p-4 w-full min-h-80 gap-10 mx-auto my-5">
       <!-- Left Section -->
       <div class="md:flex-grow md:flex-shrink-0">
         <h2 class="text-xl">
           Total Gain
-          <span class="pi" [ngClass]="{'pi-eye-slash': !isHidden, 'pi-eye': isHidden}" (click)="toggleVisibility()"
+          <span class="pi" [ngClass]="{'pi-eye-slash': !isBalanceVisible, 'pi-eye': isBalanceVisible}" (click)="toggleBalance()"
             style="cursor: pointer;">
           </span>
         </h2>
@@ -23,7 +23,17 @@
       </div>
     </div>
 
-    <!-- <p-button  (click)="createComponent()">Button</p-button> -->
+    <div class="mb-6">
+      <p-toolbar>
+        <ng-template #start>
+          <p-button icon="pi pi-plus" label="create new" class="mr-2" text severity="secondary" (click)="showDialog()" />
+        </ng-template>
+        <ng-template #end>
+          <p-button (click)="createComponent()">test</p-button>
+        </ng-template>
+      </p-toolbar>
+    </div>
+
     <div class="w-full mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <ng-container #container />
       <div *ngFor="let portfolio of portfolioDataArray">
@@ -32,3 +42,20 @@
       </div>
     </div>
   </div>
+
+  <p-dialog [modal]="true" [(visible)]="isDialogVisible" [style]="{ width: '30rem' }">
+    <ng-template pTemplate="header">
+      <h1 class="text-2xl font-medium">Create Portfolio</h1>
+    </ng-template>
+    
+    <div class="flex flex-col gap-4 mb-4">
+      <label for="name" class="text-sm">MT5 Login</label>
+      <input pInputText id="name" class="flex-auto" autocomplete="off" />
+    </div>
+
+    <div class="flex flex-col gap-4 mb-4">
+      <label for="name" class="text-sm">Portfolio Name</label>
+      <input pInputText id="name" class="flex-auto" autocomplete="off" />
+    </div>
+
+  </p-dialog>

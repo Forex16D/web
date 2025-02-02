@@ -32,7 +32,6 @@ export class BotCardComponent {
   
   ngOnChanges(): void {
     this.transformData();
-    console.log("ssss")
   }
 
   graphData = {

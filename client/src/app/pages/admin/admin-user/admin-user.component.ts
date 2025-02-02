@@ -59,7 +59,7 @@ export class AdminUserComponent {
     });
 
     effect(() => {
-      console.log("something change")
+      console.log('something change')
       const currentPage = this.page();
       const currentLimit = this.limit();
       this.updateQueryParams(currentPage, currentLimit);

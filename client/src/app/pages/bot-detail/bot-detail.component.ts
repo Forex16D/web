@@ -41,16 +41,16 @@ export class BotDetailComponent {
   }
 
   data = {
-    backtest: "126D",
-    start_balance: "1000",
-    risk_reward_ratio: "2.26",
-    roi: "0.71",
-    pnl: "$710.86",
-    max_drawdown: "0.16",
-    winrate: "0.5882",
-    win: "20",
-    loss: "14",
-    total: "34",
+    backtest: '126D',
+    start_balance: '1000',
+    risk_reward_ratio: '2.26',
+    roi: '0.71',
+    pnl: '$710.86',
+    max_drawdown: '0.16',
+    winrate: '0.5882',
+    win: '20',
+    loss: '14',
+    total: '34',
   }
 
   barData = [12, -150, 30, 40, 160, 130, 200];
