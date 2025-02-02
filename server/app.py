@@ -9,11 +9,16 @@ from application.routes.portfolio import portfolio_routes
 
 from application.services.middleware import token_required
 from application.services.db import DatabasePool
+from application.services.portfolio_service import PortfolioService
+
+from application.controllers.portfolio_controller import PortfolioController
+
 
 class AppContainer:
   def __init__(self):
     self.db_pool = DatabasePool()
     self.hasher = PasswordHasher()
+    self.portfolio_service = PortfolioService(self.db_pool)
 
 def create_app(container: AppContainer):
   app = Flask(__name__)
@@ -36,6 +41,7 @@ def create_app(container: AppContainer):
   def before_request():
     g.db_pool = container.db_pool
     g.hasher = container.hasher
+    g.portfolio_service = container.portfolio_service
 
   return app
 
