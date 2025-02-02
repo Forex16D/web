@@ -4,6 +4,7 @@ RUN apk update && apk add \
     build-base \
     libpq-dev \
     gcc \
+    libffi-dev \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
