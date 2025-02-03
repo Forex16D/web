@@ -63,6 +63,7 @@ export class ApiService {
 
   private handleError(error: any) {
     console.error('API request error:', error);
-    return throwError(() => new Error(error.message || 'Server error'));
+    console.error(error.error.message)
+    return throwError(() => new Error(error.error.message || 'Server error'));
   }
 }

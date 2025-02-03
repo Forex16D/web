@@ -1,24 +1,16 @@
 from flask import Flask, request, jsonify, g
 from flask_cors import CORS
 from psycopg2.extras import RealDictCursor
-from argon2 import PasswordHasher
 
-from application.routes.auth import auth_routes
-from application.routes.user import user_routes
+
+from application.routes.auth_route import auth_routes
+from server.application.routes.user_route import user_routes
 from application.routes.portfolio import portfolio_routes
 
 from application.services.middleware import token_required
-from application.services.db import DatabasePool
-from application.services.portfolio_service import PortfolioService
 
-from application.controllers.portfolio_controller import PortfolioController
-
-
-class AppContainer:
-  def __init__(self):
-    self.db_pool = DatabasePool()
-    self.hasher = PasswordHasher()
-    self.portfolio_service = PortfolioService(self.db_pool)
+from application.container import AppContainer
+from application.container import container
 
 def create_app(container: AppContainer):
   app = Flask(__name__)
@@ -42,10 +34,10 @@ def create_app(container: AppContainer):
     g.db_pool = container.db_pool
     g.hasher = container.hasher
     g.portfolio_service = container.portfolio_service
+    g.auth_service = container.auth_service
 
   return app
 
-container = AppContainer()
 app = create_app(container)
 
 if __name__ == "__main__":
