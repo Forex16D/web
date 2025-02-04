@@ -30,7 +30,6 @@ import { ToastModule } from 'primeng/toast';
   ],
   templateUrl: './register.component.html',
   styleUrl: './register.component.css',
-  providers: [MessageService],
 })
 export class RegisterComponent {
   credentialForm: FormGroup;

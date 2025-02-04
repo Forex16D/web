@@ -36,7 +36,6 @@ export class ApiService {
     body?: any,
     customHeaders?: object
   ): Observable<T> {
-    console.log(this.getHeaders())
     return this.http
       .request<T>(method, `${this.apiUrl}/${endpoint}`, {
         body,

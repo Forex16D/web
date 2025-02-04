@@ -41,32 +41,31 @@
   </button> -->
 </div>
 
-<p-dialog [modal]="true" [(visible)]="visible" [style]="{ width: '30rem' }">
+<p-dialog [modal]="true" [(visible)]="isEditVisible" [style]="{ width: '30rem' }">
   <ng-template pTemplate="header">
     <h1 class="text-2xl font-medium">Edit Portfolio</h1>
   </ng-template>
-  <!-- <span class="p-text-secondary block mb-8">{{ credential.name }}</span> -->
-  <div class="flex items-center gap-4 mb-4">
-    <label for="name" class="w-20 text-sm">Old Name</label>
-    {{ credential.name }}
-  </div>
 
-  <div class="flex items-center gap-4 mb-8">
-    <label for="name" class="w-20 text-sm">New Name</label>
-    <input pInputText id="name" class="flex-auto" autocomplete="off" />
-  </div>
+  <form pFocusTrap [formGroup]="portfolioEditForm" (ngSubmit)="editItem()">
+    <div class="flex items-center gap-4 mb-8">
+      <label for="name" class="w-20 text-sm">Name</label>
+      <input pInputText id="name" class="flex-auto" autocomplete="off" formControlName="name" />
+    </div>
 
-  <div class="flex items-center gap-4 mb-4">
-    <label for="name" class="w-20 text-sm">Current Bot</label>
-    Scalper XAUUSD 1.2
-    <p-button routerLink="/bot" label="Browse" size="small" />
-  </div>
+    <div class="flex items-center gap-4 mb-8">
+      <label for="login" class="w-20 text-sm">Login</label>
+      <input pInputText id="login" class="flex-auto" autocomplete="off" formControlName="login" />
+    </div>
 
-  <div class="flex items-center gap-4 mb-8">
+    <div class="flex items-center gap-4 mb-8">
+      <label for="bot" class="w-20 text-sm">Current Bot</label>
+      <span>Scalper XAUUSD 1.2</span>
+      <p-button routerLink="/bot" label="Browse" size="small"></p-button>
+    </div>
 
-  </div>
-  <div class="flex gap-2">
-    <button pButton label="Cancel" severity="secondary" (click)="visible = false" class="w-full"></button>
-    <button pButton label="Save" (click)="visible = false" class="w-full"></button>
-  </div>
+    <div class="flex justify-end gap-2">
+      <p-button label="Cancel" severity="secondary" (click)="isEditVisible = false"></p-button>
+      <p-button label="Save" type="submit"></p-button>
+    </div>
+  </form>
 </p-dialog>

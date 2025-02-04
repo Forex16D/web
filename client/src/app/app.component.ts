@@ -5,12 +5,15 @@ import { NgIf } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { PlatformService } from './core/services/platform.service';
 import { LogoComponent } from './components/logo/logo.component';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, NgIf, RouterLink, LogoComponent],
+  imports: [RouterOutlet, NgIf, RouterLink, LogoComponent, ToastModule],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
+  providers: [MessageService]
 })
 export class AppComponent {   
   title = 'forex16d';
@@ -22,6 +25,7 @@ export class AppComponent {
     public authService: AuthService, 
     private router: Router, 
     private platformService : PlatformService,
+    private messageService: MessageService,
   ) {
     this.isBrowser = this.platformService.isBrowser();
     this.router.events.subscribe((event) => {

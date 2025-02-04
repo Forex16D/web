@@ -1,17 +1,16 @@
-import { Component } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { AuthService } from '../../core/auth/auth.service';
-import { FormGroup, FormControl, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { NgIf } from '@angular/common';
-import { LogoComponent } from '../../components/logo/logo.component';
+import { Component } from '@angular/core';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
-import { PasswordModule } from 'primeng/password';
-import { MessageModule } from 'primeng/message';
-import { InputTextModule } from 'primeng/inputtext';
 import { CheckboxModule } from 'primeng/checkbox';
 import { FocusTrapModule } from 'primeng/focustrap';
-import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
+import { InputTextModule } from 'primeng/inputtext';
+import { MessageModule } from 'primeng/message';
+import { PasswordModule } from 'primeng/password';
+import { LogoComponent } from '../../components/logo/logo.component';
+import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -30,14 +29,12 @@ import { MessageService } from 'primeng/api';
     CheckboxModule,
     RouterLink,
     FocusTrapModule,
-    ToastModule
   ],
-  providers: [MessageService],
 })
 
 export class LoginComponent {
   credentialForm = new FormGroup({
-    email: new FormControl('', [Validators.required, Validators.email]),  // Fix here
+    email: new FormControl('', [Validators.required, Validators.email]),
     password: new FormControl(''),
     remember: new FormControl(false)
   });

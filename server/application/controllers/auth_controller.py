@@ -1,12 +1,10 @@
-from flask import Flask, jsonify, request
-import logging
+from flask import jsonify
 
 class AuthController:
   def __init__(self, auth_service): 
     self.auth_service = auth_service
 
   def login(self, request): 
-    # logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
     try:
       data = request.get_json()
       if not data:

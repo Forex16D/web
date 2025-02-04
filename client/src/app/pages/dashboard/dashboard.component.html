@@ -7,8 +7,8 @@
       <div class="md:flex-grow md:flex-shrink-0">
         <h2 class="text-xl">
           Total Gain
-          <span class="pi" [ngClass]="{'pi-eye-slash': !isBalanceVisible, 'pi-eye': isBalanceVisible}" (click)="toggleBalance()"
-            style="cursor: pointer;">
+          <span class="pi" [ngClass]="{'pi-eye-slash': !isBalanceVisible, 'pi-eye': isBalanceVisible}"
+            (click)="toggleBalance()" style="cursor: pointer;">
           </span>
         </h2>
         <div class="text-2xl">$99,000.00</div>
@@ -26,7 +26,8 @@
     <div class="mb-6">
       <p-toolbar>
         <ng-template #start>
-          <p-button icon="pi pi-plus" label="create new" class="mr-2" text severity="secondary" (click)="showDialog()" />
+          <p-button icon="pi pi-plus" label="create new" class="mr-2" text severity="secondary"
+            (click)="showDialog()" />
         </ng-template>
         <ng-template #end>
           <p-button (click)="createComponent()">test</p-button>
@@ -36,26 +37,39 @@
 
     <div class="w-full mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <ng-container #container />
-      <div *ngFor="let portfolio of portfolioDataArray">
-        <app-portfolio-card [credential]="portfolio.credential" [data]="portfolio.data || defaultData">
-        </app-portfolio-card>
-      </div>
+      <app-portfolio-card *ngFor="let portfolio of portfolios()" [credential]="portfolio" [data]="defaultData"
+        (portfolioDeleted)="removePortfolio($event)">
+      </app-portfolio-card>
     </div>
   </div>
+</div>
 
-  <p-dialog [modal]="true" [(visible)]="isDialogVisible" [style]="{ width: '30rem' }">
-    <ng-template pTemplate="header">
-      <h1 class="text-2xl font-medium">Create Portfolio</h1>
-    </ng-template>
-    
+<p-dialog [modal]="true" [(visible)]="isDialogVisible" [style]="{ width: '30rem' }" (onHide)="resetForm()">
+  <ng-template pTemplate="header">
+    <h1 class="text-2xl font-medium">Create Portfolio</h1>
+  </ng-template>
+
+  <form pFocusTrap [formGroup]="portfolioForm" (ngSubmit)="createPortfolio()">
     <div class="flex flex-col gap-4 mb-4">
+      <!-- MT5 Login -->
       <label for="name" class="text-sm">MT5 Login</label>
-      <input pInputText id="name" class="flex-auto" autocomplete="off" />
+      <p-inputnumber mode="decimal" inputId="withoutgrouping" [useGrouping]="false" id="name" class="flex-auto"
+        autocomplete="off" placeholder="MT5 Login" formControlName="login" />
+      <p-message *ngIf="submitted && portfolioForm.get('login')?.invalid" severity="error"
+        text="Please enter a valid login"></p-message>
     </div>
 
-    <div class="flex flex-col gap-4 mb-4">
+    <!-- Portfolio Name -->
+    <div class="flex flex-col gap-4 mb-8">
       <label for="name" class="text-sm">Portfolio Name</label>
-      <input pInputText id="name" class="flex-auto" autocomplete="off" />
+      <input pInputText id="name" class="flex-auto" autocomplete="off" placeholder="Name" formControlName="name" />
+      <p-message *ngIf="submitted && portfolioForm.get('name')?.invalid" severity="error"
+        text="Name must be between 1-20 characters"></p-message>
     </div>
 
-  </p-dialog>
+    <div class="flex justify-end gap-2">
+      <p-button label="Cancel" severity="secondary" (click)="isDialogVisible = false" />
+      <p-button label="Save" type="submit" />
+    </div>
+  </form>
+</p-dialog>

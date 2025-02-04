@@ -15,7 +15,6 @@ interface AuthResponse {
 @Injectable({
   providedIn: 'root'
 })
-
 export class AuthService {
   private authStateSignal = signal(false);
 
@@ -24,6 +23,10 @@ export class AuthService {
   }
 
   constructor(@Inject(PLATFORM_ID) private platformId: object, private apiService: ApiService) {
+    this.initializeAuthState();
+  }
+
+  private initializeAuthState(): void {
     this.isAuthenticated().subscribe((isAuth) => {
       this.authStateSignal.set(isAuth);
     });
