@@ -18,7 +18,7 @@ def token_required(f):
         token = auth_header.split(" ")[1]
 
     if not token:
-      return jsonify({"message": "Token is missing!"}), 401
+      return jsonify({"status": 401, "message": "Unauthorized"}), 401
 
     try:
       data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
@@ -27,12 +27,12 @@ def token_required(f):
       user_id_from_request = kwargs.get('user_id', None)
 
       if user_id_from_request and int(user_id_from_request) != current_user_id:
-        return jsonify({"message": "Unauthorized access"}), 403
+        return jsonify({"status": 403, "message": "Forbidden"}), 403
 
     except jwt.ExpiredSignatureError:
-      return jsonify({"message": "Token has expired!"}), 401
+      return jsonify({"status": 401, "message": "Unauthorized"}), 401
     except jwt.InvalidTokenError:
-      return jsonify({"message": "Invalid token!"}), 401
+      return jsonify({"status": 401, "message": "Unauthorized"}), 401
 
     return f(current_user_id, *args, **kwargs)
   

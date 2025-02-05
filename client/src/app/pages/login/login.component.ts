@@ -81,11 +81,18 @@ export class LoginComponent {
         },
         error: (error) => {
           console.error('Login Failed:', error);
+          let error_message = error.message; 
+          switch (error.status) {
+            case 401:
+              error_message = 'Invalid email or password';
+              break;
+          }
+
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
-            detail: error
-          })
+            detail: error_message
+          });
         }
       });
     } else {

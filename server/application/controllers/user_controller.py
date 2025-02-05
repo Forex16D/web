@@ -9,7 +9,7 @@ class UserController:
       users = self.portfolio_service.get_all_users(request)
       return jsonify(users), 200
 
-    except RuntimeError as re:
-      return jsonify({"status": 500, "message": f"Internal server error: {str(re)}"}), 500
-    except Exception as e:
-      return jsonify({"message": "An unexpected error occurred"}), 500
+    except RuntimeError:
+      return jsonify({"status": 500, "message": "Internal server error"}), 500
+    except Exception:
+      return jsonify({"status": 500, "message": "Internal server error"}), 500

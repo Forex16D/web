@@ -17,7 +17,7 @@ class AuthService:
     self.hasher = hasher
 
   def login(self, data):
-    email = data.get("email")
+    email = data.get("email").lower()
     password = data.get("password")
 
     if not email or not password:
@@ -61,7 +61,7 @@ class AuthService:
       self.db_pool.release_connection(conn)
 
   def register(self, data): 
-    email = data.get("email")
+    email = data.get("email").lower()
     password = data.get("password")
     confirm_password = data.get("confirmPassword")
     

@@ -90,10 +90,17 @@ export class RegisterComponent {
         },
         error: (error) => {
           console.error('Register Failed:', error)
+          let error_message = error.message; 
+          switch (error.status) {
+            case 409:
+              error_message = 'Email Already Exists';
+              break;
+          }
+
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
-            detail: error.error.message
+            detail: error_message
           });
         }
       });

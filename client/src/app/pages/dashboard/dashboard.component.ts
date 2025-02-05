@@ -156,11 +156,11 @@ export class DashboardComponent {
         console.log(response);
       },
       error: (error) => {
-        console.error('Fetch failed:', error);
+        console.error('Create failed:', error);
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: error
+          detail: 'Error Creating Portfolio'
         })
       }
     })

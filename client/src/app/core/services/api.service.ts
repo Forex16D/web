@@ -62,7 +62,13 @@ export class ApiService {
 
   private handleError(error: any) {
     console.error('API request error:', error);
-    console.error(error.error.message)
-    return throwError(() => new Error(error.error.message || 'Server error'));
+    
+    const errorMessage = error?.error?.message || 'Server error';
+    const errorStatus = error?.status || 500;
+
+    return throwError(() => ({
+      message: errorMessage,
+      status: errorStatus,
+    }));
   }
 }

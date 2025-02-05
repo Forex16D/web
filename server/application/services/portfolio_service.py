@@ -62,14 +62,14 @@ class PortfolioService:
       conn.commit()
 
       if cursor.rowcount == 0:
-        raise ValueError("Portfolio not found or already deleted.")
+        raise ValueError("Portfolio not found.")
 
       return {"message": "Portfolio Deleted Successfully!"}
 
     except ValueError as ve:
       raise ve
     except Exception as e:
-      raise RuntimeError("Something went wrong") 
+      raise RuntimeError(f"Something went wrong {str(e)}") 
     finally:
       cursor.close()
       self.db_pool.release_connection(conn)

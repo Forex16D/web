@@ -103,13 +103,17 @@ export class PortfolioCardComponent {
       next: (response) => {
         this.messageService.add({
           severity: 'success',
-          summary: 'Sucess',
+          summary: 'Success',
           detail: 'Portfolio Deleted Successfully'
         })
         this.portfolioDeleted.emit(this.credential.portfolio_id);
       },
       error: (error) => {
-        console.error(error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Error Deleting Portfolio'
+        })
       }
     })
   }
@@ -128,12 +132,16 @@ export class PortfolioCardComponent {
       next: (response) => {
         this.messageService.add({
           severity: 'success',
-          summary: 'Sucess',
+          summary: 'Success',
           detail: 'Portfolio Updated Successfully'
         })
       },
       error: (error) => {
-        console.log(error)
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Error Updating Portfolio'
+        })
       }
     })
   }
