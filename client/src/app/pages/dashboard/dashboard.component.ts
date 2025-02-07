@@ -67,6 +67,7 @@ export class DashboardComponent {
   portfolioForm = new FormGroup({
     name: new FormControl('', [Validators.required, Validators.minLength(1), Validators.maxLength(20)]),
     login: new FormControl(null, [Validators.required, Validators.pattern('[0-9]*')]),
+    token: new FormControl(''),
   });
 
   submitted: boolean = false;
@@ -164,6 +165,10 @@ export class DashboardComponent {
         })
       }
     })
+  }
+
+  generateToken(): void {
+    this.portfolioForm.get('token')?.setValue('new TOken');
   }
 
   createComponent(): void {

@@ -1,4 +1,4 @@
-from flask import request, Blueprint, jsonify
+from flask import request, Blueprint, jsonify # type: ignore
 from application.services.middleware import token_required
 from application.controllers.portfolio_controller import PortfolioController
 from application.container import container

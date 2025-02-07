@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request # type: ignore
 from application.helpers.server_log_service import ServerLogService
 
 class PortfolioController:

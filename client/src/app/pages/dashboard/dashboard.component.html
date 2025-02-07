@@ -60,11 +60,21 @@
     </div>
 
     <!-- Portfolio Name -->
-    <div class="flex flex-col gap-4 mb-8">
+    <div class="flex flex-col gap-4 mb-4">
       <label for="name" class="text-sm">Portfolio Name</label>
       <input pInputText id="name" class="flex-auto" autocomplete="off" placeholder="Name" formControlName="name" />
       <p-message *ngIf="submitted && portfolioForm.get('name')?.invalid" severity="error"
         text="Name must be between 1-20 characters"></p-message>
+    </div>
+
+    <!-- Token -->
+    <div class="flex flex-col gap-4 mb-4">
+      <label for="token" class="text-sm">Token</label>
+      <input pInputText id="token" class="flex-auto" readonly="true" autocomplete="off" placeholder="Token" formControlName="token"/>
+    </div>
+
+    <div class="mb-8">
+      <p-button label="Generate Token" (click)="generateToken()"/>
     </div>
 
     <div class="flex justify-end gap-2">

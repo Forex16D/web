@@ -1,8 +1,8 @@
-from flask import jsonify
-from psycopg2.extras import RealDictCursor
-from argon2.exceptions import VerifyMismatchError
+from flask import jsonify # type: ignore
+from psycopg2.extras import RealDictCursor # type: ignore
+from argon2.exceptions import VerifyMismatchError # type: ignore
 from dotenv import load_dotenv
-import jwt
+import jwt # type: ignore
 import datetime
 import os
 import logging
@@ -45,7 +45,7 @@ class AuthService:
               algorithm="HS256"
             )
             return {"token": token}
-  
+
         except VerifyMismatchError:
           raise ValueError("Invalid email or password!")
       raise ValueError("Invalid email or password!")

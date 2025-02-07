@@ -1,5 +1,5 @@
-from flask import request, jsonify
-import jwt
+from flask import request, jsonify # type: ignore
+import jwt # type: ignore
 from functools import wraps
 from dotenv import load_dotenv
 import os

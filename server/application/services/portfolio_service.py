@@ -1,6 +1,6 @@
-from flask import jsonify
-from psycopg2.extras import RealDictCursor
-import jwt
+from flask import jsonify # type: ignore
+from psycopg2.extras import RealDictCursor # type: ignore
+import jwt # type: ignore
 import uuid
 
 class PortfolioService:
@@ -73,7 +73,7 @@ class PortfolioService:
     finally:
       cursor.close()
       self.db_pool.release_connection(conn)
-      
+
   def update_portfolio(self, data, portfolio_id):
     name = data.get("name")
     login = data.get("login")
