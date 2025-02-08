@@ -4,3 +4,4 @@ pyjwt
 python-dotenv
 psycopg2-binary
 argon2-cffi
+zmq

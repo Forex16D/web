@@ -21,6 +21,8 @@ services:
     container_name: "forex16d-server"
     ports:
       - "5000:5000"
+      - "5555:5555"
+      - "5557:5557"
     volumes:
       - ./server:/app
     command: "python -m flask run --debug --host=0.0.0.0"

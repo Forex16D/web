@@ -7,9 +7,9 @@ auth_routes = Blueprint("auth_routes", __name__)
 auth_controller = AuthController(container.auth_service)
 
 @auth_routes.route("/v1/login", methods=["POST"])
-def login_route():
+def login():
   return auth_controller.login(request)
 
 @auth_routes.route("/v1/register", methods=["POST"])
-def register_route():
+def register():
   return auth_controller.register(request)

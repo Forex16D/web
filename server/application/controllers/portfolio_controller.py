@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request # type: ignore
-from application.helpers.server_log_service import ServerLogService
+from application.helpers.server_log_helper import ServerLogService
 
 class PortfolioController:
   def __init__(self, portfolio_service): 
@@ -12,9 +12,11 @@ class PortfolioController:
       return jsonify(portfolios), 200
     except ValueError:
       return jsonify({"status": 404, "message": "Not found"}), 404
-    except RuntimeError:
+    except RuntimeError as e:
+      self.server_log_service.error(f"Unexpected error during portfolio creation: {str(e)}")
       return jsonify({"status": 500, "message": "Internal server error"}), 500
-    except Exception:
+    except Exception as e:
+      self.server_log_service.error(f"Unexpected error during portfolio creation: {str(e)}")
       return jsonify({"status": 500, "message": "Internal server error"}), 500
 
   def get_portfolio(self, portfolio_id):
@@ -33,11 +35,11 @@ class PortfolioController:
       return jsonify(portfolio), 201
     except ValueError:
       return jsonify({"status": 400, "message": "Bad request"}), 400
-    except RuntimeError:
-      self.server_log_service.log_error("Internal server error during portfolio creation")
+    except RuntimeError as re:
+      self.server_log_service.error(f"Internal server error during portfolio creation: {str(re)}")
       return jsonify({"status": 500, "message": "Internal server error"}), 500
-    except Exception:
-      self.server_log_service.log_error("Unexpected error during portfolio creation")
+    except Exception as e:
+      self.server_log_service.error(f"Unexpected error during portfolio creation: {str(e)}")
       return jsonify({"status": 500, "message": "Internal server error"}), 500
 
   def update_portfolio(self, request, portfolio_id):

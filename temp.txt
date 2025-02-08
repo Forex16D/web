@@ -1,0 +1,5 @@
+(server sign user_id with portfolio _id and random value with server's secret key) [send token to user] ---> 
+(user receive token and input it into a bot ) [bot send token to server] ---> 
+(server receive and decode token to retrieve information. ) [server send HTTP 200 to user] --->   
+(user receive response and bot can start receiving signal from server 
+and send information along with token to identify itself. Both operation use ZeroMQ)  

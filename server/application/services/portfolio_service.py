@@ -1,7 +1,7 @@
 from flask import jsonify # type: ignore
 from psycopg2.extras import RealDictCursor # type: ignore
-import jwt # type: ignore
 import uuid
+import application.services.bot_token_service as bot_token_service
 
 class PortfolioService:
   def __init__(self, db_pool):
@@ -11,7 +11,7 @@ class PortfolioService:
     conn = self.db_pool.get_connection()
     try:
       cursor = conn.cursor(cursor_factory=RealDictCursor)
-      cursor.execute("SELECT * FROM portfolios WHERE user_id = %s ORDER BY create_at ASC", (user_id,))
+      cursor.execute("SELECT * FROM portfolios WHERE user_id = %s ORDER BY created_at ASC", (user_id,))
       portfolios = cursor.fetchall()
 
       if not portfolios:
@@ -21,7 +21,7 @@ class PortfolioService:
     except ValueError as ve:
         raise ve
     except Exception as e:
-        raise RuntimeError("Something went wrong") 
+        raise RuntimeError(e) 
     finally:
       cursor.close()
       self.db_pool.release_connection(conn)
@@ -29,7 +29,7 @@ class PortfolioService:
   def create_portfolio(self, data, user_id):
     name = data.get("name")
     login = data.get("login")
-
+    
     if not name or not login or not user_id:
       raise ValueError("Missing required information.")
 
@@ -42,6 +42,13 @@ class PortfolioService:
         INSERT INTO portfolios (portfolio_id, user_id, name, login) 
         VALUES (%s, %s, %s, %s)
       """, (str(portfolio_id), user_id, name, login))
+
+      token = bot_token_service.generate_bot_token(user_id, str(portfolio_id))
+
+      cursor.execute("""
+        INSERT INTO tokens (portfolio_id, access_token)
+        VALUES (%s, %s)
+      """, (str(portfolio_id), token))
       conn.commit()
 
       return {"message": "Portfolio Created Successfully!"}
@@ -49,7 +56,7 @@ class PortfolioService:
     except ValueError as ve:
       raise ve
     except Exception as e:
-      raise RuntimeError(f"Something went wrong {str(e)}") 
+      raise RuntimeError(str(e))
     finally:
       cursor.close()
       self.db_pool.release_connection(conn)
@@ -97,7 +104,7 @@ class PortfolioService:
     except ValueError as ve:
       raise ve
     except Exception as e:
-      raise RuntimeError(f"Something went wrong {str(e)}") 
+      raise RuntimeError(str(e)) 
     finally:
       cursor.close()
       self.db_pool.release_connection(conn)

@@ -8,5 +8,5 @@ class ServerLogService:
   def log(self, message):
     logging.info(message)
 
-  def log_error(self, message):
+  def error(self, message):
     logging.error(message)
