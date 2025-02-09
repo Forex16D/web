@@ -7,10 +7,11 @@ import { PlatformService } from './core/services/platform.service';
 import { LogoComponent } from './components/logo/logo.component';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+import { NavbarComponent } from './components/navbar/navbar.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, NgIf, RouterLink, LogoComponent, ToastModule],
+  imports: [RouterOutlet, NgIf, RouterLink, LogoComponent, ToastModule, NavbarComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
   providers: [MessageService]
@@ -19,7 +20,7 @@ export class AppComponent {
   title = 'forex16d';
   isBrowser: boolean;
   showNavbar = true;
-  private routesWithoutNavbar = ['/login', '/register'];
+  private routesWithoutNavbar = ['/login', '/register', '/admin'];
 
   constructor(
     public authService: AuthService, 

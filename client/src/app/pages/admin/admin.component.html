@@ -1,7 +1,7 @@
-<!-- Main Content Area -->
-<main class="px-12">
-  <app-admin-user *ngIf="view == 'users'" />
-  <app-admin-model *ngIf="view=='models'">models</app-admin-model>
-  <app-admin-report *ngIf="view=='report'">report</app-admin-report>
-</main>
+<div class="px-12">
+  <app-admin-user *ngIf="view=='users'" />
+  <app-admin-model *ngIf="view=='models'" />
+  <app-admin-report *ngIf="view=='report'" />
+</div>
+
 <app-admin-sidebar></app-admin-sidebar>
