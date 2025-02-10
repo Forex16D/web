@@ -1,7 +1,5 @@
 import { Component } from '@angular/core';
 import { BotCardComponent } from '../../components/bot-card/bot-card.component';
-import { Input } from '@angular/core';
-import { CurrencyPipe } from '@angular/common';
 
 @Component({
   selector: 'app-bot',

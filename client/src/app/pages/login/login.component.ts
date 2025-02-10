@@ -29,6 +29,7 @@ import { AuthService } from '../../core/auth/auth.service';
     CheckboxModule,
     RouterLink,
     FocusTrapModule,
+    RouterLink
   ],
 })
 

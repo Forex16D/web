@@ -15,7 +15,7 @@ int OnInit() {
    EventSetTimer(1);
    bool isAuthorized = checkAuth();
    if (!isAuthorized)
-      return INIT_FAILED
+      return INIT_FAILED;
 
     initConnection();
     return INIT_SUCCEEDED;
@@ -23,13 +23,14 @@ int OnInit() {
 
 void OnDeinit(const int reason) {
   EventKillTimer();
-  socket.disconnect("close");
-  Print("Disconnected from ZeroMQ server.");;
+  sub_socket.disconnect("close");
+  req_socket.disconnect("close");
+  Print("Disconnected from ZeroMQ server.");
 }
 
 void OnTimer() {
    ZmqMsg message;
-   if (socket.recv(message)) {
+   if (sub_socket.recv(message)) {
       string data = message.getData();
       Print("Received message: ", data);
    } else {
@@ -53,11 +54,11 @@ int checkAuth() {
    
    if (response_code != 200) {
       Print("Request failed. Response code: ", response_code);
-      return INIT_FAILED;
+      return false;
    }
    
    Print("Request succeeded. Response: ", CharArrayToString(result));
-   return INIT_SUCCEEDED;
+   return true;
 }
 
 void initConnection()
@@ -77,22 +78,22 @@ void initConnection()
 
 void sendData()
 {
-   string user_data = "User Data: Hello World!";
-   ZmqMsg request_msg;
+//  string user_data = "User Data: Hello World!";
+//  ZmqMsg request_msg;
    
-   request_msg.setData(user_data);
+//   request_msg.setData(user_data);
 
-   if (req_socket.send(request_msg)) {
-      Print("Data sent: ", user_data);
-   } else {
-      Print("Failed to send data.");
-   }
+//   if (req_socket.send(request_msg)) {
+//      Print("Data sent: ", user_data);
+//   } else {
+//      Print("Failed to send data.");
+//  }
 
-   ZmqMsg reply_msg;
-   if (req_socket.recv(reply_msg)) {
-      string response = reply_msg.getData();
-      Print("Received reply: ", response);
-   } else {
-      Print("No reply received.");
-   }
+//   ZmqMsg reply_msg;
+//   if (req_socket.recv(reply_msg)) {
+//      string response = reply_msg.getData();
+//      Print("Received reply: ", response);
+//   } else {
+//      Print("No reply received.");
+//   }
 }

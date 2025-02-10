@@ -1,7 +1,7 @@
 import { Component, Inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
 import { Router, RouterLink, NavigationEnd } from '@angular/router';
 import { AuthService } from './core/auth/auth.service';
-import { NgIf } from '@angular/common';
+import { NgClass, NgIf } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { PlatformService } from './core/services/platform.service';
 import { LogoComponent } from './components/logo/logo.component';
@@ -11,7 +11,7 @@ import { NavbarComponent } from './components/navbar/navbar.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, NgIf, RouterLink, LogoComponent, ToastModule, NavbarComponent],
+  imports: [RouterOutlet, NgIf, RouterLink, LogoComponent, ToastModule, NavbarComponent, NgClass],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
   providers: [MessageService]
@@ -24,7 +24,7 @@ export class AppComponent {
 
   constructor(
     public authService: AuthService, 
-    private router: Router, 
+    public router: Router, 
     private platformService : PlatformService,
     private messageService: MessageService,
   ) {
