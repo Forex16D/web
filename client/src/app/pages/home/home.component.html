@@ -11,7 +11,14 @@
 </div>
 
 <div class="my-5 pl-14">
-  <app-price-chart></app-price-chart>
+  <div class="hidden ml:block">
+    <app-price-chart />
+  </div>
+  <div class="grid grid-cols-1 ml:grid-cols-3">
+    <app-mini-price-chart [symbol]="'OANDA:XAUUSD'"/>
+    <app-mini-price-chart [symbol]="'FX:USDJPY'"/>
+    <app-mini-price-chart [symbol]="'FX:EURUSD'"/>
+  </div>
 </div>
 
 <div class="flex flex-col items-center py-6 md:py-12 lg:py-16 bg-gray-1000">
