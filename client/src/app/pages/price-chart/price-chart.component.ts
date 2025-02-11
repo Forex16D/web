@@ -1,4 +1,4 @@
-import { Component, AfterViewInit } from '@angular/core';
+import { Component, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
 
 
 @Component({
@@ -8,38 +8,53 @@ import { Component, AfterViewInit } from '@angular/core';
   styleUrl: './price-chart.component.css'
 })
 export class PriceChartComponent implements AfterViewInit {
-  symbol = 'USDJPY';
-  private widget: any;
+  @ViewChild('tradingviewContainer', { static: true }) tradingviewContainer!: ElementRef;
+
+  currentSymbol: string = "OANDA:XAUUSD|1D";
 
   ngAfterViewInit() {
-    this.initTradingViewWidget(this.symbol);
+    this.loadTradingViewWidget(this.currentSymbol);
   }
 
-  private initTradingViewWidget(symbol: string): void {
-    if ((window as any).TradingView) {
-      this.widget = new (window as any).TradingView.widget({
-        container_id: 'tradingview-container',
-        autosize: true,
-        symbol: symbol,
-        interval: 'D',
-        timezone: 'Etc/UTC',
-        theme: 'dark',
-        style: '1',
-        locale: 'en',
-        toolbar_bg: '#f1f3f6',
-        enable_publishing: false,
-        hide_top_toolbar: false,
-        save_image: false,
-        studies: [],
-        details: false,
-      });
-    } else {
-      console.error('TradingView script not loaded!');
-    }
+  changeSymbol(newSymbol: string) {
+    this.currentSymbol = newSymbol;
+    this.loadTradingViewWidget(this.currentSymbol);
   }
 
-  changeSymbol(newSymbol: string): void {
-    this.symbol = newSymbol;
-    this.initTradingViewWidget(this.symbol);
+  loadTradingViewWidget(symbol: string) {
+    this.tradingviewContainer.nativeElement.innerHTML = '';  // Clear previous widget
+
+    const script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-symbol-overview.js';
+    script.async = true;
+    script.innerHTML = JSON.stringify({
+      symbols: [[symbol]],
+      chartOnly: false,
+      width: '100%',
+      height: '100%',
+      locale: 'en',
+      colorTheme: 'dark',
+      autosize: true,
+      showVolume: false,
+      showMA: false,
+      hideDateRanges: false,
+      hideMarketStatus: false,
+      hideSymbolLogo: false,
+      scalePosition: 'right',
+      scaleMode: 'Normal',
+      fontFamily: '-apple-system, BlinkMacSystemFont, Trebuchet MS, Roboto, Ubuntu, sans-serif',
+      fontSize: '10',
+      noTimeScale: false,
+      valuesTracking: '1',
+      changeMode: 'price-and-percent',
+      chartType: 'area',
+      lineWidth: 2,
+      lineType: 0,
+      dateRanges: ['1d|1', '1m|30', '3m|60', '12m|1D', '60m|1W', 'all|1M'],
+      dateFormat: "dd MMM 'yy"
+    });
+
+    this.tradingviewContainer.nativeElement.appendChild(script);
   }
 }

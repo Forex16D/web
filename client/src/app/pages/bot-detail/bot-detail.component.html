@@ -1,11 +1,29 @@
-<div class="max-w-[1200px] w-full px-4 sm:px-6 lg:px-8 mx-auto">
+<div class="max-w-7xl w-full px-4 mx-auto">
   <div class="flex flex-col w-full h-full gap-6">
-    <div class="flex flex-row justify-between gap-4">
-      <div class="grid grid-cols-3 w-full gap-4">
+    <div class="flex flex-col md:flex-row justify-between gap-4">
+      <div class="flex flex-col lg:grid lg:grid-cols-3 w-full gap-4">
         <div class="flex flex-col space-y-2">
-          <h1 class="text-xl font-medium">Expert : Scalper XAUUSD 1.2</h1>
+          <h1 class="text-xl font-medium">Expert: Scalper XAUUSD 1.2</h1>
         </div>
-        <div class="space-y-2">
+
+        <!-- Combined for smaller screens -->
+        <div class="flex flex-col space-y-2 lg:hidden">
+          <div class="flex flex-row space-x-2">
+            <div class="text-gray-400 min-w-[120px]">Timeframe</div>
+            <div>4h</div>
+          </div>
+          <div class="flex flex-row space-x-2">
+            <div class="text-gray-400 min-w-[120px]">Currency</div>
+            <div>XAUUSD</div>
+          </div>
+          <div class="flex flex-row space-x-2">
+            <div class="text-gray-400 min-w-[120px]">Min Size</div>
+            <div>0.01</div>
+          </div>
+        </div>
+
+        <!-- Separate for larger screens -->
+        <div class="hidden lg:space-y-2 lg:block">
           <div class="flex flex-row space-x-2">
             <div class="text-gray-400 min-w-[120px]">Timeframe</div>
             <div>4h</div>
@@ -15,13 +33,23 @@
             <div>XAUUSD</div>
           </div>
         </div>
-        <div class="flex flex-row space-x-2">
+        <div class="hidden lg:flex lg:flex-row lg:space-x-2">
           <div class="text-gray-400 min-w-[120px]">Min Size</div>
           <div>0.01</div>
         </div>
+
+        <!-- Button for small screens -->
+        <div class="lg:hidden">
+          <button pButton label="Copy Trade" class="w-full h-[38px]" (click)="showDialog()"></button>
+        </div>
       </div>
-      <button pButton label="copy trade" (click)="showDialog()"></button>
+
+      <!-- Button for larger screens -->
+      <div class="hidden lg:block">
+        <button pButton label="Copy Trade" class="w-[120px] h-[38px]" (click)="showDialog()"></button>
+      </div>
     </div>
+
     <!-- First Row -->
     <div class="flex flex-col xl:flex-row gap-4">
       <!-- Recent Trades -->
@@ -29,7 +57,7 @@
         <div class="flex flex-col h-full p-6 rounded-md shadow-lg border border-gray-700 text-white">
           <h2 class="text-xl font-medium mb-4">Recent Trades</h2>
           <div class="overflow-x-auto">
-            <!-- <table class="w-full text-left table-auto">
+            <table class="w-full text-left table-auto">
               <thead>
                 <tr class="text-gray-400 text-sm border-b border-gray-700">
                   <th class="px-4 py-2">Date</th>
@@ -48,14 +76,14 @@
                   </td>
                 </tr>
               </tbody>
-            </table> -->
+            </table>
           </div>
         </div>
       </div>
       <!-- Bar Chart -->
       <div class="w-full">
         <div class="flex flex-col h-full p-6 rounded-md shadow-lg border border-gray-700 ">
-          <h2 class="text-xl font-medium">
+          <h2 class="text-xl font-medium mb-4">
             PNL
           </h2>
           <div echarts [options]="barChart" class="w-full xl:max-w-[622px]" style="height: 200px;"></div>
@@ -64,15 +92,13 @@
     </div>
 
     <!-- Second Row -->
-    <div class="flex flex-row gap-4">
+    <div class="flex flex-col xl:flex-row gap-4">
       <!-- Performance Backtest -->
-      <div class="w-full lg:w-4/6">
+      <div class="w-full xl:w-4/6">
         <div class="flex flex-col h-full p-6 rounded-md shadow-lg border border-gray-700 text-white">
-          <div class="mb-6">
-            <h2 class="text-xl font-medium">
-              Performance Backtest
-            </h2>
-          </div>
+          <h2 class="text-xl font-medium mb-4">
+            Performance Backtest
+          </h2>
           <div class="space-y-3">
             <div class="flex flex-row justify-between">
               <span class="text-gray-400">Backtest</span>
@@ -121,10 +147,10 @@
       <!-- Line Chart -->
       <div class="w-full">
         <div class="flex flex-col h-full p-6 rounded-md shadow-lg border border-gray-700 ">
-          <h2 class="text-xl font-medium">
+          <h2 class="text-xl font-medium mb-4">
             ROI
           </h2>
-          <div echarts [options]="lineChart" class="w-full" style="height: 200px;"></div>
+          <div echarts [options]="lineChart" cclass="w-full xl:max-w-[622px]" style="height: 200px;"></div>
         </div>
       </div>
     </div>

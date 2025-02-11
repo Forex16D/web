@@ -8,13 +8,24 @@ import { LogoComponent } from './components/logo/logo.component';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { NavbarComponent } from './components/navbar/navbar.component';
+import { ConfirmationService } from 'primeng/api';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, NgIf, RouterLink, LogoComponent, ToastModule, NavbarComponent, NgClass],
+  imports: [
+    RouterOutlet, 
+    NgIf, 
+    RouterLink, 
+    LogoComponent, 
+    ToastModule, 
+    NavbarComponent, 
+    NgClass, 
+    ConfirmDialogModule
+  ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
-  providers: [MessageService]
+  providers: [MessageService, ConfirmationService]
 })
 export class AppComponent {   
   title = 'forex16d';

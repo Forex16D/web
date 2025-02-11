@@ -1,4 +1,12 @@
-<div class="max-w-[1200px] w-full px-4 sm:px-6 lg:px-8 mx-auto">
-  <div id="tradingview-container" class="w-full h-[600px]"></div>
+<div class="max-w-7xl min-w-2xl w-full px-4 mx-auto">
+  <h1 class="text-headline4 font-medium">
+    <i class="pi pi-chart-line text-green-400" style="font-size: 32px"></i> Price Chart
+  </h1>
+  <div class="w-full h-[600px]">
+    <div #tradingviewContainer class="tradingview-widget-container my-5"></div>
+  </div>
 </div>
-<button (click)="changeSymbol('XAUUSD')">button</button>
+
+<button (click)="changeSymbol('FX:GBPUSD|1D')">Change to GBP/USD</button>
+<button (click)="changeSymbol('FX:USDJPY|1D')">Change to USD/JPY</button>
+<button (click)="changeSymbol('OANDA:XAUUSD|1D')">Change to XAU/USD</button>

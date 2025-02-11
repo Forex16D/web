@@ -12,8 +12,9 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
 import { FormsModule, ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { MessageModule } from 'primeng/message';
-import { response } from 'express';
 import { MessageService } from 'primeng/api';
+import { ConfirmationService } from 'primeng/api';
+import { MenuItem, MenuItemCommandEvent } from 'primeng/api';
 
 @Component({
   selector: 'app-portfolio-card',
@@ -64,10 +65,10 @@ export class PortfolioCardComponent {
     login: new FormControl('', [Validators.required, Validators.pattern('[0-9]*')]),
   });
 
-  menuItems = [
+  menuItems: MenuItem[] = [
     { label: 'Detail', icon: 'pi pi-info-circle', command: () => this.detailItem() },
     { label: 'Edit', icon: 'pi pi-cog', command: () => this.showEditDialog() },
-    { label: 'Delete', icon: 'pi pi-trash', command: () => this.deleteItem() },
+    { label: 'Delete', icon: 'pi pi-trash', command: (event) => this.deleteItem(event) },
   ];
 
   constructor(
@@ -75,7 +76,8 @@ export class PortfolioCardComponent {
     private activatedRoute: ActivatedRoute,
     private router: Router,
     private apiService: ApiService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private confirmationService: ConfirmationService,
   ) { }
 
   ngOnChanges(): void {
@@ -97,25 +99,38 @@ export class PortfolioCardComponent {
       : this.currency.transform(balanceValue, 'USD', 'symbol', '.2-2') || '-';
   }
 
-  deleteItem(): void {
-    this.apiService.delete(`v1/portfolios/${this.credential.portfolio_id}`).subscribe({
-      // add pop up later
-      next: (response) => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Portfolio Deleted Successfully'
-        })
-        this.portfolioDeleted.emit(this.credential.portfolio_id);
-      },
-      error: (error) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Error Deleting Portfolio'
-        })
+  deleteItem(event: MenuItemCommandEvent): void {
+    this.confirmationService.confirm({
+      target: event.originalEvent?.target as EventTarget,
+      message: 'Are you sure you want to delete this portfolio?',
+      header: 'Delete Confirmation',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Delete',
+      rejectLabel: 'Cancel',
+      closeOnEscape: true,
+      closable: true,
+      rejectButtonStyleClass: 'p-button-secondary p-button-text',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.apiService.delete(`v1/portfolios/${this.credential.portfolio_id}`).subscribe({
+          next: (response) => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Success',
+              detail: 'Portfolio Deleted Successfully'
+            });
+            this.portfolioDeleted.emit(this.credential.portfolio_id);
+          },
+          error: (error) => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'Error Deleting Portfolio'
+            });
+          }
+        });
       }
-    })
+    });
   }
 
   showEditDialog(): void {

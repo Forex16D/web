@@ -1,5 +1,6 @@
 <ng-container *ngIf="isBrowser; else ssrPlaceholder">
-  <p-toast></p-toast>
+  <p-toast />
+  <p-confirmdialog />
   <app-navbar *ngIf="showNavbar"></app-navbar>
   <div [ngClass]="{ 'pl-14 mt-12': router.url !== '/' }" class="w-full">
     <router-outlet></router-outlet>

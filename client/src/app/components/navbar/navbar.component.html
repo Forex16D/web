@@ -29,7 +29,7 @@
         </a>
       </li>
 
-      <!-- Menu Item: Bot -->
+      <!-- Menu Item: Copy Trade -->
       <li class="relative group">
         <a class="flex items-center space-x-3 py-2 text-base text-white hover:text-green-400 cursor-pointer"
           routerLink="/bot">
@@ -39,7 +39,7 @@
             </div>
             <i class="pi pi-microchip-ai" style="font-size: 1.25rem"></i>
           </div>
-          <span class="flex-grow pl-2">Bot</span>
+          <span class="flex-grow pl-2 flex-shrink-0">Copy Trade</span>
         </a>
       </li>
 
@@ -67,7 +67,8 @@
 
     <!-- Show Log out if authenticated -->
     <li class="relative group" *ngIf="authService.authState; else loginMenu">
-      <a href="#" class="flex items-center space-x-3 py-2 text-base text-white hover:text-red-400" (click)="logout()">
+      <a class="flex items-center space-x-3 py-2 text-base text-white hover:text-red-400 cursor-pointer"
+        (click)="logout($event)">
         <div class="flex flex-shrink-0 w-14 items-center justify-center">
           <div
             class="absolute left-0 bottom-0 w-1 h-0 bg-red-400 transition-all duration-300 group-hover:h-full group-hover:bottom-0">
@@ -80,7 +81,7 @@
 
     <ng-template #loginMenu>
       <li class="relative group">
-        <a href="#" class="flex items-center space-x-3 py-2 text-base text-white hover:text-green-400"
+        <a class="flex items-center space-x-3 py-2 text-base text-white hover:text-green-400 cursor-pointer"
           (click)="login()">
           <div class="flex flex-shrink-0 w-14 items-center justify-center">
             <div

@@ -5,11 +5,20 @@ import { LogoComponent } from '../logo/logo.component';
 import { ButtonModule } from 'primeng/button';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
+import { MessageService } from 'primeng/api';
+import { ConfirmationService } from 'primeng/api';
 import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-navbar',
-  imports: [NgClass, DividerModule, LogoComponent, ButtonModule, RouterLink, NgIf],
+  imports: [
+    NgClass,
+    DividerModule,
+    LogoComponent,
+    ButtonModule,
+    RouterLink,
+    NgIf,
+  ],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
 })
@@ -19,11 +28,28 @@ export class NavbarComponent {
   constructor(
     public authService: AuthService,
     private router: Router,
-  ) {}
+    private confirmationService: ConfirmationService,
+    private messageService: MessageService,
+  ) { }
 
-  logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/login']);
+  logout(event: Event): void {
+    this.confirmationService.confirm({
+      target: event.target as EventTarget,
+      message: 'Are you sure you want to log out?',
+      header: 'Log out Confirmation',
+      icon: 'pi pi-sign-out',
+      acceptLabel: 'Log out',
+      rejectLabel: 'Cancel',
+      closeOnEscape: true,
+      closable: true,
+      rejectButtonStyleClass: 'p-button-secondary p-button-text',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.messageService.add({ severity: 'info', summary: 'Logged out', detail: 'You have successfully logged out.' });
+        this.authService.logout();
+        this.router.navigate(['/']);
+      },
+    });
   }
 
   login(): void {
