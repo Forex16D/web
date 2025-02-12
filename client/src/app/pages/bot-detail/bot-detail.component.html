@@ -155,19 +155,41 @@
       </div>
     </div>
   </div>
-  <p-dialog header="Copy trade" [modal]="true" [(visible)]="visible" [style]="{ width: '25rem' }">
-    <span class="p-text-secondary block mb-8">Scalper XAUUSD 1.2</span>
-    <div class="flex items-center gap-4 mb-4">
-      <label for="username" class="font-semibold w-24">Username</label>
-      <input pInputText id="username" class="flex-auto" autocomplete="off" />
-    </div>
-    <div class="flex items-center gap-4 mb-8">
-      <label for="email" class="font-semibold w-24">Email</label>
-      <input pInputText id="email" class="flex-auto" autocomplete="off" />
-    </div>
-    <div class="flex justify-end gap-2">
-      <p-button label="Cancel" severity="secondary" (click)="visible = false" />
-      <p-button label="Save" (click)="visible = false" />
-    </div>
-  </p-dialog>
 </div>
+
+<p-dialog header="Copy trade" [modal]="true" [(visible)]="visible" [style]="{ width: '25rem' }">
+  <span class="p-text-secondary block mb-8">Scalper XAUUSD 1.2</span>
+  <div class="flex items-center gap-4 mb-4">
+    <label for="portfolio" class="font-semibold w-24">Portfolio</label>
+    <p-dropdown [options]="portfolios()" [(ngModel)]="selectedPortfolio" optionLabel="name" [filter]="true"
+      filterBy="name" [showClear]="true" placeholder="Select a Portfolio" appendTo="body">
+
+      <!-- Custom Selected Item Template -->
+      <ng-template pTemplate="selectedItem" let-selectedOption>
+        <div class="flex items-center gap-2">
+          <i class="pi pi-briefcase text-blue-500"></i>
+          <div>{{ selectedOption?.name || 'No Portfolio Selected' }}</div>
+        </div>
+      </ng-template>
+
+      <!-- Custom Item Template -->
+      <ng-template pTemplate="item" let-portfolio>
+        <div class="flex items-center justify-between w-full">
+          <div class="flex items-center gap-2">
+            <i class="pi pi-database text-green-400"></i>
+            <div>{{ portfolio.name }}</div>
+          </div>
+          <span class="text-xs text-gray-500">{{ portfolio.create_at | date: 'short' }}</span>
+        </div>
+      </ng-template>
+    </p-dropdown>
+  </div>
+  <div class="flex items-center gap-4 mb-8">
+    <label for="lot-size" class="font-semibold w-24">Lot Size</label>
+    <input pInputText id="lot-size" class="flex-auto" autocomplete="off" />
+  </div>
+  <div class="flex justify-end gap-2">
+    <p-button label="Cancel" severity="secondary" text="true" (click)="visible = false" />
+    <p-button label="Save" (click)="visible = false" />
+  </div>
+</p-dialog>

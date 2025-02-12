@@ -18,21 +18,11 @@ import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } 
 import { NgxEchartsModule, provideEchartsCore, NgxEchartsDirective } from 'ngx-echarts';
 import { MessageModule } from 'primeng/message';
 import { FocusTrapModule } from 'primeng/focustrap';
+import { PortfolioResponse } from '../../models/portfolio-response.model';
 
 import * as echarts from 'echarts/core';
 import { InputNumberModule } from 'primeng/inputnumber';
 echarts.use([BarChart, GridComponent, CanvasRenderer]);
-
-interface PortfolioResponse {
-  connected: boolean
-  create_at: string
-  login: string
-  model_id: string | null
-  name: string
-  portfolio_id: string
-  token_id: string | null
-  user_id: string
-}
 
 @Component({
   selector: 'app-dashboard',

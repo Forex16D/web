@@ -1,9 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { PriceChartComponent } from '../price-chart/price-chart.component';
 import { NgClass } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
+import { PortfolioResponse } from '../../models/portfolio-response.model';
+import { DropdownModule } from 'primeng/dropdown';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { DatePipe } from '@angular/common';
 
 import { BarChart } from 'echarts/charts';
 import { LineChart } from 'echarts/charts';
@@ -13,6 +17,7 @@ import { CanvasRenderer } from 'echarts/renderers';
 import { NgxEchartsModule, provideEchartsCore, NgxEchartsDirective } from 'ngx-echarts';
 
 import * as echarts from 'echarts/core';
+import { ApiService } from '../../core/services/api.service';
 echarts.use([BarChart, LineChart, GridComponent, CanvasRenderer]);
 
 @Component({
@@ -25,6 +30,11 @@ echarts.use([BarChart, LineChart, GridComponent, CanvasRenderer]);
     ButtonModule,
     DialogModule,
     InputTextModule,
+    DropdownModule,
+    FormsModule,
+    ReactiveFormsModule,
+    DatePipe,
+
   ],
   templateUrl: './bot-detail.component.html',
   styleUrl: './bot-detail.component.css',
@@ -36,9 +46,6 @@ echarts.use([BarChart, LineChart, GridComponent, CanvasRenderer]);
 export class BotDetailComponent {
   visible = false;
 
-  showDialog(): void {
-    this.visible = !this.visible;
-  }
 
   data = {
     backtest: '126D',
@@ -51,6 +58,19 @@ export class BotDetailComponent {
     win: '20',
     loss: '14',
     total: '34',
+  }
+
+  portfolios = signal<PortfolioResponse[]>([]);
+
+  selectedPortfolio: PortfolioResponse | null = null;
+
+  constructor(
+    private apiService: ApiService,
+  ) { }
+
+  showDialog(): void {
+    this.getPortfolios();
+    this.visible = !this.visible;
   }
 
   barData = [12, -150, 30, 40, 160, 130, 200];
@@ -110,4 +130,16 @@ export class BotDetailComponent {
       },
     ],
   };
+
+  getPortfolios(): void {
+    this.apiService.get<PortfolioResponse[]>('v1/portfolios').subscribe({
+      next: (response: PortfolioResponse[]) => {
+        this.portfolios.set(response);
+        console.log(response);
+      },
+      error: (error) => {
+        console.error('Fetch failed:', error);
+      },
+    });
+  }
 }
