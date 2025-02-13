@@ -1,5 +1,4 @@
 from flask import request, Blueprint, jsonify #type: ignore
-from application.services.middleware import bot_token_required
 from application.controllers.mt_controller import MtController
 from application.container import container
 

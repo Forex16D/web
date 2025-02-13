@@ -15,6 +15,7 @@ import { RouterLink } from '@angular/router';
 })
 export class BotCardComponent {
   
+  @Input() name?: string;
   @Input() data = {
     pnl: '',
     winrate: '',

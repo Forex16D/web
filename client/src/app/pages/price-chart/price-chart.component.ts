@@ -10,18 +10,12 @@ import { Component, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
 export class PriceChartComponent implements AfterViewInit {
   @ViewChild('tradingviewContainer', { static: true }) tradingviewContainer!: ElementRef;
 
-  currentSymbol: string = "OANDA:XAUUSD|1D";
-
+  symbols: string[][] = [['FX:GBPUSD'], ['FX:USDJPY'], ['OANDA:XAUUSD']]
   ngAfterViewInit() {
-    this.loadTradingViewWidget(this.currentSymbol);
+    this.loadTradingViewWidget();
   }
 
-  changeSymbol(newSymbol: string) {
-    this.currentSymbol = newSymbol;
-    this.loadTradingViewWidget(this.currentSymbol);
-  }
-
-  loadTradingViewWidget(symbol: string) {
+  loadTradingViewWidget() {
     this.tradingviewContainer.nativeElement.innerHTML = '';  // Clear previous widget
 
     const script = document.createElement('script');
@@ -29,7 +23,7 @@ export class PriceChartComponent implements AfterViewInit {
     script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-symbol-overview.js';
     script.async = true;
     script.innerHTML = JSON.stringify({
-      symbols: [[symbol]],
+      symbols: this.symbols,
       chartOnly: false,
       width: '100%',
       height: '100%',
@@ -51,7 +45,7 @@ export class PriceChartComponent implements AfterViewInit {
       chartType: 'area',
       lineWidth: 2,
       lineType: 0,
-      dateRanges: ['1d|1', '1m|30', '3m|60', '12m|1D', '60m|1W', 'all|1M'],
+      dateRanges: ['1d|60', '1m|30', '3m|60', '12m|1D', '60m|1W', 'all|1M'],
       dateFormat: "dd MMM 'yy"
     });
 
