@@ -1,4 +1,4 @@
-from flask import request, Blueprint, g
+from flask import request, Blueprint # type: ignore
 from application.services.middleware import token_required
 from application.services.user import *
 from application.container import container

@@ -11,11 +11,11 @@ load_dotenv()
 SECRET_KEY = os.getenv("SECRET_KEY")
 SECRET_KEY_BOT_TOKEN = os.getenv("SECRET_KEY_BOT_TOKEN")
 
-def sign_token(user, role):
+def sign_token(user_id, role):
   token = jwt.encode(
     {
-      "user": user["user_id"],
-      "role": user["role"],
+      "user": user_id,
+      "role": role,
       "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1)
     },
     SECRET_KEY,

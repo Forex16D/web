@@ -1,5 +1,5 @@
-from flask import jsonify
-
+from flask import jsonify  # type: ignore
+from application.helpers.server_log_helper import ServerLogService
 class AuthController:
   def __init__(self, auth_service): 
     self.auth_service = auth_service
@@ -15,10 +15,12 @@ class AuthController:
       else:
         return jsonify({"status": 401, "message": "Unauthorized"}), 401
       
-    except RuntimeError:
+    except RuntimeError as e:
+      ServerLogService().error(e)
       return jsonify({"status": 500, "message": "Internal server error"}), 500
     
-    except Exception:
+    except Exception as e:
+      ServerLogService().error(e)
       return jsonify({"status": 500, "message": "Internal server error"}), 500
 
   def register(self, request): 

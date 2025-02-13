@@ -2,6 +2,7 @@ from flask import jsonify # type: ignore
 from psycopg2.extras import RealDictCursor # type: ignore
 from argon2.exceptions import VerifyMismatchError # type: ignore
 from dotenv import load_dotenv
+from application.services.middleware import sign_token
 import jwt # type: ignore
 import datetime
 import os
@@ -36,15 +37,7 @@ class AuthService:
       if user:
         try:
           if self.hasher.verify(user["password"], password):
-            token = jwt.encode(
-              {
-                "user": user["user_id"],
-                "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1)
-              },
-              SECRET_KEY,
-              algorithm="HS256"
-            )
-            return {"token": token}
+            return sign_token(user["user_id"], user["role"])
 
         except VerifyMismatchError:
           raise ValueError("Invalid email or password!")
