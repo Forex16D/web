@@ -13,3 +13,7 @@ def login():
 @auth_routes.route("/v1/register", methods=["POST"])
 def register():
   return auth_controller.register(request)
+
+@auth_routes.route("/v1/auth", methods=["GET"])
+def verify_user():
+  return auth_controller.verify_user(request)

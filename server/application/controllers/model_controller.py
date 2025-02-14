@@ -20,10 +20,10 @@ class ModelController:
       return jsonify({"status": 500, "message": "Internal server error"}), 500
  
   def create_models(self, request, current_user_id): 
+    if not request.files:
+      return {"status": 400, "message": "Bad Request"}, 400
+   
     try:
-      if not request.files:
-        return {"status": 400, "message": "Bad Request"}, 400
-
       form_data = request.form
       files = request.files.getlist('files[]')
       ServerLogService().log(files)

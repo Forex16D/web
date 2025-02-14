@@ -1,9 +1,15 @@
 from psycopg2.extras import RealDictCursor # type: ignore
 from argon2.exceptions import VerifyMismatchError # type: ignore
 from application.services.middleware import sign_token
+from flask import jsonify # type: ignore
 import logging
 import uuid
+from dotenv import load_dotenv
+import jwt # type: ignore
+import os
 
+load_dotenv()
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 class AuthService:
   def __init__(self, db_pool, hasher):
@@ -83,6 +89,39 @@ class AuthService:
     except Exception as e:
       raise RuntimeError("An error occurred while registering the user.") from e
 
+    finally:
+      cursor.close()
+      self.db_pool.release_connection(conn)
+
+  def verify_user(self, request):
+    token = None
+    if "Authorization" in request.headers:
+      auth_header = request.headers["Authorization"]
+      if auth_header.startswith("Bearer "):
+        token = auth_header.split(" ")[1]
+
+    if not token:
+      raise ValueError
+
+    try:
+      data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+      current_user_id = data["user"]
+
+      conn = self.db_pool.get_connection()
+      
+      cursor = conn.cursor(cursor_factory=RealDictCursor)
+      cursor.execute("SELECT user_id FROM users WHERE user_id = %s", (current_user_id,))
+      user = cursor.fetchone()
+      
+      if not user:
+        raise ValueError("User not found")
+      
+      return {"authentication": True}
+    
+    except jwt.ExpiredSignatureError as e:
+      raise e
+    except jwt.InvalidTokenError as e:
+      raise e
     finally:
       cursor.close()
       self.db_pool.release_connection(conn)

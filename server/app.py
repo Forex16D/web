@@ -9,7 +9,7 @@ from application.routes.portfolio_route import portfolio_routes
 from application.routes.mt_route import mt_routes
 from application.routes.model_route import model_routes
 
-from application.services.middleware import token_required, verify
+from application.services.middleware import token_required
 from application.helpers.server_log_helper import ServerLogService
 
 shutdown_event = threading.Event()
@@ -21,11 +21,6 @@ def create_app():
   @app.route("/")
   def check():
     return "Flask works!"
-
-  @app.route("/v1/auth")
-  @token_required
-  def auth(current_user_id):
-    return jsonify({"authentication": True}), 200
 
   app.register_blueprint(auth_routes)
   app.register_blueprint(user_routes)
