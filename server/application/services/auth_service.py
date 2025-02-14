@@ -1,16 +1,9 @@
-from flask import jsonify # type: ignore
 from psycopg2.extras import RealDictCursor # type: ignore
 from argon2.exceptions import VerifyMismatchError # type: ignore
-from dotenv import load_dotenv
 from application.services.middleware import sign_token
-import jwt # type: ignore
-import datetime
-import os
 import logging
 import uuid
 
-load_dotenv()
-SECRET_KEY = os.getenv("SECRET_KEY")
 
 class AuthService:
   def __init__(self, db_pool, hasher):
@@ -20,7 +13,8 @@ class AuthService:
   def login(self, data):
     email = data.get("email").lower()
     password = data.get("password")
-
+    remember = data.get("remember")
+    
     if not email or not password:
       raise ValueError("Missing required information.")
 
@@ -31,13 +25,13 @@ class AuthService:
 
     try:
       cursor = conn.cursor(cursor_factory=RealDictCursor)
-      cursor.execute("SELECT password, user_id FROM users WHERE email = %s;", (email,))
+      cursor.execute("SELECT password, user_id, role FROM users WHERE email = %s;", (email,))
       user = cursor.fetchone()
 
       if user:
         try:
           if self.hasher.verify(user["password"], password):
-            return sign_token(user["user_id"], user["role"])
+            return sign_token(user["user_id"], user["role"], remember)
 
         except VerifyMismatchError:
           raise ValueError("Invalid email or password!")

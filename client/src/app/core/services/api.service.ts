@@ -13,12 +13,16 @@ export class ApiService {
 
   constructor(private http: HttpClient) { }
 
-  private getHeaders(customHeaders?: object): HttpHeaders {
-    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+  private getHeaders(customHeaders?: object, isFileUpload: boolean = false): HttpHeaders {
+    let headers = new HttpHeaders();
 
     const token = localStorage.getItem('authToken');
     if (token) {
       headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+
+    if (!isFileUpload) {
+      headers = headers.set('Content-Type', 'application/json');
     }
 
     if (customHeaders) {
@@ -34,12 +38,13 @@ export class ApiService {
     method: 'GET' | 'POST' | 'PUT' | 'DELETE',
     endpoint: string,
     body?: any,
-    customHeaders?: object
+    customHeaders?: object,
+    isFileUpload: boolean = false
   ): Observable<T> {
     return this.http
       .request<T>(method, `${this.apiUrl}/${endpoint}`, {
         body,
-        headers: this.getHeaders(customHeaders),
+        headers: this.getHeaders(customHeaders, isFileUpload),
       })
       .pipe(catchError(this.handleError));
   }
@@ -48,8 +53,8 @@ export class ApiService {
     return this.request<T>('GET', endpoint, null, customHeaders);
   }
 
-  post<T>(endpoint: string, data: any, customHeaders?: object): Observable<T> {
-    return this.request<T>('POST', endpoint, data, customHeaders);
+  post<T>(endpoint: string, data: any, customHeaders?: object, isFileUpload: boolean = false): Observable<T> {
+    return this.request<T>('POST', endpoint, data, customHeaders, isFileUpload);
   }
 
   put<T>(endpoint: string, data: any, customHeaders?: object): Observable<T> {

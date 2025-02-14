@@ -43,9 +43,9 @@ export class AuthService {
     }
   }
 
-  login(email: string, password: string): Observable<LoginResponse> {
+  login(email: string, password: string, remember: boolean): Observable<LoginResponse> {
     if (isPlatformBrowser(this.platformId)) {
-      const data = { email, password };
+      const data = { email, password, remember };
       return this.apiService.post<LoginResponse>('v1/login', data).pipe(
         tap((response: LoginResponse) => {
           if (response.token) {

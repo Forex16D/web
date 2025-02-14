@@ -72,9 +72,9 @@ export class LoginComponent {
     }
 
     if (this.credentialForm.valid) {
-      const { email, password } = this.credentialForm.value;
+      const { email, password, remember } = this.credentialForm.value;
 
-      this.authService.login(email as string, password as string).subscribe({
+      this.authService.login(email as string, password as string, remember as boolean).subscribe({
         next: (response) => {
           console.log('Login Successful:', response);
           const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { TableModule } from 'primeng/table';
 import { ToolbarModule } from 'primeng/toolbar';
 import { ButtonModule } from 'primeng/button';
@@ -10,6 +10,8 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { FormsModule } from '@angular/forms';;
 import { FileUploadModule } from 'primeng/fileupload';
 import { RippleModule } from 'primeng/ripple';
+import { ApiService } from '../../../core/services/api.service';
+import { FileUpload } from 'primeng/fileupload';
 
 @Component({
   selector: 'app-admin-model',
@@ -30,6 +32,8 @@ import { RippleModule } from 'primeng/ripple';
   styleUrl: './admin-model.component.css'
 })
 export class AdminModelComponent {
+  @ViewChild('fileUploader', { static: false }) fileUploader!: FileUpload;
+
   models: any[] = [];
   selectedModels: any[] = [];
 
@@ -37,10 +41,11 @@ export class AdminModelComponent {
   rowsPerPage: number = 10;
   expandedRows: { [key: string]: boolean } = {};
 
-  constructor() {
+  constructor(
+    private apiService: ApiService,) {
     this.models = [
       { id: 0, name: 'Trend follower XAUUSD 1.2', price: 100.2, winrate: 0.5 },
-      { id: 1, name: 'Scalper USDJPY 1.0', price: 0.00, winrate: 0.41},
+      { id: 1, name: 'Scalper USDJPY 1.0', price: 0.00, winrate: 0.41 },
     ];
     this.loadUsers(this.firstElement, this.rowsPerPage)
   }
@@ -59,6 +64,22 @@ export class AdminModelComponent {
     console.log(`Fetching ${firstElement}-${firstElement + size - 1}`);
   }
 
+  onUpload(event: any) {
+    const formData = new FormData();
+
+    for (let i = 0; i < event.files.length; i++) {
+      formData.append('files[]', event.files[i], event.files[i].name);
+    }
+
+    const headers = {}
+    this.apiService.post('v1/models', formData, headers, true).subscribe({
+      next: (response) => console.log('Upload successful:', response),
+      error: (error) => console.error('Upload failed:', error)
+    });
+
+    this.fileUploader.clear();
+  }
+
   expandAll() {
     this.expandedRows = this.models.reduce((acc, model) => {
       acc[model.id] = true;
@@ -75,7 +96,7 @@ export class AdminModelComponent {
     console.log('Model:', model);
     console.log('Is Expanded:', expanded);
     console.log('Expanded Rows State:', this.expandedRows);
-  
+
     const rowKey = model.id;
     if (this.expandedRows[rowKey]) {
       console.log(`Collapsing row with ID: ${rowKey}`);
@@ -85,10 +106,10 @@ export class AdminModelComponent {
       this.expandedRows[rowKey] = true;
     }
   }
-  
+
   toggleRow(model: any) {
     const rowKey = model.id;
-  
+
     if (this.expandedRows[rowKey]) {
       delete this.expandedRows[rowKey];
       console.log(`Collapsing row with ID: ${rowKey}`);
@@ -96,7 +117,7 @@ export class AdminModelComponent {
       this.expandedRows[rowKey] = true;
       console.log(`Expanding row with ID: ${rowKey}`);
     }
-  
+
     console.log('Updated Expanded Rows:', this.expandedRows);
   }
 

@@ -1,5 +1,4 @@
-from flask import jsonify
-from psycopg2.extras import RealDictCursor
+from psycopg2.extras import RealDictCursor # type: ignore
 
 class UserService:
   def __init__(self, db_pool):

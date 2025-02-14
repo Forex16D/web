@@ -7,8 +7,9 @@
   </ng-template>
 
   <ng-template #end>
-    <p-fileUpload mode="basic" accept="image/*" [maxFileSize]="1000000" label="Import" chooseLabel="Import" auto
-      customUpload class="mr-2 inline-block" [chooseButtonProps]="{ severity: 'secondary' }" />
+    <p-fileupload #fileUploader name="demo[]" [customUpload]="true" (uploadHandler)="onUpload($event)"
+      [multiple]=" true" accept=".py" maxFileSize="10000000" mode="advanced" class="mr-2 inline-block"
+      [chooseButtonProps]="{ severity: 'secondary' }" chooseLabel="Import" />
     <p-button label="Export" icon="pi pi-upload" severity="secondary" />
   </ng-template>
 </p-toolbar>

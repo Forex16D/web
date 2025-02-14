@@ -1,5 +1,4 @@
 from flask import request, jsonify # type: ignore
-from argon2.exceptions import VerifyMismatchError # type: ignore
 import jwt # type: ignore
 from functools import wraps
 from dotenv import load_dotenv
@@ -11,12 +10,14 @@ load_dotenv()
 SECRET_KEY = os.getenv("SECRET_KEY")
 SECRET_KEY_BOT_TOKEN = os.getenv("SECRET_KEY_BOT_TOKEN")
 
-def sign_token(user_id, role):
+def sign_token(user_id, role, remember=False):
+  # if remember expire in 7 days
+  time_offset = 168 if remember else 1
   token = jwt.encode(
     {
       "user": user_id,
       "role": role,
-      "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1)
+      "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=time_offset)
     },
     SECRET_KEY,
     algorithm="HS256"
@@ -67,12 +68,12 @@ def admin_required(f):
 
     try:
       data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-      current_user_id = data["user"]
-
-      user_id_from_request = kwargs.get("user_id", None)
-
-      if user_id_from_request and int(user_id_from_request) != current_user_id:
+      current_user_role = data["role"]
+      
+      if current_user_role != "admin":
         return jsonify({"status": 403, "message": "Forbidden"}), 403
+
+      current_user_id = data["user"]
 
     except jwt.ExpiredSignatureError:
       return jsonify({"status": 401, "message": "Unauthorized"}), 401
