@@ -77,7 +77,7 @@ export class AdminUserComponent {
   loadUsers(page: number, limit: number) {
     console.log(`Fetching users for page ${page} with limit ${limit}`);
     console.log('First:', (this.page() - 1) * this.limit())
-    this.apiService.get<UserResponse>(`/v1/users?page=${page}&limit=${limit}`).subscribe({
+    this.apiService.get<UserResponse>(`v1/users?page=${page}&limit=${limit}`).subscribe({
       next: (response) => {
 
         this.users.set(response.users);
@@ -86,6 +86,16 @@ export class AdminUserComponent {
       error: (error) => {
         console.error('Error fetching users:', error);
       }
+    });
+  }
+
+  deleteUser(user_id: string) {
+    this.apiService.delete(`v1/users/${user_id}`).subscribe({
+      next: (response) => {
+        console.log('Delete successful', response);
+        this.loadUsers(1, 100);
+      },
+      error: (error) => console.error('Delete failed:', error)
     });
   }
 

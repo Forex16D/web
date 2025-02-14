@@ -19,8 +19,23 @@ class UserService:
       cursor.execute("SELECT COUNT(*) FROM users")
       total_users = cursor.fetchone()["count"]
 
-      cursor.close()
       return {"users": users, "total_users": total_users}
+    except Exception as e:
+      raise RuntimeError(f"Something went wrong: {str(e)}")
+    finally:
+      cursor.close()
+      self.db_pool.release_connection(conn)
+
+  def delete_user(self, user_id):
+    conn = self.db_pool.get_connection()
+
+    try:
+      cursor = conn.cursor(cursor_factory=RealDictCursor)
+      cursor.execute("DELETE FROM users WHERE user_id = %s", (user_id,))
+      conn.commit()
+
+      cursor.close()
+      return {"message": "User Deleted Successfully!"}
     except Exception as e:
       raise RuntimeError(f"Something went wrong: {str(e)}")
     finally:

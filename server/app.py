@@ -9,7 +9,7 @@ from application.routes.portfolio_route import portfolio_routes
 from application.routes.mt_route import mt_routes
 from application.routes.model_route import model_routes
 
-from application.services.middleware import token_required
+from application.services.middleware import token_required, verify
 from application.helpers.server_log_helper import ServerLogService
 
 shutdown_event = threading.Event()

@@ -1,9 +1,12 @@
 from flask import request, jsonify # type: ignore
+from psycopg2.extras import RealDictCursor # type: ignore
 import jwt # type: ignore
 from functools import wraps
 from dotenv import load_dotenv
 import datetime
 import os
+
+from application.container import container
 
 load_dotenv()
 
@@ -84,7 +87,6 @@ def admin_required(f):
   
   return decorator
 
-
 def bot_token_required(f):
   @wraps(f)
   def decorator(*args, **kwargs):
@@ -110,3 +112,36 @@ def bot_token_required(f):
     return f(user_id, portfolio_id, *args, **kwargs)
   
   return decorator
+
+def verify():
+  token = None
+  if "Authorization" in request.headers:
+    auth_header = request.headers["Authorization"]
+    if auth_header.startswith("Bearer "):
+      token = auth_header.split(" ")[1]
+
+  if not token:
+    return jsonify({"status": 401, "message": "Unauthorized"}), 401
+
+  try:
+    data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+    current_user_id = data["user"]
+
+    conn = container.db_pool.get_connection()
+    
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    cursor.execute("SELECT user_id FROM users WHERE user_id = %s", (current_user_id,))
+    user = cursor.fetchone()
+    
+    if not user:
+      return jsonify({"status": 401, "message": "Unauthorized"}), 401
+  
+  except jwt.ExpiredSignatureError:
+    return jsonify({"status": 401, "message": "Unauthorized"}), 401
+  except jwt.InvalidTokenError:
+    return jsonify({"status": 401, "message": "Unauthorized"}), 401
+  finally:
+    cursor.close()
+    container.db_pool.release_connection(conn)
+    
+  return jsonify({"authentication": True}), 200
