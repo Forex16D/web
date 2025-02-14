@@ -37,7 +37,7 @@ class ModelService:
       ServerLogService().log(f"Received Python file: {filename}")
 
       try:
-        save_path = f"{filename}"
+        save_path = f"./models/{filename}"
         file.save(save_path)
 
         ServerLogService().log(f"File saved to: {save_path}")
