@@ -40,3 +40,18 @@ class UserService:
       raise RuntimeError(f"Something went wrong: {str(e)}")
     finally:
       self.db_pool.release_connection(conn)
+
+  def get_user_profile(self, user_id):
+    conn = self.db_pool.get_connection()
+
+    try:
+      cursor = conn.cursor(cursor_factory=RealDictCursor)
+      cursor.execute("SELECT email FROM users WHERE user_id = %s", (user_id,))
+      profile = cursor.fetchone()
+
+      return {"email": profile["email"],}
+    except Exception as e:
+      raise RuntimeError(f"Something went wrong: {str(e)}")
+    finally:
+      cursor.close()
+      self.db_pool.release_connection(conn)

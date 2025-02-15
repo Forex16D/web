@@ -8,6 +8,8 @@ import { AuthService } from '../../core/auth/auth.service';
 import { MessageService } from 'primeng/api';
 import { ConfirmationService } from 'primeng/api';
 import { Router } from '@angular/router';
+import { ApiService } from '../../core/services/api.service';
+import { response } from 'express';
 
 @Component({
   selector: 'app-navbar',
@@ -24,13 +26,17 @@ import { Router } from '@angular/router';
 })
 export class NavbarComponent {
   isVisible = true;
+  profile: any = {};
 
   constructor(
     public authService: AuthService,
     private router: Router,
     private confirmationService: ConfirmationService,
     private messageService: MessageService,
-  ) { }
+    private apiService: ApiService,
+  ) { 
+    this.getProfile()
+  }
 
   logout(event: Event): void {
     this.confirmationService.confirm({
@@ -54,5 +60,12 @@ export class NavbarComponent {
 
   login(): void {
     this.router.navigate(['/login']);
+  }
+
+  getProfile(): void {
+    this.apiService.get('v1/users/profile').subscribe({
+      next: (response) => this.profile = response,
+      error: (error) => console.error(error)
+    })
   }
 }

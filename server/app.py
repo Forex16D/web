@@ -10,7 +10,7 @@ from application.routes.mt_route import mt_routes
 from application.routes.model_route import model_routes
 
 from application.services.middleware import token_required
-from application.helpers.server_log_helper import ServerLogService
+from application.helpers.server_log_helper import ServerLogHelper
 
 shutdown_event = threading.Event()
 

@@ -1,6 +1,6 @@
 import zmq
 import signal
-from application.helpers.server_log_helper import ServerLogService
+from application.helpers.server_log_helper import ServerLogHelper
 
 class ZeroMQReceiver:
   def __init__(self):
@@ -14,33 +14,33 @@ class ZeroMQReceiver:
   def start_zmq(self):
     try:
       self.receiver_socket.bind("tcp://*:5557")
-      ServerLogService().log("ZeroMQ receiver bound to tcp://*:5557")
+      ServerLogHelper().log("ZeroMQ receiver bound to tcp://*:5557")
 
       while not self.kill_now:
         try:
           message_received = self.receiver_socket.recv_string(flags=zmq.NOBLOCK)
-          ServerLogService().log(f"Received message: {message_received}")
+          ServerLogHelper().log(f"Received message: {message_received}")
           
           self.receiver_socket.send_string("ACK")
-          ServerLogService().log(f"Sent ACK for message: {message_received}")
+          ServerLogHelper().log(f"Sent ACK for message: {message_received}")
 
         except zmq.Again:
           continue
 
 
     except Exception as e:
-      ServerLogService().error(f"Error in ZeroMQ service: {str(e)}")
+      ServerLogHelper().error(f"Error in ZeroMQ service: {str(e)}")
     finally:
       self.cleanup()
 
   def handle_termination(self, signum, frame):
-    ServerLogService().log(f"Received termination signal: {signum}")
+    ServerLogHelper().log(f"Received termination signal: {signum}")
     self.kill_now = True
     
   def cleanup(self):
     self.receiver_socket.close()
     self.context.term()
-    ServerLogService().error("ZeroMQ service terminated.")
+    ServerLogHelper().error("ZeroMQ service terminated.")
 
 if __name__ == "__main__":
   zmq_service = ZeroMQReceiver()

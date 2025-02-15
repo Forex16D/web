@@ -25,6 +25,7 @@ services:
       - "5557:5557"
     volumes:
       - ./server:/app
+      - /app/logs
     command: "python -m flask run --debug --host=0.0.0.0"
 
   mongo:

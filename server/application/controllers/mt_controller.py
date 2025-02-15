@@ -1,10 +1,10 @@
 from flask import jsonify # type: ignore
-from application.helpers.server_log_helper import ServerLogService
+from application.helpers.server_log_helper import ServerLogHelper
 
 class MtController:
   def __init__(self, mt_service):
     self.mt_service = mt_service
-    self.server_log_service = ServerLogService()
+    self.server_log_service = ServerLogHelper()
 
   def verify_token(self, request):
     try:

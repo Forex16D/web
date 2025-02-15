@@ -1,10 +1,10 @@
 from flask import Flask, jsonify, request # type: ignore
-from application.helpers.server_log_helper import ServerLogService
+from application.helpers.server_log_helper import ServerLogHelper
 
 class PortfolioController:
   def __init__(self, portfolio_service): 
     self.portfolio_service = portfolio_service
-    self.server_log_service = ServerLogService()
+    self.server_log_service = ServerLogHelper()
 
   def get_portfolios(self, user_id):
     try:

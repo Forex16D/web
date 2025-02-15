@@ -1,6 +1,6 @@
 import logging
 
-class ServerLogService:
+class ServerLogHelper:
   def __init__(self):
     if not logging.getLogger().hasHandlers():
       logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')

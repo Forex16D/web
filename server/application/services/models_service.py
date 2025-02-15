@@ -1,6 +1,6 @@
 from psycopg2.extras import RealDictCursor # type: ignore
 import uuid
-from application.helpers.server_log_helper import ServerLogService
+from application.helpers.server_log_helper import ServerLogHelper
 
 class ModelService:
   def __init__(self, db_pool):
@@ -34,16 +34,16 @@ class ModelService:
       if not filename.endswith('.py'):
         raise ValueError("Only .py files are allowed.")
 
-      ServerLogService().log(f"Received Python file: {filename}")
+      ServerLogHelper().log(f"Received Python file: {filename}")
 
       try:
         save_path = f"./models/{filename}"
         file.save(save_path)
 
-        ServerLogService().log(f"File saved to: {save_path}")
+        ServerLogHelper().log(f"File saved to: {save_path}")
 
       except Exception as e:
-        ServerLogService().error(f"Error saving file {filename}: {str(e)}")
+        ServerLogHelper().error(f"Error saving file {filename}: {str(e)}")
         raise Exception("Internal server error while saving files.")
 
     return {"message": "Model(s) created successfully!"}

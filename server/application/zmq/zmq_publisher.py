@@ -2,7 +2,7 @@ import zmq
 import time
 import json
 import signal
-from application.helpers.server_log_helper import ServerLogService
+from application.helpers.server_log_helper import ServerLogHelper
 
 class ZeroMQPublisher:
   def __init__(self):
@@ -16,7 +16,7 @@ class ZeroMQPublisher:
   def start_zmq(self):
     try:
       self.sender_socket.bind("tcp://*:5555")
-      ServerLogService().log("ZeroMQ sender bound to tcp://*:5555")
+      ServerLogHelper().log("ZeroMQ sender bound to tcp://*:5555")
 
       while not self.kill_now:
         expert_id = "expert_123"
@@ -29,22 +29,22 @@ class ZeroMQPublisher:
 
         message = f"{expert_id} {json.dumps(trade_signal)}"
         self.sender_socket.send_string(message)
-        ServerLogService().log(f"Sent: {message}")
+        ServerLogHelper().log(f"Sent: {message}")
 
         time.sleep(3)
     except Exception as e:
-      ServerLogService().error(f"Error in ZeroMQ service: {str(e)}")
+      ServerLogHelper().error(f"Error in ZeroMQ service: {str(e)}")
     finally:
       self.cleanup()
 
   def handle_termination(self, signum, frame):
-    ServerLogService().log(f"Received termination signal: {signum}")
+    ServerLogHelper().log(f"Received termination signal: {signum}")
     self.kill_now = True
 
   def cleanup(self):
     self.sender_socket.close()
     self.context.term()
-    ServerLogService().log("ZeroMQ service terminated.")
+    ServerLogHelper().log("ZeroMQ service terminated.")
 
 if __name__ == "__main__":
   zmq_service = ZeroMQPublisher()
