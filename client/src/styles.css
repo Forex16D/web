@@ -7,10 +7,19 @@
   --foreground-color: #2B3139;
   --background-color: #181A20;
   --white: #ffffff;
-  --p-drawer-background: rgba(43, 49, 57, 0.5) !important;
-  --p-drawer-border-color: rgba(43, 49, 57, 0.5) !important;
+
   --p-toolbar-background: rgba(0, 0, 0, 0) !important;
   --p-toolbar-border-color: #374151 !important;
+
+  --p-fileupload-border-color: #374151 !important;
+  --p-fileupload-background: rgba(0, 0, 0, 0) !important;
+
+  --p-datatable-border-color: #374151 !important; 
+  --p-datatable-row-background: #1b212b !important;
+  --p-datatable-header-background: #1b212b !important;
+  --p-datatable-header-cell-background: #1b212b !important;
+  --p-datatable-footer-background: #1b212b !important;
+  --p-paginator-background: #1b212b !important;
 }
 
 html,

@@ -3,7 +3,7 @@ import { Component } from '@angular/core';
 import { DividerModule } from 'primeng/divider';
 import { LogoComponent } from '../logo/logo.component';
 import { ButtonModule } from 'primeng/button';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { MessageService } from 'primeng/api';
 import { ConfirmationService } from 'primeng/api';
@@ -11,7 +11,7 @@ import { Router } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
 
 @Component({
-  selector: 'app-navbar',
+  selector: 'app-admin-navbar',
   imports: [
     NgClass,
     DividerModule,
@@ -20,10 +20,10 @@ import { ApiService } from '../../core/services/api.service';
     RouterLink,
     NgIf,
   ],
-  templateUrl: './navbar.component.html',
-  styleUrl: './navbar.component.css'
+  templateUrl: './admin-navbar.component.html',
+  styleUrl: './admin-navbar.component.css'
 })
-export class NavbarComponent {
+export class AdminNavbarComponent {
   isVisible = true;
   profile: any = {};
 
@@ -33,6 +33,7 @@ export class NavbarComponent {
     private confirmationService: ConfirmationService,
     private messageService: MessageService,
     private apiService: ApiService,
+    private activatedRoute: ActivatedRoute,
   ) { 
     this.getProfile()
   }
@@ -67,5 +68,16 @@ export class NavbarComponent {
       next: (response) => this.profile = response,
       error: (error) => console.error(error)
     })
+  }
+
+  updateQueryParams(value: string) {
+    this.router.navigate(
+      [],
+      {
+        relativeTo: this.activatedRoute,
+        queryParams: { view: value },
+        queryParamsHandling: 'merge'
+      }
+    );
   }
 }

@@ -1,5 +1,5 @@
 <div class="text-headline2">Models</div>
-<p-toolbar styleClass="mb-6">
+<!-- <p-toolbar styleClass="mb-6">
   <ng-template #start>
     <p-button label="New" icon="pi pi-plus" class="mr-2" />
     <p-button severity="danger" label="Delete" icon="pi pi-trash" outlined
@@ -7,19 +7,22 @@
   </ng-template>
 
   <ng-template #end>
-    <p-fileupload #fileUploader name="demo[]" [customUpload]="true" (uploadHandler)="onUpload($event)"
-      [multiple]=" true" accept=".py" maxFileSize="10000000" mode="advanced" class="mr-2 inline-block"
-      [chooseButtonProps]="{ severity: 'secondary' }" chooseLabel="Import" />
-    <p-button label="Export" icon="pi pi-upload" severity="secondary" />
   </ng-template>
-</p-toolbar>
+</p-toolbar> -->
 
-<p-table [value]="models" dataKey="id" [tableStyle]="{ 'min-width': '50rem' }" [expandedRowKeys]="expandedRows"
-  [rows]="10" [rowsPerPageOptions]="[1, 10, 25, 50]" [paginator]="true" (onPage)="onPageChange($event)">
-  <ng-template #caption>
-    <div class="flex flex-wrap justify-end gap-2">
-      <p-button label="Expand All" icon="pi pi-plus" text (click)="expandAll()" />
-      <p-button label="Collapse All" icon="pi pi-minus" text (click)="collapseAll()" />
+<p-table 
+[value]="models" 
+dataKey="id" 
+[tableStyle]="{ 'min-width': '50rem' }" 
+[expandedRowKeys]="expandedRows"
+[rows]="10" 
+[rowsPerPageOptions]="[1, 10, 25, 50]" 
+[paginator]="true" 
+(onPage)="onPageChange($event)">
+<ng-template #caption>
+  <div class="flex flex-wrap justify-end gap-2">
+    <p-button label="Expand All" icon="pi pi-plus" text (click)="expandAll()" />
+    <p-button label="Collapse All" icon="pi pi-minus" text (click)="collapseAll()" />
     </div>
   </ng-template>
   <ng-template #header>
@@ -29,33 +32,40 @@
       <th>Name</th>
       <th>Price</th>
       <th style="width: 8rem">
-    </tr>
-  </ng-template>
-  <ng-template #body let-model let-expanded="expanded">
-    <tr>
-      <td style="width: 1rem">
-        <p-button pRipple [pRowToggler]="model" [text]="true" [rounded]="true" [plain]="true"
+      </tr>
+    </ng-template>
+    <ng-template #body let-model let-expanded="expanded">
+      <tr>
+        <td style="width: 1rem">
+          <p-button pRipple [pRowToggler]="model" [text]="true" [rounded]="true" [plain]="true"
           [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'" />
-      </td>
-      <td>{{ model.id }}</td>
-      <td>{{ model.name }}</td>
-      <td>{{ model.price || 'N/A' }}</td>
-      <td>
-        <p-button icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true" />
-        <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [outlined]="true" />
-      </td>
-    </tr>
-  </ng-template>
-
-  <ng-template #expandedrow let-model>
-    <tr>
-      <td colspan="5">
-        <div class="p-4">
-          <h3>Details for {{ model.name }}</h3>
-          <p>ID: {{ model.id }}</p>
-          <p>Winrate: {{ model.winrate }}</p>
-        </div>
-      </td>
-    </tr>
-  </ng-template>
-</p-table>
+        </td>
+        <td>{{ model.id }}</td>
+        <td>{{ model.name }}</td>
+        <td>{{ model.price || 'N/A' }}</td>
+        <td>
+          <p-button icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true" />
+          <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [outlined]="true" />
+        </td>
+      </tr>
+    </ng-template>
+    
+    <ng-template #expandedrow let-model>
+      <tr>
+        <td colspan="5">
+          <div class="p-4">
+            <h3>Details for {{ model.name }}</h3>
+            <p>ID: {{ model.id }}</p>
+            <p>Winrate: {{ model.winrate }}</p>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+  
+  <div class="mb-6">
+    <p-fileupload styleClass="w-full" #fileUploader name="demo[]" [customUpload]="true" (uploadHandler)="onUpload($event)"
+      [multiple]=" true" accept=".py" maxFileSize="10000000" mode="advanced" class="mr-2 inline-block"
+      [chooseButtonProps]="{ severity: 'secondary' }" chooseLabel="Import" >
+    </p-fileupload>
+  </div>
