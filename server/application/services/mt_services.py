@@ -22,7 +22,7 @@ class MtService:
 
     if not auth_header:
       raise ValueError()
-    
+  
     if auth_header.startswith("Bearer "):
       token = auth_header.split(" ")[1]
 

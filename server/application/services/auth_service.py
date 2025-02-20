@@ -1,8 +1,7 @@
 from psycopg2.extras import RealDictCursor # type: ignore
 from argon2.exceptions import VerifyMismatchError # type: ignore
 from application.services.middleware import sign_token
-from flask import jsonify # type: ignore
-import logging
+from application.helpers.logging import Logging
 import uuid
 from dotenv import load_dotenv
 import jwt # type: ignore
@@ -24,8 +23,7 @@ class AuthService:
     if not email or not password:
       raise ValueError("Missing required information.")
 
-    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
-    logging.info(f"Attempting login for: {email}")
+    Logging.user_log(f"Attempting login for: {email}")
 
     conn = self.db_pool.get_connection()
 

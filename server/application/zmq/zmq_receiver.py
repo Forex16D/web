@@ -1,4 +1,5 @@
 import zmq
+import json
 import signal
 from application.helpers.server_log_helper import ServerLogHelper
 
@@ -19,14 +20,14 @@ class ZeroMQReceiver:
       while not self.kill_now:
         try:
           message_received = self.receiver_socket.recv_string(flags=zmq.NOBLOCK)
-          ServerLogHelper().log(f"Received message: {message_received}")
+          data = json.loads(message_received)
+          ServerLogHelper().log(f"Received message: {data}")
           
           self.receiver_socket.send_string("ACK")
           ServerLogHelper().log(f"Sent ACK for message: {message_received}")
 
         except zmq.Again:
           continue
-
 
     except Exception as e:
       ServerLogHelper().error(f"Error in ZeroMQ service: {str(e)}")

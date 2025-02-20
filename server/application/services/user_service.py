@@ -1,4 +1,5 @@
 from psycopg2.extras import RealDictCursor # type: ignore
+from application.helpers.logging import Logging
 
 class UserService:
   def __init__(self, db_pool):
@@ -26,7 +27,7 @@ class UserService:
       cursor.close()
       self.db_pool.release_connection(conn)
 
-  def delete_user(self, user_id):
+  def delete_user(self, current_user_id, user_id):
     conn = self.db_pool.get_connection()
 
     try:
@@ -35,6 +36,7 @@ class UserService:
       conn.commit()
 
       cursor.close()
+      Logging.admin_log(f"Admin {current_user_id} deleted user {user_id}")
       return {"message": "User Deleted Successfully!"}
     except Exception as e:
       raise RuntimeError(f"Something went wrong: {str(e)}")

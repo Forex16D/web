@@ -20,7 +20,7 @@ class UserController:
   def delete_user(self, current_user_id, user_id):
     try:
       if current_user_id != user_id:
-        users = self.user_service.delete_user(user_id)
+        users = self.user_service.delete_user(current_user_id, user_id)
         return jsonify(users), 200
       else:
         ServerLogHelper().error(f"{user_id} {current_user_id}")
