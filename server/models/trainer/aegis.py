@@ -25,8 +25,8 @@ def fetch_data(symbol, timeframe, bars):
   bb = BollingerBands(df['close'], window=20)
   df['BB_Upper'] = bb.bollinger_hband()
   df['BB_Lower'] = bb.bollinger_lband()
-  df.fillna(0, inplace=True)
-  return df[['EMA_12', 'EMA_50', 'MACD', 'RSI', 'BB_Upper', 'BB_Lower', 'close']]
+  df.dropna(inplace=True)
+  return df[['EMA_12', 'EMA_50', 'MACD', 'RSI', 'BB_Upper', 'BB_Lower', 'close', 'open', 'high', 'low']]
 
 class StockTradingEnv(gym.Env):
   def __init__(self, data, window_size=60, initial_balance=10000, volume=100):
@@ -38,7 +38,7 @@ class StockTradingEnv(gym.Env):
     self.positions = []
     self.volume = volume
     self.action_space = Discrete(3)  # 0: Hold, 1: Buy, 2: Sell
-    self.observation_space = Box(low=-np.inf, high=np.inf, shape=(self.window_size, 7), dtype=np.float32)
+    self.observation_space = Box(low=-np.inf, high=np.inf, shape=(self.window_size, 10), dtype=np.float32)
 
   def step(self, action):
     current_price = self.data['close'].iloc[self.current_step]
@@ -47,10 +47,19 @@ class StockTradingEnv(gym.Env):
     if action == 1 and self.balance >= current_price * self.volume:  # Buy
       self.positions.append(current_price)
       self.balance -= current_price * self.volume
+      reward = 0.1 
     elif action == 2 and self.positions:  # Sell
       entry_price = self.positions.pop(0)
-      reward = (current_price - entry_price) * self.volume
+      profit = (current_price - entry_price) * self.volume
+      reward = profit
       self.balance += current_price * self.volume
+    else:
+      if self.positions:
+        unrealized_profit = (current_price - self.positions[0]) * self.volume
+        reward = unrealized_profit / 10
+      else:
+        reward = -1
+
 
     self.current_step += 1
     done = self.current_step >= len(self.data) - 1
@@ -76,5 +85,5 @@ if __name__ == '__main__':
 
   model = PPO("MlpPolicy", env, learning_rate=1e-4, batch_size=128, n_steps=2048, gamma=0.98, verbose=1)
   model.learn(total_timesteps=100000)
-  model.save("ppo_trading_model")
+  model.save("./server/models/output/ppo_trading_model")
   mt5.shutdown()
