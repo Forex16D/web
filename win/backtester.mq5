@@ -1,7 +1,9 @@
 #include <Zmq/Zmq.mqh>
+#include <Trade\Trade.mqh>
+
 
 input string zmq_address = "tcp://127.0.0.1:5557";
-input double lot_size = 0.05;
+input double lot_size = 0.01;
 input int magic_number = 1987;
 ENUM_TIMEFRAMES timeframe = PERIOD_H1;
 
@@ -11,7 +13,8 @@ Socket req_socket(context, ZMQ_REQ);
 int MAX_TICK = 109;
 
 datetime last_bar_time = 0;
-struct TickData {
+struct TickData
+{
   datetime time;
   double open;
   double high;
@@ -57,15 +60,15 @@ void OnTick()
   if (current_bar_time != last_bar_time)
   {
     last_bar_time = current_bar_time;
-    
+
     sendData();
- 
   }
 }
 
 string getLastNBarOHLC(int N)
 {
-  if (N <= 0) return "[]";
+  if (N <= 0)
+    return "[]";
 
   string json_data = "[";
 
@@ -82,7 +85,8 @@ string getLastNBarOHLC(int N)
                               TimeToString(time, TIME_DATE | TIME_MINUTES),
                               open, high, low, close, volume);
 
-    if (i < N - 1) json_data += ",";
+    if (i < N - 1)
+      json_data += ",";
   }
 
   json_data += "]";
@@ -96,16 +100,20 @@ void sendData()
   // Send the data via ZeroMQ
   ZmqMsg request_msg(json_data);
 
-  if (req_socket.send(request_msg)) {
+  if (req_socket.send(request_msg))
+  {
     Print("Data sent successfully.");
-  } else {
+  }
+  else
+  {
     Print("Failed to send data.");
     return;
   }
 
   ZmqMsg reply_msg;
-  
-  if (!req_socket.recv(reply_msg)) {
+
+  if (!req_socket.recv(reply_msg))
+  {
     Print("No reply received.");
     return;
   }
@@ -115,35 +123,72 @@ void sendData()
 
   // Set up trade request
   MqlTradeRequest request = {};
-  request.action = TRADE_ACTION_DEAL;  // Market execution
-  request.magic = magic_number;        // Set magic number for trade identification
-  request.symbol = "EURUSD";           // Set symbol
-  request.volume = lot_size;           // Set volume in 0.1 lots
-  request.sl = 0;                       // No Stop Loss
-  request.tp = 0;                       // No Take Profit
-  request.deviation = 10;               // Price deviation allowed
-  request.type_filling = ORDER_FILLING_IOC; // Fill or kill
-  request.type_time = ORDER_TIME_GTC;   // Good till canceled
-
+  request.action = TRADE_ACTION_DEAL;       
+  request.magic = magic_number;             
+  request.symbol = "EURUSD";               
+  request.volume = lot_size;               
+  request.sl = 0;                         
+  request.tp = 0;                         
+  request.deviation = 10;                  
+  request.type_filling = ORDER_FILLING_IOC;
+  request.type_time = ORDER_TIME_GTC;      
+  request.price = iClose(Symbol(), timeframe, 1);
+  
   MqlTradeResult result = {};
-
+ 
   // Execute trade based on received signal
-  if (response == "buy") {
+  if (response == "buy")
+  {
     request.type = ORDER_TYPE_BUY;
-    request.price = SymbolInfoDouble("EURUSD", SYMBOL_ASK); // Buy at ask price
-  } 
-  else if (response == "sell") {
+//    request.price = SymbolInfoDouble("EURUSD", SYMBOL_ASK); // Buy at ask price
+  }
+  else if (response == "sell")
+  {
     request.type = ORDER_TYPE_SELL;
-    request.price = SymbolInfoDouble("EURUSD", SYMBOL_BID); // Sell at bid price
-  } 
-  else {
+//    request.price = SymbolInfoDouble("EURUSD", SYMBOL_BID); // Sell at bid price
+  }
+  else if (response == "close_buy" || response == "close_sell")
+  {
+    ENUM_POSITION_TYPE closeType = (response == "close_buy") ? POSITION_TYPE_BUY : POSITION_TYPE_SELL;
+    ulong oldestTicket = 0;
+    datetime oldestTime = INT_MAX;
+
+    // Loop through positions to find the oldest buy/sell position
+    for(int i = 0; i < PositionsTotal(); i++)
+    {
+      ulong ticket = PositionGetTicket(i);
+      if(PositionSelectByTicket(ticket))
+      {
+        if (PositionGetInteger(POSITION_TYPE) == closeType)
+        {
+          datetime openTime = PositionGetInteger(POSITION_TIME);
+          if (openTime < oldestTime)
+          { // Find the oldest trade
+            oldestTime = openTime;
+            oldestTicket = PositionGetInteger(POSITION_TICKET);
+          }
+        }
+      }
+    }
+    // If an old position was found, close it
+    if (oldestTicket > 0)
+    {
+      CTrade trade;
+      trade.PositionClose(oldestTicket);
+    }
+  }
+  else
+  {
     return;
   }
 
   // Send trade request
-  if (!OrderSend(request, result)) {
+  if (!OrderSend(request, result))
+  {
     Print("OrderSend failed. Error code: ", GetLastError());
-  } else {
+  }
+  else
+  {
     Print("Order placed successfully. Order ID: ", result.order);
   }
 

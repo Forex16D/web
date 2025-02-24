@@ -62,7 +62,7 @@ def evaluate_with_model(json_str):
     print(f"Predicted action signal: {action_signal}")
 
     action_signal = int(action_signal)
-    action_map = {0: "hold", 1: "buy", 2: "sell"}
+    action_map = {0: "hold", 1: "buy", 2: "sell", 3: "close_buy", 4: "close_sell"}
     return action_map.get(action_signal, "ERROR")
 
   except Exception as e:
@@ -84,7 +84,6 @@ try:
       if mode == "backtest":
         try:
           ohlc_data = json.loads(message)
-          print(f"Received data: {ohlc_data[0]}")
           if len(ohlc_data) != 109:
             print("Invalid number of rows. Expected 109 rows.")
             socket_recv.send_string("ERROR")
