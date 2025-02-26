@@ -12,6 +12,7 @@ import { FileUploadModule } from 'primeng/fileupload';
 import { RippleModule } from 'primeng/ripple';
 import { ApiService } from '../../../core/services/api.service';
 import { FileUpload } from 'primeng/fileupload';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-admin-model',
@@ -32,17 +33,20 @@ import { FileUpload } from 'primeng/fileupload';
   styleUrl: './admin-model.component.css'
 })
 export class AdminModelComponent {
-  @ViewChild('fileUploader', { static: false }) fileUploader!: FileUpload;
+  @ViewChild('fu', { static: false }) fileUploader!: FileUpload;
 
   models: any[] = [];
   selectedModels: any[] = [];
+  selectedFiles: File[] = [];
 
   firstElement: number = 0;
   rowsPerPage: number = 10;
   expandedRows: { [key: string]: boolean } = {};
 
   constructor(
-    private apiService: ApiService,) {
+    private apiService: ApiService,
+    private messageService: MessageService,
+  ) {
     this.models = [
       { id: 0, name: 'Trend follower XAUUSD 1.2', price: 100.2, winrate: 0.5 },
       { id: 1, name: 'Scalper USDJPY 1.0', price: 0.00, winrate: 0.41 },
@@ -64,17 +68,28 @@ export class AdminModelComponent {
     console.log(`Fetching ${firstElement}-${firstElement + size - 1}`);
   }
 
-  onUpload(event: any) {
+  onFileSelected(event: any) {
+    this.selectedFiles = event.files;
+    console.log('Selected Files:', this.selectedFiles);
+  }
+
+  uploadFile() {
     const formData = new FormData();
 
-    for (let i = 0; i < event.files.length; i++) {
-      formData.append('files[]', event.files[i], event.files[i].name);
+    for (let i = 0; i < this.selectedFiles.length; i++) {
+      formData.append('files[]', this.selectedFiles[i], this.selectedFiles[i].name);
     }
-
+    
     const headers = {}
     this.apiService.post('v1/models', formData, headers, true).subscribe({
-      next: (response) => console.log('Upload successful:', response),
-      error: (error) => console.error('Upload failed:', error)
+      next: (response) => {
+        console.log('Upload successful:', response)
+        this.messageService.add({ severity: 'success', summary: 'Upload successful', detail: 'Your file has been uploaded successfully.' });
+      },
+      error: (error) => {
+        console.error('Upload failed:', error)
+        this.messageService.add({ severity: 'error', summary: 'Upload failed', detail: 'Your file could not be uploaded.' });
+      }
     });
 
     this.fileUploader.clear();

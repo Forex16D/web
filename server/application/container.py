@@ -3,7 +3,7 @@ from application.services.portfolio_service import PortfolioService
 from application.services.auth_service import AuthService
 from application.services.user_service import UserService
 from application.services.mt_services import MtService
-from application.services.models_service import ModelService
+from application.services.model_service import ModelService
 
 from argon2 import PasswordHasher # type: ignore
 

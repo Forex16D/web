@@ -33,7 +33,7 @@ def evaluate_with_model(json_str):
     df = pd.DataFrame(data_list)
 
     df.drop(columns=['time'], errors='ignore', inplace=True)
-    df = df.drop(columns=['volume'], errors='ignore')
+    df.rename(columns={"volumn": "tick_volume"}, inplace=True)
 
     numeric_cols = ['open', 'high', 'low','close']
     df[numeric_cols] = df[numeric_cols].astype(float)
@@ -53,7 +53,7 @@ def evaluate_with_model(json_str):
     df = df.dropna()
 
     if len(df) < 60:
-      print(f"Invalid data shape after indicators: {df.shape}. Expected (60, 10).")
+      print(f"Invalid data shape after indicators: {df.shape}. Expected (60, 11).")
       return "ERROR"
 
     df = df.tail(60)

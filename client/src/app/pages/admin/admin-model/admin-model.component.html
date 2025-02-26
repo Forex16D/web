@@ -1,4 +1,4 @@
-<div class="text-headline2">Models</div>
+<div class="text-headline4">Models</div>
 <!-- <p-toolbar styleClass="mb-6">
   <ng-template #start>
     <p-button label="New" icon="pi pi-plus" class="mr-2" />
@@ -9,6 +9,15 @@
   <ng-template #end>
   </ng-template>
 </p-toolbar> -->
+<div class="flex flex-col justify-start gap-2 mb-6">
+  <div class="text-subtitle1">
+    Upload a new model
+  </div>
+  <div class="flex gap-2">
+    <p-fileupload #fu [multiple]="true" mode="basic" chooseLabel="Choose" chooseIcon="pi pi-upload" name="demo[]" accept=".zip" maxFileSize="10000000" (onSelect)="onFileSelected($event)" />
+    <p-button label="Upload" (click)="uploadFile()" severity="secondary" class="flex justify-center"/>
+  </div>
+</div>
 
 <p-table 
 [value]="models" 
@@ -49,7 +58,7 @@ dataKey="id"
         </td>
       </tr>
     </ng-template>
-    
+
     <ng-template #expandedrow let-model>
       <tr>
         <td colspan="5">
@@ -63,9 +72,3 @@ dataKey="id"
     </ng-template>
   </p-table>
   
-  <div class="mb-6">
-    <p-fileupload styleClass="w-full" #fileUploader name="demo[]" [customUpload]="true" (uploadHandler)="onUpload($event)"
-      [multiple]=" true" accept=".py" maxFileSize="10000000" mode="advanced" class="mr-2 inline-block"
-      [chooseButtonProps]="{ severity: 'secondary' }" chooseLabel="Import" >
-    </p-fileupload>
-  </div>

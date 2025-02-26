@@ -25,9 +25,11 @@ class ModelController:
    
     try:
       form_data = request.form
+      file_type = form_data.get("type")
       files = request.files.getlist('files[]')
-      ServerLogHelper().log(files)
+      ServerLogHelper().log(file_type)
       response = self.model_service.create_models(form_data, files)
+
       return jsonify(response), 201
 
     except ValueError as e:
