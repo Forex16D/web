@@ -1,4 +1,4 @@
-import { Component, effect, signal } from '@angular/core';
+import { Component, effect, OnInit, signal } from '@angular/core';
 import { TableModule } from 'primeng/table';
 import { ToolbarModule } from 'primeng/toolbar';
 import { ButtonModule } from 'primeng/button';
@@ -36,7 +36,7 @@ interface UserResponse {
   templateUrl: './admin-user.component.html',
   styleUrl: './admin-user.component.css'
 })
-export class AdminUserComponent {
+export class AdminUserComponent implements OnInit {
   users = signal<any[]>([]);
   selectedUsers = signal<any[]>([]);
 
@@ -48,8 +48,9 @@ export class AdminUserComponent {
     private router: Router,
     private activatedRoute: ActivatedRoute,
     private apiService: ApiService,
-  ) {
+  ) { }
 
+  ngOnInit(): void {
     this.loadUsers(1, 100);
     this.activatedRoute.queryParams.subscribe((params) => {
       const page = params['page'] ? parseInt(params['page'], 10) : 1;

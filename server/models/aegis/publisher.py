@@ -7,8 +7,9 @@ import pandas as pd
 from ta.trend import EMAIndicator, MACD
 from ta.momentum import RSIIndicator
 from ta.volatility import BollingerBands
+from pathlib import Path
 import sys
-
+ 
 mode = sys.argv[1] if len(sys.argv) > 1 else "backtest"
 assert mode in ["backtest", "deploy"], "Invalid mode. Use 'backtest' or 'deploy'."
 
@@ -21,10 +22,10 @@ if mode == "backtest":
 else:
   socket_recv = context.socket(zmq.PULL)
   socket_recv.bind("tcp://127.0.0.1:5557")
-  socket_send = context.socket(zmq.PUB)
-  socket_send.bind("tcp://127.0.0.1:5555")
+  socket_send = context.socket(zmq.DEALER)
+  socket_send.connect("tcp://127.0.0.1:5555")
 
-model_path = "./server/models/output/ppo_trading_model.zip"
+model_path = Path(__file__).parent / "model"
 model = PPO.load(model_path)
 
 def evaluate_with_model(json_str):

@@ -14,12 +14,16 @@ class ZeroMQReceiver:
 
   def start_zmq(self):
     try:
-      self.receiver_socket.bind("tcp://*:5557")
-      ServerLogHelper().log("ZeroMQ receiver bound to tcp://*:5557")
+      self.receiver_socket.bind("tcp://127.0.0.1:5557")
+      ServerLogHelper().log("ZeroMQ receiver bound to tcp://127.0.0.1:5557")
 
       while not self.kill_now:
         try:
           message_received = self.receiver_socket.recv_string(flags=zmq.NOBLOCK)
+          if message_received == "init":
+            self.receiver_socket.send_string("ACK")
+            continue
+
           data = json.loads(message_received)
           ServerLogHelper().log(f"Received message: {data}")
           

@@ -28,7 +28,7 @@ class ModelService:
     finally:
       self.db_pool.release_connection(conn)
 
-  def create_models(self, form_data, files):
+  def create_models(self, files):
     models_dir = Path("./models")
     models_dir.mkdir(parents=True, exist_ok=True)  # Ensure base directory exists
 
@@ -40,6 +40,7 @@ class ModelService:
       cursor = conn.cursor(cursor_factory=RealDictCursor)
 
       for file in files:
+        model_id = uuid.uuid4()
         filename = file.filename
         file_ext = Path(filename).suffix.lower()
         save_path = models_dir / filename  # Path to save uploaded file
@@ -69,7 +70,6 @@ class ModelService:
           saved_files.remove(save_path)  # Remove from rollback list
           ServerLogHelper().log(f"Deleted compressed file: {save_path}")
           
-          model_id = uuid.uuid4()
           model_name = extract_dir.name
           cursor.execute("INSERT INTO models (model_id, name, file_path) VALUES (%s, %s, %s)", (str(model_id), filename, str(model_name)))
           conn.commit()
@@ -92,3 +92,27 @@ class ModelService:
 
       raise Exception("Internal server error while processing files. Rollback completed.")
     
+    finally:
+      cursor.close()
+      self.db_pool.release_connection(conn)
+    
+  def delete_model(self, model_id):
+    conn = self.db_pool.get_connection()
+    cursor = conn.cursor()
+
+    try:
+      path = Path(f"./models/{model_id}")
+      if path.exists():
+        shutil.rmtree(path)
+        ServerLogHelper().log(f"Deleted model directory: {path}")
+
+      cursor.execute("DELETE FROM models WHERE model_id = %s", (model_id,))
+      conn.commit()
+      return {"message": "Model deleted successfully!"}
+    except Exception as e:
+      ServerLogHelper().error(f"Error deleting model: {str(e)}")
+      conn.rollback()
+      raise RuntimeError(f"Something went wrong: {str(e)}")
+    finally:
+      cursor.close()
+      self.db_pool.release_connection(conn)

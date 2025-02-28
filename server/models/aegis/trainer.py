@@ -123,6 +123,6 @@ if __name__ == '__main__':
   model = PPO("MlpPolicy", env, learning_rate=5e-5, batch_size=256, n_steps=4096, gamma=0.995, verbose=1)
   model.learn(total_timesteps=100000)
   script_dir = Path(__file__).parent
-  file_path = script_dir / "aegis_model"
+  file_path = script_dir / "model"
   model.save(str(file_path))
   mt5.shutdown()

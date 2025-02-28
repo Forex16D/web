@@ -7,6 +7,7 @@ from application.helpers.server_log_helper import ServerLogHelper
 class ZeroMQPublisher:
   def __init__(self):
     self.context = zmq.Context()
+    self.receiver_socket = self.context.socket(zmq.ROUTER)
     self.sender_socket = self.context.socket(zmq.PUB)
     self.kill_now = False
 

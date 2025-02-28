@@ -10,13 +10,7 @@ class PortfolioController:
     try:
       portfolios = self.portfolio_service.get_portfolios_by_user(user_id)
       return jsonify(portfolios), 200
-    except ValueError:
-      return jsonify({"status": 404, "message": "Not found"}), 404
-    except RuntimeError as e:
-      self.server_log_service.error(f"Unexpected error during portfolio creation: {str(e)}")
-      return jsonify({"status": 500, "message": "Internal server error"}), 500
-    except Exception as e:
-      self.server_log_service.error(f"Unexpected error during portfolio creation: {str(e)}")
+    except Exception:
       return jsonify({"status": 500, "message": "Internal server error"}), 500
 
   def get_portfolio(self, portfolio_id):

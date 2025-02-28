@@ -1,4 +1,4 @@
-import { Component, signal, viewChild, ViewContainerRef } from '@angular/core';
+import { Component, OnInit, signal, viewChild, ViewContainerRef } from '@angular/core';
 import { ThemeService } from '../../core/services/theme.service';
 import { PortfolioCardComponent } from '../../components/portfolio-card/portfolio-card.component';
 import { NgFor, NgIf } from '@angular/common';
@@ -48,7 +48,7 @@ echarts.use([BarChart, GridComponent, CanvasRenderer]);
   styleUrl: './dashboard.component.css',
   providers: [provideEchartsCore({ echarts }),],
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit {
   vcr = viewChild('container', { read: ViewContainerRef });
   isBalanceVisible = false;
   isDialogVisible = false;
@@ -111,7 +111,9 @@ export class DashboardComponent {
     private themeService: ThemeService,
     private apiService: ApiService,
     private messageService: MessageService,
-  ) {
+  ) { }
+
+  ngOnInit(): void {
     this.getPortfolios()
   }
 

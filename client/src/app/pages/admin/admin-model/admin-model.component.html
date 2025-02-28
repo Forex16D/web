@@ -37,9 +37,9 @@ dataKey="id"
   <ng-template #header>
     <tr>
       <th style="width: 1rem"></th>
-      <th>Id</th>
+      <th style="width: 16rem;">Id</th>
       <th>Name</th>
-      <th>Price</th>
+      <th>Commision</th>
       <th style="width: 8rem">
       </tr>
     </ng-template>
@@ -49,24 +49,27 @@ dataKey="id"
           <p-button pRipple [pRowToggler]="model" [text]="true" [rounded]="true" [plain]="true"
           [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'" />
         </td>
-        <td>{{ model.id }}</td>
+        <td>{{ model.model_id }}</td>
         <td>{{ model.name }}</td>
-        <td>{{ model.price || 'N/A' }}</td>
+        <td>{{ model.commision || 'N/A' }}</td>
         <td>
           <p-button icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true" />
-          <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [outlined]="true" />
+          <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [outlined]="true" (click)="deleteModel(model)"/>
         </td>
       </tr>
     </ng-template>
 
     <ng-template #expandedrow let-model>
       <tr>
-        <td colspan="5">
+        <td colspan="3">
           <div class="p-4">
-            <h3>Details for {{ model.name }}</h3>
-            <p>ID: {{ model.id }}</p>
-            <p>Winrate: {{ model.winrate }}</p>
+            <p>ID: {{ model.model_id }}</p>
+            <p>Name: {{ model.name }}</p>
+            <p></p>
           </div>
+        </td>
+        <td colspan="2">
+          <button pButton>Train</button>
         </td>
       </tr>
     </ng-template>
