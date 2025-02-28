@@ -9,7 +9,7 @@ from ta.momentum import RSIIndicator
 from ta.volatility import BollingerBands
 from pathlib import Path
 import sys
-
+ 
 mode = sys.argv[1] if len(sys.argv) > 1 else "backtest"
 assert mode in ["backtest", "deploy"], "Invalid mode. Use 'backtest' or 'deploy'."
 
@@ -17,12 +17,12 @@ context = zmq.Context()
 
 if mode == "backtest":
   socket_recv = context.socket(zmq.REP)
-  socket_recv.connect("tcp://127.0.0.1:5557")
+  socket_recv.bind("tcp://127.0.0.1:5557")
   socket_send = None
 else:
   socket_recv = context.socket(zmq.PULL)
-  socket_recv.connect("tcp://127.0.0.1:5557")
-  socket_send = context.socket(zmq.PUB)
+  socket_recv.bind("tcp://127.0.0.1:5557")
+  socket_send = context.socket(zmq.DEALER)
   socket_send.connect("tcp://127.0.0.1:5555")
 
 model_path = Path(__file__).parent / "model"

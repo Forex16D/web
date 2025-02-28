@@ -40,10 +40,10 @@ class ModelService:
       cursor = conn.cursor(cursor_factory=RealDictCursor)
 
       for file in files:
-        model_id = uuid.uuid4()
+        model_id = str(uuid.uuid4())
         filename = file.filename
         file_ext = Path(filename).suffix.lower()
-        save_path = models_dir / filename  # Path to save uploaded file
+        save_path = models_dir / f"{model_id}_temp"  # Path to save uploaded file
 
         ServerLogHelper().log(f"Received file: {filename}")
 
@@ -52,7 +52,7 @@ class ModelService:
         ServerLogHelper().log(f"File saved to: {save_path}")
 
         if file_ext == ".zip":
-          extract_dir = models_dir / filename.replace(".zip", "")  # Folder name
+          extract_dir = models_dir / model_id   # Folder name
           extract_dir.mkdir(parents=True, exist_ok=True)
           extracted_dirs.append(extract_dir)  # Track extracted directory
 
@@ -69,11 +69,14 @@ class ModelService:
           save_path.unlink()  # Delete the zip file after successful extraction
           saved_files.remove(save_path)  # Remove from rollback list
           ServerLogHelper().log(f"Deleted compressed file: {save_path}")
-          
-          model_name = extract_dir.name
-          cursor.execute("INSERT INTO models (model_id, name, file_path) VALUES (%s, %s, %s)", (str(model_id), filename, str(model_name)))
+
+          cursor.execute("""
+                         INSERT INTO models (model_id, name, file_path) 
+                         VALUES (%s, %s, %s)
+                         """, 
+                         (model_id, filename.replace(".zip", ""), str(extract_dir)))
           conn.commit()
-          
+
       return {"message": "Model(s) created successfully!"}
 
     except Exception as e:

@@ -91,6 +91,7 @@ export class AdminModelComponent implements OnInit {
       next: (response) => {
         console.log('Upload successful:', response)
         this.messageService.add({ severity: 'success', summary: 'Upload successful', detail: 'Your file has been uploaded successfully.' });
+        this.getModels();
       },
       error: (error) => {
         console.error('Upload failed:', error)
@@ -165,7 +166,7 @@ export class AdminModelComponent implements OnInit {
         this.apiService.delete(`v1/models/${model.model_id}`).subscribe({
           next: (response) => {
             console.log('Model deleted:', model);
-            this.models = this.models.filter((m) => m.id !== model.id);
+            this.models = this.models.filter((m) => m.model_id !== model.model_id);
             this.messageService.add({ severity: 'success', summary: 'Model deleted', detail: 'The model has been deleted successfully.' });
           },
           error: (error) => this.messageService.add({ severity: 'error', summary: 'Model deletion failed', detail: 'The model could not be deleted.' }),

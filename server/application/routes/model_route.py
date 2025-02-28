@@ -15,8 +15,7 @@ def get_models():
 @model_routes.route("/v1/models", methods=["POST"])
 @admin_required
 def create_models(current_user_id):
-  # if request.content_type != "multipart/form-data":
-  # return {"status": 415, "message": request.content_type}, 415
+
   return model_controller.create_models(request, current_user_id)
 
 @model_routes.route("/v1/models/<model_id>", methods=["DELETE"])

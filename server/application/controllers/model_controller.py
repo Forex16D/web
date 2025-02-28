@@ -21,7 +21,7 @@ class ModelController:
 
       response = self.model_service.create_models(files)
 
-      Logging.admin_log(f"User {current_user_id} created model {response['model_id']}")
+      # Logging.admin_log(f"User {current_user_id} created model {response['model_id']}")
       return jsonify(response), 201
 
     except ValueError as e:
