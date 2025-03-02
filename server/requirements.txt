@@ -6,4 +6,8 @@ psycopg2-binary
 argon2-cffi
 zmq
 ta
-gym
+pandas
+stable_baselines3
+stable-baselines3[extra]
+gymnasium[box2d]
+torch 

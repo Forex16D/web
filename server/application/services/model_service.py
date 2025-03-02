@@ -1,8 +1,11 @@
 from psycopg2.extras import RealDictCursor # type: ignore
+from pathlib import Path
+import subprocess
+import zipfile
 import shutil
 import uuid
-import zipfile
-from pathlib import Path
+import os
+
 from application.helpers.server_log_helper import ServerLogHelper
 
 class ModelService:
@@ -57,7 +60,12 @@ class ModelService:
           extracted_dirs.append(extract_dir)  # Track extracted directory
 
           with zipfile.ZipFile(save_path, 'r') as zip_ref:
-            zip_ref.extractall(extract_dir)  # Extract contents
+            for file in zip_ref.namelist():
+              if not file.endswith('/'):  # Skip directories
+                destination = os.path.join(extract_dir, os.path.basename(file))
+                with zip_ref.open(file) as source, open(destination, 'wb') as target:
+                  target.write(source.read())
+
 
           ServerLogHelper().log(f"Extracted {filename} to {extract_dir}")
 
@@ -119,3 +127,17 @@ class ModelService:
     finally:
       cursor.close()
       self.db_pool.release_connection(conn)
+  
+  def train_model(self, model_id):
+    try:
+      path = Path(f"./models/{model_id}")
+      if not path.exists():
+        raise ValueError("Model directory not found.")
+
+      # Load model and train
+      subprocess.run(["python3", str(path / "trainer.py")], check=True)
+
+      return {"message": "Model trained successfully!"}
+    except Exception as e:
+      raise RuntimeError(f"Something went wrong: {str(e)}")
+    

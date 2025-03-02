@@ -18,6 +18,18 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
+-- Name: oeder_types; Type: TYPE; Schema: public; Owner: admin
+--
+
+CREATE TYPE public.oeder_types AS ENUM (
+    'buy',
+    'sell'
+);
+
+
+ALTER TYPE public.oeder_types OWNER TO admin;
+
+--
 -- Name: roles; Type: TYPE; Schema: public; Owner: admin
 --
 
@@ -28,6 +40,19 @@ CREATE TYPE public.roles AS ENUM (
 
 
 ALTER TYPE public.roles OWNER TO admin;
+
+--
+-- Name: symbols; Type: TYPE; Schema: public; Owner: admin
+--
+
+CREATE TYPE public.symbols AS ENUM (
+    'USDJPY',
+    'XAUUSD',
+    'GBPUSD'
+);
+
+
+ALTER TYPE public.symbols OWNER TO admin;
 
 SET default_tablespace = '';
 
@@ -40,15 +65,34 @@ SET default_table_access_method = heap;
 CREATE TABLE public.models (
     model_id character varying NOT NULL,
     name character varying NOT NULL,
-    price double precision NOT NULL,
-    commission double precision NOT NULL,
     file_path character varying NOT NULL,
-    created_at date NOT NULL,
-    updated_at date NOT NULL
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone,
+    commission double precision
 );
 
 
 ALTER TABLE public.models OWNER TO admin;
+
+--
+-- Name: orders; Type: TABLE; Schema: public; Owner: admin
+--
+
+CREATE TABLE public.orders (
+    order_id character varying(255) NOT NULL,
+    portfolio_id character varying(255) NOT NULL,
+    model_id character varying(255) NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    order_type public.oeder_types NOT NULL,
+    symbol public.symbols NOT NULL,
+    profit double precision NOT NULL,
+    volume double precision NOT NULL,
+    entry_price double precision NOT NULL,
+    exit_price double precision NOT NULL
+);
+
+
+ALTER TABLE public.orders OWNER TO admin;
 
 --
 -- Name: portfolios; Type: TABLE; Schema: public; Owner: admin

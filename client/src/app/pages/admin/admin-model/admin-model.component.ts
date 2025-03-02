@@ -175,4 +175,14 @@ export class AdminModelComponent implements OnInit {
       }
     });
   }
+
+  trainModel(model: any) {
+    this.apiService.post(`v1/models/${model.model_id}/train`, {}).subscribe({
+      next: (response) => {
+        console.log('Model training started:', model);
+        this.messageService.add({ severity: 'success', summary: 'Model training started', detail: 'The model training has started successfully.' });
+      },
+      error: (error) => this.messageService.add({ severity: 'error', summary: 'Model training failed', detail: 'The model training could not be started.' }),
+    });
+  }
 }

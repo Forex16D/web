@@ -1,17 +1,28 @@
-FROM python:3.14.0a3-alpine3.21
+FROM python:3.12
 
-RUN apk update && apk add \
-    build-base \
-    libpq-dev \
-    gcc \
-    libffi-dev \
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    libfreetype6-dev \
+    libsdl2-dev \
+    libsdl2-mixer-dev \
+    libsdl2-image-dev \
+    libsdl2-ttf-dev \
+    libpng-dev \
+    libjpeg-dev \
+    libgl1-mesa-dev \
+    swig \
+    git \
+    pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
 COPY requirements.txt .
 
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel
+
+RUN pip install --no-cache-dir --prefer-binary -r requirements.txt
 
 COPY . .
 

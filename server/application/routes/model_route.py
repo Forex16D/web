@@ -8,8 +8,8 @@ model_routes = Blueprint("model_routes", __name__)
 model_controller = ModelController(container.model_service)
 
 @model_routes.route("/v1/models", methods=["GET"])
-# @admin_required
-def get_models():
+@admin_required
+def get_models(current_user_id):
   return model_controller.get_all_models(request)
 
 @model_routes.route("/v1/models", methods=["POST"])
@@ -23,3 +23,7 @@ def create_models(current_user_id):
 def delete_model(current_user_id, model_id):
   return model_controller.delete_model(model_id, current_user_id)
 
+@model_routes.route("/v1/models/<model_id>/train", methods=["POST"])
+@admin_required
+def train_model(current_user_id, model_id):
+  return model_controller.train_model(model_id)

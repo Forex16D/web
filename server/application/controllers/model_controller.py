@@ -42,3 +42,11 @@ class ModelController:
     except Exception as e:
       ServerLogHelper().error(str(e))
       return {"status": 500, "message": "Internal server error"}, 500
+    
+  def train_model(self, model_id): 
+    try:
+      response = self.model_service.train_model(model_id)
+      return jsonify(response), 200
+    except Exception as e:
+      ServerLogHelper().error(str(e))
+      return {"status": 500, "message": "Internal server error"}, 500

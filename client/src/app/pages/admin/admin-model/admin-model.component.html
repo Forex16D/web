@@ -69,7 +69,11 @@ dataKey="id"
           </div>
         </td>
         <td colspan="2">
-          <button pButton>Train</button>
+          <div class="flex gap-2">
+            <button pButton (click)="trainModel(model)">Train</button>
+            <button pButton (click)="trainModel(model)">Backtest</button>
+            <button pButton (click)="trainModel(model)">Run</button>
+          </div>
         </td>
       </tr>
     </ng-template>
