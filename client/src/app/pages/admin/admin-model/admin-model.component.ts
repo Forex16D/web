@@ -1,4 +1,4 @@
-import { Component, ElementRef, model, OnInit, ViewChild } from '@angular/core';
+import { Component, model, OnInit, ViewChild } from '@angular/core';
 import { TableModule } from 'primeng/table';
 import { ToolbarModule } from 'primeng/toolbar';
 import { ButtonModule } from 'primeng/button';
@@ -7,7 +7,7 @@ import { InputIconModule } from 'primeng/inputicon';
 import { SplitButtonModule } from 'primeng/splitbutton';
 import { InputTextModule } from 'primeng/inputtext';
 import { CheckboxModule } from 'primeng/checkbox';
-import { FormsModule } from '@angular/forms';;
+import { FormsModule, ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { FileUploadModule } from 'primeng/fileupload';
 import { RippleModule } from 'primeng/ripple';
 import { ApiService } from '../../../core/services/api.service';
@@ -16,6 +16,7 @@ import { MessageService } from 'primeng/api';
 import { ConfirmationService } from 'primeng/api';
 import { Model } from '../../../models/model.model';
 import { Observable } from 'rxjs';
+import { DialogModule } from 'primeng/dialog';
 
 @Component({
   selector: 'app-admin-model',
@@ -31,6 +32,9 @@ import { Observable } from 'rxjs';
     FormsModule,
     FileUploadModule,
     RippleModule,
+    DialogModule,
+    ReactiveFormsModule,
+    FormsModule,
   ],
   templateUrl: './admin-model.component.html',
   styleUrl: './admin-model.component.css'
@@ -39,12 +43,20 @@ export class AdminModelComponent implements OnInit {
   @ViewChild('fu', { static: false }) fileUploader!: FileUpload;
 
   models: Model[] = [];
-  selectedModels: any[] = [];
+  selectedModel: Model | null = null;
   selectedFiles: File[] = [];
 
   firstElement: number = 0;
   rowsPerPage: number = 10;
   expandedRows: { [key: string]: boolean } = {};
+
+  isEditVisible: boolean = false;
+
+  modelEditForm = new FormGroup({
+    model_id: new FormControl(''),
+    name: new FormControl('', [Validators.required, Validators.minLength(1), Validators.maxLength(20)]),
+    commission: new FormControl('', [Validators.required, Validators.pattern('^[0-9]+(\\.[0-9]+)?$')]),
+  });
 
   constructor(
     private apiService: ApiService,
@@ -115,7 +127,6 @@ export class AdminModelComponent implements OnInit {
     }, {});
   }
 
-
   collapseAll() {
     this.expandedRows = {};
   }
@@ -127,11 +138,10 @@ export class AdminModelComponent implements OnInit {
         for (let model of this.models) {
           this.getProcess(model).subscribe({
             next: (response) => {
-              model.running = response.model_id == model.model_id? response.running : false;
+              model.running = response.model_id == model.model_id ? response.running : false;
             },
             error: (error) => console.error('Failed to fetch process:', error),
           });
-          console.log(this.getProcess(model));
         }
       },
       error: (error) => console.error('Failed to fetch models:', error),
@@ -157,6 +167,32 @@ export class AdminModelComponent implements OnInit {
           error: (error) => this.messageService.add({ severity: 'error', summary: 'Model deletion failed', detail: 'The model could not be deleted.' }),
         });
       }
+    });
+  }
+
+  editModel(model: Model) {
+    this.selectedModel = model;
+
+    this.modelEditForm.setValue({
+      model_id: model.model_id.toString(),
+      name: model.name,
+      commission: model.commission?.toString() || null
+    });
+
+    this.modelEditForm.get('model_id')?.disable();
+
+    this.isEditVisible = true;
+  }
+
+  saveModel() {
+    this.apiService.put(`v1/models/${this.selectedModel?.model_id}`, this.modelEditForm.value).subscribe({
+      next: (response) => { 
+        console.log('Model updated:', response);
+        this.messageService.add({ severity: 'success', summary: 'Model updated', detail: 'The model has been updated successfully.' });
+        this.getModels();
+        this.isEditVisible = false;
+      },
+      error : (error) => this.messageService.add({ severity: 'error', summary: 'Model update failed', detail: 'The model could not be updated.' }),
     });
   }
 
@@ -187,12 +223,12 @@ export class AdminModelComponent implements OnInit {
             model.running = true;
           },
           error: (error) => {
-          if (error.status === 400) {
-            this.messageService.add({ severity: 'error', summary: 'Model backtesting failed', detail: 'The model is already running a backtest.' })
-          } else {
-            this.messageService.add({ severity: 'error', summary: 'Model backtesting failed', detail: 'The model backtesting could not be started.' })
-          }
-        },
+            if (error.status === 400) {
+              this.messageService.add({ severity: 'error', summary: 'Model backtesting failed', detail: 'The model is already running a backtest.' })
+            } else {
+              this.messageService.add({ severity: 'error', summary: 'Model backtesting failed', detail: 'The model backtesting could not be started.' })
+            }
+          },
         });
       }
     });
@@ -218,7 +254,7 @@ export class AdminModelComponent implements OnInit {
             if (error.status === 400) {
               this.messageService.add({ severity: 'error', summary: 'Model backtesting stop failed', detail: 'The model is not running a backtest.' })
             } else {
-            this.messageService.add({ severity: 'error', summary: 'Model backtesting stop failed', detail: 'The model backtesting could not be stopped.' })
+              this.messageService.add({ severity: 'error', summary: 'Model backtesting stop failed', detail: 'The model backtesting could not be stopped.' })
             }
           },
         });
