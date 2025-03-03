@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, model, OnInit, ViewChild } from '@angular/core';
 import { TableModule } from 'primeng/table';
 import { ToolbarModule } from 'primeng/toolbar';
 import { ButtonModule } from 'primeng/button';
@@ -14,6 +14,8 @@ import { ApiService } from '../../../core/services/api.service';
 import { FileUpload } from 'primeng/fileupload';
 import { MessageService } from 'primeng/api';
 import { ConfirmationService } from 'primeng/api';
+import { Model } from '../../../models/model.model';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-admin-model',
@@ -36,7 +38,7 @@ import { ConfirmationService } from 'primeng/api';
 export class AdminModelComponent implements OnInit {
   @ViewChild('fu', { static: false }) fileUploader!: FileUpload;
 
-  models: any[] = [];
+  models: Model[] = [];
   selectedModels: any[] = [];
   selectedFiles: File[] = [];
 
@@ -48,16 +50,11 @@ export class AdminModelComponent implements OnInit {
     private apiService: ApiService,
     private messageService: MessageService,
     private confirmationService: ConfirmationService,
-  ) {
-    this.models = [
-      // { id: 0, name: 'Trend follower XAUUSD 1.2', commision: 100.2, winrate: 0.5 },
-      // { id: 1, name: 'Scalper USDJPY 1.0', commision: 0.00, winrate: 0.41 },
-    ];
-    // this.loadUsers(this.firstElement, this.rowsPerPage)
-  }
+  ) { }
 
   ngOnInit() {
     this.getModels();
+    this.getProcesses();
   }
 
   onPageChange(event: any) {
@@ -102,58 +99,44 @@ export class AdminModelComponent implements OnInit {
     this.fileUploader.clear();
   }
 
+  toggleRow(model: Model) {
+    const modelId = model.model_id;
+    if (this.expandedRows[modelId]) {
+      delete this.expandedRows[modelId];
+    } else {
+      this.expandedRows[modelId] = true;
+    }
+  }
+
   expandAll() {
-    this.expandedRows = this.models.reduce((acc, model) => {
-      acc[model.id] = true;
+    this.expandedRows = this.models.reduce((acc: { [key: string]: boolean }, model) => {
+      acc[model.model_id] = true;
       return acc;
     }, {});
   }
+  
 
   collapseAll() {
     this.expandedRows = {};
   }
 
-  debugButton(model: any, expanded: boolean) {
-    console.log('Button clicked!');
-    console.log('Model:', model);
-    console.log('Is Expanded:', expanded);
-    console.log('Expanded Rows State:', this.expandedRows);
-
-    const rowKey = model.id;
-    if (this.expandedRows[rowKey]) {
-      console.log(`Collapsing row with ID: ${rowKey}`);
-      delete this.expandedRows[rowKey];
-    } else {
-      console.log(`Expanding row with ID: ${rowKey}`);
-      this.expandedRows[rowKey] = true;
-    }
-  }
-
-  toggleRow(model: any) {
-    const rowKey = model.id;
-
-    if (this.expandedRows[rowKey]) {
-      delete this.expandedRows[rowKey];
-      console.log(`Collapsing row with ID: ${rowKey}`);
-    } else {
-      this.expandedRows[rowKey] = true;
-      console.log(`Expanding row with ID: ${rowKey}`);
-    }
-
-    console.log('Updated Expanded Rows:', this.expandedRows);
-  }
-
   getModels() {
     this.apiService.get('v1/models').subscribe({
-      next: (response : any) => {
+      next: (response: any) => {
         this.models = response.models;
-        console.log('Models:', this.models);
+        for (let model of this.models) {
+          this.getProcess(model).subscribe({
+            next: (isRunning) => model.running = isRunning,
+            error: (error) => console.error('Failed to fetch process:', error),
+          });
+          console.log(this.getProcess(model));
+        }
       },
       error: (error) => console.error('Failed to fetch models:', error),
     });
   }
 
-  deleteModel(model: any) {
+  deleteModel(model: Model) {
     this.confirmationService.confirm({
       message: 'Are you sure you want to delete this model?',
       header: 'Delete Confirmation',
@@ -171,12 +154,11 @@ export class AdminModelComponent implements OnInit {
           },
           error: (error) => this.messageService.add({ severity: 'error', summary: 'Model deletion failed', detail: 'The model could not be deleted.' }),
         });
-
       }
     });
   }
 
-  trainModel(model: any) {
+  trainModel(model: Model) {
     this.apiService.post(`v1/models/${model.model_id}/train`, {}).subscribe({
       next: (response) => {
         console.log('Model training started:', model);
@@ -185,4 +167,68 @@ export class AdminModelComponent implements OnInit {
       error: (error) => this.messageService.add({ severity: 'error', summary: 'Model training failed', detail: 'The model training could not be started.' }),
     });
   }
+
+  backtestModel(model: Model) {
+    this.confirmationService.confirm({
+      message: 'Are you sure you want to start the backtesting process for this model?',
+      header: 'Backtest Confirmation',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Backtest',
+      rejectLabel: 'Cancel',
+      acceptButtonStyleClass: 'p-button-success',
+      rejectButtonStyleClass: 'p-button-secondary p-button-text',
+      accept: () => {
+        this.apiService.post(`v1/models/${model.model_id}/backtest`, {}).subscribe({
+          next: (response) => {
+            console.log('Model backtesting started:', model);
+            this.messageService.add({ severity: 'success', summary: 'Model backtesting started', detail: 'The model backtesting has started successfully.' });
+            this.getProcess(model).subscribe({
+              next: (isRunning) => model.running = isRunning,
+              error: (error) => console.error('Failed to fetch process:', error),
+            });
+          },
+          error: (error) => this.messageService.add({ severity: 'error', summary: 'Model backtesting failed', detail: 'The model backtesting could not be started.' }),
+        });
+      }
+    });
+  }
+
+  stopBacktest(model: Model) {
+    this.confirmationService.confirm({
+      message: 'Are you sure you want to stop the backtesting process for this model?',
+      header: 'Stop Backtest Confirmation',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Stop Backtest',
+      rejectLabel: 'Cancel',
+      acceptButtonStyleClass: 'p-button-danger',
+      rejectButtonStyleClass: 'p-button-secondary p-button-text',
+      accept: () => {
+        this.apiService.post(`v1/models/${model.model_id}/backtest/stop`, {}).subscribe({
+          next: (response) => {
+            console.log('Model backtesting stopped:', model);
+            this.messageService.add({ severity: 'success', summary: 'Model backtesting stopped', detail: 'The model backtesting has stopped successfully.' });
+            this.getProcess(model).subscribe({
+              next: (isRunning) => model.running = isRunning,
+              error: (error) => console.error('Failed to fetch process:', error),
+            });
+          },
+          error: (error) => this.messageService.add({ severity: 'error', summary: 'Model backtesting stop failed', detail: 'The model backtesting could not be stopped.' }),
+        });
+      }
+    });
+  }
+
+  getProcesses() {
+    this.apiService.get('v1/models/status').subscribe({
+      next: (response) => {
+        console.log('Processes:', response);
+      },
+      error: (error) => console.error('Failed to fetch processes:', error),
+    });
+  }
+
+  getProcess(model: Model): Observable<boolean> {
+    return this.apiService.get<boolean>(`v1/models/${model.model_id}/status`);
+  }
+  
 }

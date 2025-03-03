@@ -50,3 +50,35 @@ class ModelController:
     except Exception as e:
       ServerLogHelper().error(str(e))
       return {"status": 500, "message": "Internal server error"}, 500
+    
+  def backtest_model(self, model_id): 
+    try:
+      response = self.model_service.backtest_model(model_id)
+      return jsonify(response), 200
+    except Exception as e:
+      ServerLogHelper().error(str(e))
+      return {"status": 500, "message": "Internal server error"}, 500
+    
+  def stop_backtest(self, model_id): 
+    try:
+      response = self.model_service.stop_backtest(model_id)
+      return jsonify(response), 200
+    except Exception as e:
+      ServerLogHelper().error(str(e))
+      return {"status": 500, "message": "Internal server error"}, 500
+
+  def get_processes_status(self): 
+    try:
+      response = self.model_service.get_processes_status()
+      return jsonify(response), 200
+    except Exception as e:
+      ServerLogHelper().error(str(e))
+      return {"status": 500, "message": "Internal server error"}, 500
+
+  def get_process_status(self, model_id): 
+    try:
+      response = self.model_service.get_process_status(model_id)
+      return jsonify(response), 200
+    except Exception as e:
+      ServerLogHelper().error(str(e))
+      return {"status": 500, "message": "Internal server error"}, 500

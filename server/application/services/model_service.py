@@ -11,7 +11,8 @@ from application.helpers.server_log_helper import ServerLogHelper
 class ModelService:
   def __init__(self, db_pool):
     self.db_pool = db_pool
-    
+    self.processes = {}
+
   def get_all_models(self, request):
     limit = request.args.get("limit", default=10, type=int)
     page = request.args.get("page", default=1, type=int)
@@ -134,10 +135,61 @@ class ModelService:
       if not path.exists():
         raise ValueError("Model directory not found.")
 
+      module_path = Path(f"models.{model_id}.trainer")
+
       # Load model and train
-      subprocess.run(["python3", str(path / "trainer.py")], check=True)
+      subprocess.run(["python3", str(module_path)], check=True)
 
       return {"message": "Model trained successfully!"}
     except Exception as e:
       raise RuntimeError(f"Something went wrong: {str(e)}")
+
+  def backtest_model(self, model_id):
+    try:
+      path = Path(f"./models/{model_id}")
+      if not path.exists():
+        raise ValueError("Model directory not found.")
+
+      module_path = Path(f"models.{model_id}.publisher")
+
+      # Load model and backtest
+      ServerLogHelper().log(f"Backtesting model {model_id}")
+      
+      if model_id in self.processes:
+        raise ValueError(f"Model {model_id} is already running.")
+
+      process = subprocess.Popen(["python3", "-m", str(module_path)])
+      
+      self.processes[model_id] = process  # Store the process with model_id
+
+      return {"message": f"Model {model_id} backtesting started!"}
+    except Exception as e:
+      raise RuntimeError(f"Something went wrong: {str(e)}")
+
+  def stop_backtest(self, model_id):
+    process = self.processes.get(model_id)  # Get process by model_id
+
+    if process:  # Check if process is running
+      process.terminate()  # Gracefully terminate the process
+      process.wait()  # Wait for termination
+      del self.processes[model_id]  # Remove from the dictionary
+      return {"message": f"Model {model_id} backtest stopped successfully!"}
     
+    return {"message": f"No running backtest found for model {model_id}."}
+
+  def stop_all_backtests(self):
+    for model_id in list(self.processes.keys()):  # Iterate over a copy of keys
+      self.stop_backtest(model_id)  # Stop each process
+    return {"message": "All backtests stopped."}
+  
+  def get_process_status(self, model_id):
+    process = self.processes.get(model_id)
+    if process:
+      return True
+    return False
+    
+  def get_processes_status(self):
+    status = {}
+    for model_id, process in self.processes.items():
+      status[model_id] = process.poll()  # Get process status
+    return status

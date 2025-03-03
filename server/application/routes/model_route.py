@@ -27,3 +27,23 @@ def delete_model(current_user_id, model_id):
 @admin_required
 def train_model(current_user_id, model_id):
   return model_controller.train_model(model_id)
+
+@model_routes.route("/v1/models/<model_id>/backtest", methods=["POST"])
+@admin_required
+def backtest_model(current_user_id, model_id):
+  return model_controller.backtest_model(model_id)
+
+@model_routes.route("/v1/models/<model_id>/backtest/stop", methods=["POST"])
+@admin_required
+def stop_backtest(current_user_id, model_id):
+  return model_controller.stop_backtest(model_id)
+
+@model_routes.route("/v1/models/status", methods=["GET"])
+@admin_required
+def get_processes_status(current_user_id):
+  return model_controller.get_processes_status()
+
+@model_routes.route("/v1/models/<model_id>/status", methods=["GET"])
+@admin_required
+def get_process_status(current_user_id, model_id):
+  return model_controller.get_process_status(model_id)

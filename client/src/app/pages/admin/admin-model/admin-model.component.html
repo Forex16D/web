@@ -20,8 +20,8 @@
 </div>
 
 <p-table 
-[value]="models" 
-dataKey="id" 
+[value]="models"
+dataKey="model_id" 
 [tableStyle]="{ 'min-width': '50rem' }" 
 [expandedRowKeys]="expandedRows"
 [rows]="10" 
@@ -46,8 +46,8 @@ dataKey="id"
     <ng-template #body let-model let-expanded="expanded">
       <tr>
         <td style="width: 1rem">
-          <p-button pRipple [pRowToggler]="model" [text]="true" [rounded]="true" [plain]="true"
-          [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'" />
+          <p-button pRipple (click)="toggleRow(model)" [text]="true" [rounded]="true" [plain]="true"
+          [icon]="expandedRows[model.model_id] ? 'pi pi-chevron-down' : 'pi pi-chevron-right'" />
         </td>
         <td>{{ model.model_id }}</td>
         <td>{{ model.name }}</td>
@@ -65,14 +65,15 @@ dataKey="id"
           <div class="p-4">
             <p>ID: {{ model.model_id }}</p>
             <p>Name: {{ model.name }}</p>
+            <p>Running: {{ model.running }}</p>
             <p></p>
           </div>
         </td>
         <td colspan="2">
           <div class="flex gap-2">
             <button pButton (click)="trainModel(model)">Train</button>
-            <button pButton (click)="trainModel(model)">Backtest</button>
-            <button pButton (click)="trainModel(model)">Run</button>
+            <button pButton (click)="backtestModel(model)">Backtest</button>
+            <button pButton (click)="stopBacktest(model)">Stop</button>
           </div>
         </td>
       </tr>
