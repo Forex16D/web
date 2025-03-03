@@ -1,9 +1,11 @@
+from flask import Response, stream_with_context # type: ignore
 from psycopg2.extras import RealDictCursor # type: ignore
 from pathlib import Path
 import subprocess
 import zipfile
 import shutil
 import uuid
+import time
 import os
 
 from application.helpers.server_log_helper import ServerLogHelper
@@ -11,7 +13,8 @@ from application.helpers.server_log_helper import ServerLogHelper
 class ModelService:
   def __init__(self, db_pool):
     self.db_pool = db_pool
-    self.processes = {}
+    self.backtest_process = None
+    self.current_backtest_model = None
 
   def get_all_models(self, request):
     limit = request.args.get("limit", default=10, type=int)
@@ -150,43 +153,51 @@ class ModelService:
       if not path.exists():
         raise ValueError("Model directory not found.")
 
-      module_path = Path(f"models.{model_id}.publisher")
+      module_path = f"models.{model_id}.publisher"
 
-      # Load model and backtest
-      ServerLogHelper().log(f"Backtesting model {model_id}")
-      
-      if model_id in self.processes:
-        raise ValueError(f"Model {model_id} is already running.")
+      if self.backtest_process is not None and self.backtest_process.poll() is None:
+        raise ValueError(f"A backtest is already running for model {self.current_backtest_model}. Please stop it before starting a new one.")
 
-      process = subprocess.Popen(["python3", "-m", str(module_path)])
-      
-      self.processes[model_id] = process  # Store the process with model_id
+      ServerLogHelper().log(f"Starting backtest for model {model_id}")
 
-      return {"message": f"Model {model_id} backtesting started!"}
+      self.backtest_process = subprocess.Popen(["python3", "-m", module_path])
+      self.current_backtest_model = model_id  # Track the running model
+
+      return {"message": f"Backtest started for model {model_id}!"}
+    except ValueError as e:
+      raise ValueError(str(e))
     except Exception as e:
       raise RuntimeError(f"Something went wrong: {str(e)}")
 
-  def stop_backtest(self, model_id):
-    process = self.processes.get(model_id)  # Get process by model_id
+  def stop_backtest(self):
+    if self.backtest_process is not None:
+      if self.backtest_process.poll() is None:  # Check if running
+        self.backtest_process.terminate()  # Gracefully terminate
+        self.backtest_process.wait()  # Ensure it stops
+        ServerLogHelper().log(f"Backtest for model {self.current_backtest_model} stopped.")
 
-    if process:  # Check if process is running
-      process.terminate()  # Gracefully terminate the process
-      process.wait()  # Wait for termination
-      del self.processes[model_id]  # Remove from the dictionary
-      return {"message": f"Model {model_id} backtest stopped successfully!"}
-    
-    return {"message": f"No running backtest found for model {model_id}."}
+      self.backtest_process = None  # Reset tracking variable
+      self.current_backtest_model = None  # Reset the tracking model
 
-  def stop_all_backtests(self):
-    for model_id in list(self.processes.keys()):  # Iterate over a copy of keys
-      self.stop_backtest(model_id)  # Stop each process
-    return {"message": "All backtests stopped."}
-  
-  def get_process_status(self, model_id):
-    process = self.processes.get(model_id)
-    if process:
-      return True
-    return False
+      return {"message": "Backtest stopped successfully."}
+
+    raise ValueError("No backtest process running.")
+
+  def get_process_status(self):
+    """Returns the current model being backtested or None if no backtest is running."""
+    if self.backtest_process is not None and self.backtest_process.poll() is None:
+      return {"running": True, "model_id": self.current_backtest_model}
+    return {"running": False, "model_id": None}
+
+  def stream_backtest_status(self):
+    def generate():
+      while True:
+        if not self.get_process_status():
+          yield f"data finished\n\n"
+          break
+        time.sleep(2)
+
+    return Response(stream_with_context(generate()), content_type="text/event-stream")
     
   def get_processes_status(self):
     status = {}

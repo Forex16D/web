@@ -54,7 +54,7 @@ export class AdminModelComponent implements OnInit {
 
   ngOnInit() {
     this.getModels();
-    this.getProcesses();
+    // this.getProcesses();
   }
 
   onPageChange(event: any) {
@@ -114,7 +114,7 @@ export class AdminModelComponent implements OnInit {
       return acc;
     }, {});
   }
-  
+
 
   collapseAll() {
     this.expandedRows = {};
@@ -126,7 +126,9 @@ export class AdminModelComponent implements OnInit {
         this.models = response.models;
         for (let model of this.models) {
           this.getProcess(model).subscribe({
-            next: (isRunning) => model.running = isRunning,
+            next: (response) => {
+              model.running = response.model_id == model.model_id? response.running : false;
+            },
             error: (error) => console.error('Failed to fetch process:', error),
           });
           console.log(this.getProcess(model));
@@ -182,12 +184,15 @@ export class AdminModelComponent implements OnInit {
           next: (response) => {
             console.log('Model backtesting started:', model);
             this.messageService.add({ severity: 'success', summary: 'Model backtesting started', detail: 'The model backtesting has started successfully.' });
-            this.getProcess(model).subscribe({
-              next: (isRunning) => model.running = isRunning,
-              error: (error) => console.error('Failed to fetch process:', error),
-            });
+            model.running = true;
           },
-          error: (error) => this.messageService.add({ severity: 'error', summary: 'Model backtesting failed', detail: 'The model backtesting could not be started.' }),
+          error: (error) => {
+          if (error.status === 400) {
+            this.messageService.add({ severity: 'error', summary: 'Model backtesting failed', detail: 'The model is already running a backtest.' })
+          } else {
+            this.messageService.add({ severity: 'error', summary: 'Model backtesting failed', detail: 'The model backtesting could not be started.' })
+          }
+        },
         });
       }
     });
@@ -207,12 +212,15 @@ export class AdminModelComponent implements OnInit {
           next: (response) => {
             console.log('Model backtesting stopped:', model);
             this.messageService.add({ severity: 'success', summary: 'Model backtesting stopped', detail: 'The model backtesting has stopped successfully.' });
-            this.getProcess(model).subscribe({
-              next: (isRunning) => model.running = isRunning,
-              error: (error) => console.error('Failed to fetch process:', error),
-            });
+            model.running = false;
           },
-          error: (error) => this.messageService.add({ severity: 'error', summary: 'Model backtesting stop failed', detail: 'The model backtesting could not be stopped.' }),
+          error: (error) => {
+            if (error.status === 400) {
+              this.messageService.add({ severity: 'error', summary: 'Model backtesting stop failed', detail: 'The model is not running a backtest.' })
+            } else {
+            this.messageService.add({ severity: 'error', summary: 'Model backtesting stop failed', detail: 'The model backtesting could not be stopped.' })
+            }
+          },
         });
       }
     });
@@ -227,8 +235,8 @@ export class AdminModelComponent implements OnInit {
     });
   }
 
-  getProcess(model: Model): Observable<boolean> {
-    return this.apiService.get<boolean>(`v1/models/${model.model_id}/status`);
+  getProcess(model: Model): Observable<any> {
+    return this.apiService.get(`v1/models/${model.model_id}/status`);
   }
-  
+
 }

@@ -47,3 +47,7 @@ def get_processes_status(current_user_id):
 @admin_required
 def get_process_status(current_user_id, model_id):
   return model_controller.get_process_status(model_id)
+
+@model_routes.route("/v1/models/backtest/stream")
+def stream_status():
+  return model_controller.stream_backtest_status()

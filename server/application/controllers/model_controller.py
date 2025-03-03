@@ -55,13 +55,25 @@ class ModelController:
     try:
       response = self.model_service.backtest_model(model_id)
       return jsonify(response), 200
+    except ValueError as e:
+      return {"status": 400, "message": "Bad Request"}, 400
     except Exception as e:
-      ServerLogHelper().error(str(e))
+      ServerLogHelper().error(e)
       return {"status": 500, "message": "Internal server error"}, 500
     
   def stop_backtest(self, model_id): 
     try:
-      response = self.model_service.stop_backtest(model_id)
+      response = self.model_service.stop_backtest()
+      return jsonify(response), 200
+    except ValueError as e:
+      return {"status": 400, "message": "Bad Request"}, 400
+    except Exception as e:
+      ServerLogHelper().error(str(e))
+      return {"status": 500, "message": "Internal server error"}, 500
+
+  def get_process_status(self, model_id): 
+    try:
+      response = self.model_service.get_process_status()
       return jsonify(response), 200
     except Exception as e:
       ServerLogHelper().error(str(e))
@@ -75,10 +87,11 @@ class ModelController:
       ServerLogHelper().error(str(e))
       return {"status": 500, "message": "Internal server error"}, 500
 
-  def get_process_status(self, model_id): 
+    
+  def stream_backtest_status(self): 
     try:
-      response = self.model_service.get_process_status(model_id)
-      return jsonify(response), 200
+      response = self.model_service.stream_backtest_status()
+      return response, 200
     except Exception as e:
       ServerLogHelper().error(str(e))
       return {"status": 500, "message": "Internal server error"}, 500
