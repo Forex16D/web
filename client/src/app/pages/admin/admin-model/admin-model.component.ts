@@ -197,7 +197,10 @@ export class AdminModelComponent implements OnInit {
   }
 
   trainModel(model: Model) {
-    this.apiService.post(`v1/models/${model.model_id}/train`, {}).subscribe({
+    const date = new Date(Date.now());
+    const formatted_date = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`;
+    const body = {"start_date": formatted_date}
+    this.apiService.post(`v1/models/${model.model_id}/train`, body).subscribe({
       next: (response) => {
         console.log('Model training started:', model);
         this.messageService.add({ severity: 'success', summary: 'Model training started', detail: 'The model training has started successfully.' });

@@ -26,7 +26,7 @@ def delete_model(current_user_id, model_id):
 @model_routes.route("/v1/models/<model_id>/train", methods=["POST"])
 @admin_required
 def train_model(current_user_id, model_id):
-  return model_controller.train_model(model_id)
+  return model_controller.train_model(model_id, request)
 
 @model_routes.route("/v1/models/<model_id>/backtest", methods=["POST"])
 @admin_required

@@ -1,12 +1,13 @@
-from flask import Response, stream_with_context # type: ignore
 from psycopg2.extras import RealDictCursor # type: ignore
 from pathlib import Path
 import subprocess
 import threading
+import tempfile
 import zipfile
 import shutil
 import uuid
 import time
+import json
 import os
 
 from application.helpers.server_log_helper import ServerLogHelper
@@ -134,68 +135,41 @@ class ModelService:
       cursor.close()
       self.db_pool.release_connection(conn)
   
-  def update_model(self, request, model_id):
-    name = request.json.get("name")
-    commission = request.json.get("commission")
-    
-    if not name or not commission:
-      raise ValueError("Missing required fields.")
-    
-    conn = self.db_pool.get_connection()
-    cursor = conn.cursor(cursor_factory=RealDictCursor)
-
-
-    try:
-      cursor.execute(""" UPDATE models 
-                     SET name = %s, commission = %s, updated_at = NOW()
-                     WHERE model_id = %s 
-                     """, (name, commission, model_id))
-      conn.commit()
-      return {"message": "Model updated successfully!"}
-    except Exception as e:
-      ServerLogHelper().error(f"Error updating model: {str(e)}")
-      conn.rollback()
-      raise RuntimeError(f"Something went wrong: {str(e)}")
-    finally:
-      cursor.close()
-      self.db_pool.release_connection(conn)
-      
-  def train_model(self, model_id):
+  def train_model(self, model_id, start_date, bars=100000):
     try:
       path = Path(f"./models/{model_id}")
       if not path.exists():
         raise ValueError("Model directory not found.")
 
-      module_path = Path(f"models.{model_id}.trainer")
+      conn = self.db_pool.get_connection()
+      cursor = conn.cursor()
 
-      # Load model and train
-      subprocess.run(["python3", str(module_path)], check=True)
+      if start_date is None:
+        raise ValueError("start_date must be specified.")
+      
+      # Fetch data from DB
+      cursor.execute("SELECT * FROM market_data WHERE timestamp < %s LIMIT %s", (start_date, bars))
+      data = cursor.fetchall()
+      columns = [desc[0] for desc in cursor.description]  # Get column names
+
+      # Convert to JSON
+      dataset = [dict(zip(columns, row)) for row in data]
+
+      # Create a temporary file for data
+      # Create a temporary file for data
+      with tempfile.NamedTemporaryFile(delete=False, suffix=".json", mode="w", encoding="utf-8") as tmp_file:
+        json.dump(dataset, tmp_file, default=str)
+        temp_path = tmp_file.name
+
+      # Call subprocess with data file path
+      subprocess.run(["python3", str(path / "trainer.py"), temp_path], check=True)
 
       return {"message": "Model trained successfully!"}
     except Exception as e:
       raise RuntimeError(f"Something went wrong: {str(e)}")
-
-  def backtest_model(self, model_id):
-    try:
-      path = Path(f"./models/{model_id}")
-      if not path.exists():
-        raise ValueError("Model directory not found.")
-
-      module_path = f"models.{model_id}.publisher"
-
-      if self.backtest_process is not None and self.backtest_process.poll() is None:
-        raise ValueError(f"A backtest is already running for model {self.current_backtest_model}. Please stop it before starting a new one.")
-
-      ServerLogHelper().log(f"Starting backtest for model {model_id}")
-
-      self.backtest_process = subprocess.Popen(["python3", "-m", module_path])
-      self.current_backtest_model = model_id  # Track the running model
-
-      return {"message": f"Backtest started for model {model_id}!"}
-    except ValueError as e:
-      raise ValueError(str(e))
-    except Exception as e:
-      raise RuntimeError(f"Something went wrong: {str(e)}")
+    finally:
+      cursor.close()
+      self.db_pool.release_connection(conn)
 
   def stop_backtest(self):
     if self.backtest_process is not None:

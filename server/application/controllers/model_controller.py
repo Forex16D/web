@@ -55,9 +55,12 @@ class ModelController:
       return {"status": 500, "message": "Internal server error"}, 500
     
     
-  def train_model(self, model_id): 
+  def train_model(self, model_id, request): 
     try:
-      response = self.model_service.train_model(model_id)
+      data = request.get_json()
+      start_date = data.get("start_date")
+      bars = data.get("bars")
+      response = self.model_service.train_model(model_id, start_date, bars)
       return jsonify(response), 200
     except Exception as e:
       ServerLogHelper().error(str(e))
