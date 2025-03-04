@@ -135,6 +135,47 @@ class ModelService:
       cursor.close()
       self.db_pool.release_connection(conn)
   
+  def update_model(self, request, model_id):
+    name = request.json.get("name")
+    commission = request.json.get("commission")
+    
+    if not name or not commission:
+      raise ValueError("Missing required fields.")
+    
+    conn = self.db_pool.get_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+
+    try:
+      cursor.execute(""" UPDATE models 
+                     SET name = %s, commission = %s, updated_at = NOW()
+                     WHERE model_id = %s 
+                     """, (name, commission, model_id))
+      conn.commit()
+      return {"message": "Model updated successfully!"}
+    except Exception as e:
+      ServerLogHelper().error(f"Error updating model: {str(e)}")
+      conn.rollback()
+      raise RuntimeError(f"Something went wrong: {str(e)}")
+    finally:
+      cursor.close()
+      self.db_pool.release_connection(conn)
+      
+  def train_model(self, model_id):
+    try:
+      path = Path(f"./models/{model_id}")
+      if not path.exists():
+        raise ValueError("Model directory not found.")
+
+      module_path = Path(f"models.{model_id}.trainer")
+
+      # Load model and train
+      subprocess.run(["python3", str(module_path)], check=True)
+
+      return {"message": "Model trained successfully!"}
+    except Exception as e:
+      raise RuntimeError(f"Something went wrong: {str(e)}")
+
   def train_model(self, model_id, start_date, bars=100000):
     try:
       path = Path(f"./models/{model_id}")
