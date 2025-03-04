@@ -197,15 +197,30 @@ export class AdminModelComponent implements OnInit {
   }
 
   trainModel(model: Model) {
-    const date = new Date(Date.now());
-    const formatted_date = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`;
-    const body = {"start_date": formatted_date}
-    this.apiService.post(`v1/models/${model.model_id}/train`, body).subscribe({
-      next: (response) => {
-        console.log('Model training started:', model);
-        this.messageService.add({ severity: 'success', summary: 'Model training started', detail: 'The model training has started successfully.' });
-      },
-      error: (error) => this.messageService.add({ severity: 'error', summary: 'Model training failed', detail: 'The model training could not be started.' }),
+    this.confirmationService.confirm({
+      message: 'Are you sure you want to start the training process for this model?',
+      header: 'Training Confirmation',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Train',
+      rejectLabel: 'Cancel',
+      acceptButtonStyleClass: 'p-button-success',
+      rejectButtonStyleClass: 'p-button-secondary p-button-text',
+      accept: () => {
+        model.running = true;
+        const date = new Date(Date.now());
+        const formatted_date = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`;
+        const body = { "start_date": formatted_date }
+        this.apiService.post(`v1/models/${model.model_id}/train`, body).subscribe({
+          next: (response) => {
+            model.running = true;
+            this.messageService.add({ severity: 'success', summary: 'Model training started', detail: 'The model training has started successfully.' });
+          },
+          error: (error) => this.messageService.add({ severity: 'error', summary: 'Model training failed', detail: 'The model training could not be started.' }),
+          complete: () => {
+            model.running = false;
+          }
+        });
+      }
     });
   }
 

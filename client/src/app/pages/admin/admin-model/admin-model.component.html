@@ -49,8 +49,7 @@
       <td>{{ model.symbol }}</td>
       <td>{{ model.commission || 'N/A' }}</td>
       <td>
-        <p-button icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true"
-          (click)="editModel(model)" />
+        <p-button icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true" (click)="editModel(model)" />
         <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [outlined]="true"
           (click)="deleteModel(model)" />
       </td>
@@ -69,8 +68,10 @@
       </td>
       <td colspan="2">
         <div class="flex gap-2">
-          <button pButton (click)="trainModel(model)">Train</button>
-          <button pButton (click)="backtestModel(model)">Backtest</button>
+          <button pButton (click)="trainModel(model)" [disabled]="model.running" label="Train"
+            [icon]="model.running ? 'pi pi-spin pi-spinner' : 'pi pi-play'"></button>
+          <button pButton (click)="backtestModel(model)" [disabled]="model.running" label="Backtest"
+            [icon]="model.running ? 'pi pi-spin pi-spinner' : 'pi pi-play'"></button>
           <button pButton (click)="stopBacktest(model)">Stop</button>
         </div>
       </td>
@@ -86,7 +87,7 @@
   <form pFocusTrap [formGroup]="modelEditForm" (ngSubmit)="saveModel()">
     <div class="flex items-center gap-4 mb-8">
       <label for="model_id" class="w-20 text-sm">model_id</label>
-      <input pInputText id="model_id" class="flex-auto" autocomplete="off" formControlName="model_id"/>
+      <input pInputText id="model_id" class="flex-auto" autocomplete="off" formControlName="model_id" />
     </div>
 
     <div class="flex items-center gap-4 mb-8">

@@ -155,14 +155,19 @@ class ModelService:
       # Convert to JSON
       dataset = [dict(zip(columns, row)) for row in data]
 
-      # Create a temporary file for data
-      # Create a temporary file for data
       with tempfile.NamedTemporaryFile(delete=False, suffix=".json", mode="w", encoding="utf-8") as tmp_file:
         json.dump(dataset, tmp_file, default=str)
         temp_path = tmp_file.name
 
+      module_path = f"models.{model_id}.trainer"
+
       # Call subprocess with data file path
-      subprocess.run(["python3", str(path / "trainer.py"), temp_path], check=True)
+      count = 0
+      while count != 10:
+        count += 1
+        ServerLogHelper().log(count)
+        time.sleep(1)
+      # subprocess.run(["python3", "-m", module_path, temp_path], check=True)
 
       return {"message": "Model trained successfully!"}
     except Exception as e:
@@ -171,6 +176,28 @@ class ModelService:
       cursor.close()
       self.db_pool.release_connection(conn)
 
+  def backtest_model(self, model_id):
+    try:
+      path = Path(f"./models/{model_id}")
+      if not path.exists():
+        raise ValueError("Model directory not found.")
+
+      module_path = f"models.{model_id}.publisher"
+
+      if self.backtest_process is not None and self.backtest_process.poll() is None:
+        raise ValueError(f"A backtest is already running for model {self.current_backtest_model}. Please stop it before starting a new one.")
+
+      ServerLogHelper().log(f"Starting backtest for model {model_id}")
+
+      self.backtest_process = subprocess.Popen(["python3", "-m", module_path])
+      self.current_backtest_model = model_id  # Track the running model
+
+      return {"message": f"Backtest started for model {model_id}!"}
+    except ValueError as e:
+      raise ValueError(str(e))
+    except Exception as e:
+      raise RuntimeError(f"Something went wrong: {str(e)}")
+  
   def stop_backtest(self):
     if self.backtest_process is not None:
       if self.backtest_process.poll() is None:  # Check if running
