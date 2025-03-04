@@ -33,6 +33,7 @@
       <th style="width: 1rem"></th>
       <th style="width: 16rem;">Id</th>
       <th>Name</th>
+      <th>Symbol</th>
       <th>Commision</th>
       <th style="width: 8rem">
     </tr>
@@ -45,6 +46,7 @@
       </td>
       <td>{{ model.model_id }}</td>
       <td>{{ model.name }}</td>
+      <td>{{ model.symbol }}</td>
       <td>{{ model.commission || 'N/A' }}</td>
       <td>
         <p-button icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true"
@@ -57,7 +59,7 @@
 
   <ng-template #expandedrow let-model>
     <tr>
-      <td colspan="3">
+      <td colspan="4">
         <div class="p-4">
           <p>ID: {{ model.model_id }}</p>
           <p>Name: {{ model.name }}</p>

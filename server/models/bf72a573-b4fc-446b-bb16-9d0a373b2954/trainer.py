@@ -1,4 +1,5 @@
 import gymnasium as gym
+import yfinance as yf
 import numpy as np
 import pandas as pd
 from stable_baselines3 import PPO
@@ -14,7 +15,7 @@ if not mt5.initialize():
   raise Exception("MetaTrader 5 initialization failed!")
 
 def fetch_data(symbol, timeframe, bars):
-  two_years_ago = 365 * 2 * 24 # hours in a year * 2 years * 24 hours
+  two_years_ago = 365 * 2 * 24 # hours in a year * 2 years * 24 hours 
   rates = mt5.copy_rates_from_pos(symbol, timeframe, two_years_ago, bars)
   if rates is None or len(rates) == 0:
     raise Exception(f"No data retrieved for symbol: {symbol}")

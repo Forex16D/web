@@ -2,6 +2,7 @@ from flask import Response, stream_with_context # type: ignore
 from psycopg2.extras import RealDictCursor # type: ignore
 from pathlib import Path
 import subprocess
+import threading
 import zipfile
 import shutil
 import uuid
@@ -15,6 +16,7 @@ class ModelService:
     self.db_pool = db_pool
     self.backtest_process = None
     self.current_backtest_model = None
+    self.stop_event = threading.Event()
 
   def get_all_models(self, request):
     limit = request.args.get("limit", default=10, type=int)
@@ -205,6 +207,8 @@ class ModelService:
       self.backtest_process = None  # Reset tracking variable
       self.current_backtest_model = None  # Reset the tracking model
 
+      self.stop_event.set() 
+
       return {"message": "Backtest stopped successfully."}
 
     raise ValueError("No backtest process running.")
@@ -216,14 +220,18 @@ class ModelService:
     return {"running": False, "model_id": None}
 
   def stream_backtest_status(self):
-    def generate():
-      while True:
-        if not self.get_process_status():
-          yield f"data finished\n\n"
-          break
-        time.sleep(2)
+    """Streams the backtest status continuously until stopped."""
+    self.stop_event.clear()  # Reset stop event before streaming
 
-    return Response(stream_with_context(generate()), content_type="text/event-stream")
+    def generate():
+      while not self.stop_event.is_set():
+        if not self.get_process_status()["running"]:
+          yield "completed"
+          break
+        yield "running"
+        time.sleep(2)  # Adjust based on how often you want updates
+
+    return generate()
     
   def get_processes_status(self):
     status = {}

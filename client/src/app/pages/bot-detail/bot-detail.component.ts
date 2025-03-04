@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { PriceChartComponent } from '../price-chart/price-chart.component';
-import { NgClass } from '@angular/common';
+import { NgClass, NgFor } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
@@ -34,6 +34,7 @@ echarts.use([BarChart, LineChart, GridComponent, CanvasRenderer]);
     FormsModule,
     ReactiveFormsModule,
     DatePipe,
+    NgFor,
 
   ],
   templateUrl: './bot-detail.component.html',

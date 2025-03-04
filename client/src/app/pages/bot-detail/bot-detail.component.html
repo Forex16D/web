@@ -67,14 +67,14 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let trade of data.recentTrades" class="text-sm">
+                <!-- <tr *ngFor="let trade of data.recentTrades" class="text-sm">
                   <td class="px-4 py-2">{{ trade.date }}</td>
                   <td class="px-4 py-2">{{ trade.symbol }}</td>
                   <td class="px-4 py-2">{{ trade.entry }}</td>
                   <td class="px-4 py-2" [ngClass]="{'text-green-400': trade.pnl > 0, 'text-red-400': trade.pnl < 0}">
                     {{ trade.pnl }}
                   </td>
-                </tr>
+                </tr> -->
               </tbody>
             </table>
           </div>

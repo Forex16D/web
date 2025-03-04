@@ -65,15 +65,54 @@ export class ApiService {
     return this.request<T>('DELETE', endpoint, null, customHeaders);
   }
 
-  private handleError(error: any) {
-    console.error('API request error:', error);
-    
-    const errorMessage = error?.error?.message || 'Server error';
-    const errorStatus = error?.status || 500;
+  getStream(endpoint: string, customHeaders?: object): Observable<string> {
+    return new Observable((observer) => {
+      fetch(`${this.apiUrl}/${endpoint}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'text/event-stream',
+          ...(customHeaders || {}),
+        },
+      })
+        .then((response) => {
+          if (!response.ok || !response.body) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
 
-    return throwError(() => ({
-      message: errorMessage,
-      status: errorStatus,
-    }));
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
+
+          const readStream = async () => {
+            try {
+              while (true) {
+                const { done, value } = await reader.read();
+                if (done) {
+                  observer.complete();
+                  break;
+                }
+                const chunk = decoder.decode(value, { stream: true });
+                observer.next(chunk);
+              }
+            } catch (error) {
+              observer.error(error);
+            }
+          };
+
+          readStream();
+        })
+        .catch((error) => observer.error(error));
+    });
   }
+
+  private handleError(error: any) {
+  console.error('API request error:', error);
+
+  const errorMessage = error?.error?.message || 'Server error';
+  const errorStatus = error?.status || 500;
+
+  return throwError(() => ({
+    message: errorMessage,
+    status: errorStatus,
+  }));
+}
 }

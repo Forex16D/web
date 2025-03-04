@@ -1,6 +1,7 @@
 export interface Model {
   model_id: string
   name: string
+  symbol: string
   commission: number | null
   running: boolean
   created_at: string

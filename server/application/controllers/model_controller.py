@@ -99,7 +99,6 @@ class ModelController:
       ServerLogHelper().error(str(e))
       return {"status": 500, "message": "Internal server error"}, 500
 
-    
   def stream_backtest_status(self): 
     try:
       response = self.model_service.stream_backtest_status()

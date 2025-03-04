@@ -186,13 +186,13 @@ export class AdminModelComponent implements OnInit {
 
   saveModel() {
     this.apiService.put(`v1/models/${this.selectedModel?.model_id}`, this.modelEditForm.value).subscribe({
-      next: (response) => { 
+      next: (response) => {
         console.log('Model updated:', response);
         this.messageService.add({ severity: 'success', summary: 'Model updated', detail: 'The model has been updated successfully.' });
         this.getModels();
         this.isEditVisible = false;
       },
-      error : (error) => this.messageService.add({ severity: 'error', summary: 'Model update failed', detail: 'The model could not be updated.' }),
+      error: (error) => this.messageService.add({ severity: 'error', summary: 'Model update failed', detail: 'The model could not be updated.' }),
     });
   }
 
@@ -221,6 +221,16 @@ export class AdminModelComponent implements OnInit {
             console.log('Model backtesting started:', model);
             this.messageService.add({ severity: 'success', summary: 'Model backtesting started', detail: 'The model backtesting has started successfully.' });
             model.running = true;
+
+            this.getBacktestEndStatus().subscribe({
+              next: (status) => {
+                console.log('Model backtesting status:', status === "completed");
+                if (status === 'completed') {
+                  model.running = false;
+                  this.messageService.add({ severity: 'success', summary: 'Model backtesting completed', detail: 'The model backtesting has completed successfully.' });
+                }
+              }
+            });
           },
           error: (error) => {
             if (error.status === 400) {
@@ -246,7 +256,6 @@ export class AdminModelComponent implements OnInit {
       accept: () => {
         this.apiService.post(`v1/models/${model.model_id}/backtest/stop`, {}).subscribe({
           next: (response) => {
-            console.log('Model backtesting stopped:', model);
             this.messageService.add({ severity: 'success', summary: 'Model backtesting stopped', detail: 'The model backtesting has stopped successfully.' });
             model.running = false;
           },
@@ -275,4 +284,7 @@ export class AdminModelComponent implements OnInit {
     return this.apiService.get(`v1/models/${model.model_id}/status`);
   }
 
+  getBacktestEndStatus(): Observable<string> {
+    return this.apiService.getStream('v1/models/backtest/stream');
+  }
 }
