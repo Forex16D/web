@@ -33,10 +33,10 @@ def train_model(current_user_id, model_id):
 def backtest_model(current_user_id, model_id):
   return model_controller.backtest_model(model_id)
 
-@model_routes.route("/v1/models/<model_id>/backtest/stop", methods=["POST"])
+@model_routes.route("/v1/models/<model_id>/evaluate/stop", methods=["POST"])
 @admin_required
-def stop_backtest(current_user_id, model_id):
-  return model_controller.stop_backtest(model_id)
+def stop_evaluate(current_user_id, model_id):
+  return model_controller.stop_evaluate(model_id)
 
 @model_routes.route("/v1/models/status", methods=["GET"])
 @admin_required

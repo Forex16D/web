@@ -206,19 +206,25 @@ export class AdminModelComponent implements OnInit {
       acceptButtonStyleClass: 'p-button-success',
       rejectButtonStyleClass: 'p-button-secondary p-button-text',
       accept: () => {
-        model.running = true;
         const date = new Date(Date.now());
         const formatted_date = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`;
         const body = { "start_date": formatted_date }
+        model.running = true;
         this.apiService.post(`v1/models/${model.model_id}/train`, body).subscribe({
           next: (response) => {
-            model.running = true;
             this.messageService.add({ severity: 'success', summary: 'Model training started', detail: 'The model training has started successfully.' });
+
+            this.getBacktestEndStatus().subscribe({
+              next: (status) => {
+                console.log('Model training status:', status === "completed");
+                if (status === 'completed') {
+                  model.running = false;
+                  this.messageService.add({ severity: 'success', summary: 'Model training completed', detail: 'The model training has completed successfully.' });
+                }
+              }
+            });
           },
           error: (error) => this.messageService.add({ severity: 'error', summary: 'Model training failed', detail: 'The model training could not be started.' }),
-          complete: () => {
-            model.running = false;
-          }
         });
       }
     });
@@ -262,7 +268,7 @@ export class AdminModelComponent implements OnInit {
     });
   }
 
-  stopBacktest(model: Model) {
+  stopEvaluate(model: Model) {
     this.confirmationService.confirm({
       message: 'Are you sure you want to stop the backtesting process for this model?',
       header: 'Stop Backtest Confirmation',
@@ -272,7 +278,7 @@ export class AdminModelComponent implements OnInit {
       acceptButtonStyleClass: 'p-button-danger',
       rejectButtonStyleClass: 'p-button-secondary p-button-text',
       accept: () => {
-        this.apiService.post(`v1/models/${model.model_id}/backtest/stop`, {}).subscribe({
+        this.apiService.post(`v1/models/${model.model_id}/evaluate/stop`, {}).subscribe({
           next: (response) => {
             this.messageService.add({ severity: 'success', summary: 'Model backtesting stopped', detail: 'The model backtesting has stopped successfully.' });
             model.running = false;

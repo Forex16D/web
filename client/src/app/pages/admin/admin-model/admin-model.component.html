@@ -72,7 +72,7 @@
             [icon]="model.running ? 'pi pi-spin pi-spinner' : 'pi pi-play'"></button>
           <button pButton (click)="backtestModel(model)" [disabled]="model.running" label="Backtest"
             [icon]="model.running ? 'pi pi-spin pi-spinner' : 'pi pi-play'"></button>
-          <button pButton (click)="stopBacktest(model)">Stop</button>
+          <button pButton (click)="stopEvaluate(model)">Stop</button>
         </div>
       </td>
     </tr>

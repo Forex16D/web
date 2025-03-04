@@ -53,8 +53,7 @@ class ModelController:
     except Exception as e:
       ServerLogHelper().error(str(e))
       return {"status": 500, "message": "Internal server error"}, 500
-    
-    
+
   def train_model(self, model_id, request): 
     try:
       data = request.get_json()
@@ -76,9 +75,9 @@ class ModelController:
       ServerLogHelper().error(e)
       return {"status": 500, "message": "Internal server error"}, 500
     
-  def stop_backtest(self, model_id): 
+  def stop_evaluate(self, model_id): 
     try:
-      response = self.model_service.stop_backtest()
+      response = self.model_service.stop_evaluate()
       return jsonify(response), 200
     except ValueError as e:
       return {"status": 400, "message": "Bad Request"}, 400

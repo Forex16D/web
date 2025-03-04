@@ -15,8 +15,8 @@ from application.helpers.server_log_helper import ServerLogHelper
 class ModelService:
   def __init__(self, db_pool):
     self.db_pool = db_pool
-    self.backtest_process = None
-    self.current_backtest_model = None
+    self.evaluation_process = None
+    self.current_evaluation_model = None
     self.stop_event = threading.Event()
 
   def get_all_models(self, request):
@@ -147,6 +147,12 @@ class ModelService:
       if start_date is None:
         raise ValueError("start_date must be specified.")
       
+      if self.evaluation_process is not None and self.evaluation_process.poll() is None:
+        raise ValueError(f"A training is already running for model {self.current_evaluation_model}. Please stop it before starting a new one.")
+
+      ServerLogHelper().log(f"Start training for model {model_id}")
+
+
       # Fetch data from DB
       cursor.execute("SELECT * FROM market_data WHERE timestamp < %s LIMIT %s", (start_date, bars))
       data = cursor.fetchall()
@@ -162,12 +168,8 @@ class ModelService:
       module_path = f"models.{model_id}.trainer"
 
       # Call subprocess with data file path
-      count = 0
-      while count != 10:
-        count += 1
-        ServerLogHelper().log(count)
-        time.sleep(1)
-      # subprocess.run(["python3", "-m", module_path, temp_path], check=True)
+      self.evaluation_process = subprocess.Popen(["python3", "-m", module_path, temp_path])
+      self.current_evaluation_model = model_id
 
       return {"message": "Model trained successfully!"}
     except Exception as e:
@@ -184,13 +186,13 @@ class ModelService:
 
       module_path = f"models.{model_id}.publisher"
 
-      if self.backtest_process is not None and self.backtest_process.poll() is None:
-        raise ValueError(f"A backtest is already running for model {self.current_backtest_model}. Please stop it before starting a new one.")
+      if self.evaluation_process is not None and self.evaluation_process.poll() is None:
+        raise ValueError(f"A backtest is already running for model {self.current_evaluation_model}. Please stop it before starting a new one.")
 
       ServerLogHelper().log(f"Starting backtest for model {model_id}")
 
-      self.backtest_process = subprocess.Popen(["python3", "-m", module_path])
-      self.current_backtest_model = model_id  # Track the running model
+      self.evaluation_process = subprocess.Popen(["python3", "-m", module_path])
+      self.current_evaluation_model = model_id  # Track the running model
 
       return {"message": f"Backtest started for model {model_id}!"}
     except ValueError as e:
@@ -198,15 +200,15 @@ class ModelService:
     except Exception as e:
       raise RuntimeError(f"Something went wrong: {str(e)}")
   
-  def stop_backtest(self):
-    if self.backtest_process is not None:
-      if self.backtest_process.poll() is None:  # Check if running
-        self.backtest_process.terminate()  # Gracefully terminate
-        self.backtest_process.wait()  # Ensure it stops
-        ServerLogHelper().log(f"Backtest for model {self.current_backtest_model} stopped.")
+  def stop_evaluate(self):
+    if self.evaluation_process is not None:
+      if self.evaluation_process.poll() is None:  # Check if running
+        self.evaluation_process.terminate()  # Gracefully terminate
+        self.evaluation_process.wait()  # Ensure it stops
+        ServerLogHelper().log(f"Backtest for model {self.current_evaluation_model} stopped.")
 
-      self.backtest_process = None  # Reset tracking variable
-      self.current_backtest_model = None  # Reset the tracking model
+      self.evaluation_process = None  # Reset tracking variable
+      self.current_evaluation_model = None  # Reset the tracking model
 
       self.stop_event.set() 
 
@@ -216,8 +218,8 @@ class ModelService:
 
   def get_process_status(self):
     """Returns the current model being backtested or None if no backtest is running."""
-    if self.backtest_process is not None and self.backtest_process.poll() is None:
-      return {"running": True, "model_id": self.current_backtest_model}
+    if self.evaluation_process is not None and self.evaluation_process.poll() is None:
+      return {"running": True, "model_id": self.current_evaluation_model}
     return {"running": False, "model_id": None}
 
   def stream_backtest_status(self):
