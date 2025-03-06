@@ -12,6 +12,20 @@ class ModelController:
       return jsonify(response), 200
     except:
       return {"status": 500, "message": "Internal server error"}, 500
+
+  def get_active_models(self): 
+    try:
+      response = self.model_service.get_active_models()
+      return jsonify(response), 200
+    except:
+      return {"status": 500, "message": "Internal server error"}, 500
+  
+  def get_model_detail(self, model_id):
+    try:
+      response = self.model_service.get_model_detail(model_id)
+      return jsonify(response), 200
+    except:
+      return {"status": 500, "message": "Internal server error"}, 500
   
   def create_models(self, request, current_user_id):
     try:
@@ -108,3 +122,17 @@ class ModelController:
     except Exception as e:
       ServerLogHelper().error(str(e))
       return {"status": 500, "message": "Internal server error"}, 500
+    
+  def copy_trade(self, request, model_id, user_id):
+    try:
+      data = request.get_json()
+      portfolio_id = data.get("portfolio_id")
+      
+      response = self.model_service.copy_trade(portfolio_id, model_id, user_id)
+      return jsonify(response), 200
+    except ValueError as e:
+      ServerLogHelper().error(str(e))
+      return {"status": 400, "message": "Bad Request"}, 400
+    except Exception as e:
+      ServerLogHelper().error(str(e))
+      return {"status": 500, "message": "Internal server error"}, 500      

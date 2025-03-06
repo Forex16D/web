@@ -1,10 +1,11 @@
 <div class="flex flex-col p-4 rounded-md shadow-lg border border-gray-700 w-full justify-between items-start">
   <div class="flex items-center w-full border-b border-gray-700 pb-2 mb-4 gap-4">
     <i class="pi pi-chart-line"></i>
-    <p>Scalper XAUUSD 1.2</p>
+    <p> {{ name }} </p>
   </div>
 
-  <div class="flex w-full justify-between gap-4">
+  <div class="flex w-full 
+  justify-between gap-4">
     <div class="flex flex-col justify-between">
       <div class="text-sm text-gray-400 my-2">
         <p>126D</p>
@@ -33,7 +34,7 @@
         Symbol
       </div>
       <div>
-        XAUUSD
+        {{ data.symbol }}
       </div>
     </div>
     <div class="text-sm">
@@ -49,10 +50,10 @@
         commission
       </div>
       <div>
-        17.00%
+        {{ data.commission }}
       </div>
     </div>
   </div>
-  <button pButton routerLink="/bot/detail/0" label="View"
+  <button pButton [routerLink]="['/bot/detail', data.model_id]" label="View"
     class="mt-4 w-full text-sm px-4 py-2 rounded shadow-sm"></button>
 </div>

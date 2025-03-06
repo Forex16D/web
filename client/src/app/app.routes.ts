@@ -41,7 +41,7 @@ export const routes: Routes = [
     component: BotComponent,
   },
   {
-    path: 'bot/detail/:id',
+    path: 'bot/detail/:model_id',
     component: BotDetailComponent
   },
   {
@@ -49,7 +49,7 @@ export const routes: Routes = [
     component: PriceChartComponent,
   },
   {
-    path: 'portfolio/:id',
+    path: 'portfolio/:portfolio_id',
     component: PortfolioDetailComponent,
   }
 ];

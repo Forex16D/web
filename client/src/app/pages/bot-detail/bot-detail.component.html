@@ -3,7 +3,7 @@
     <div class="flex flex-col md:flex-row justify-between gap-4">
       <div class="flex flex-col lg:grid lg:grid-cols-3 w-full gap-4">
         <div class="flex flex-col space-y-2">
-          <h1 class="text-xl font-medium">Expert: Scalper XAUUSD 1.2</h1>
+          <h1 class="text-xl font-medium">Expert: {{ model.name }}</h1>
         </div>
 
         <!-- Combined for smaller screens -->
@@ -14,7 +14,7 @@
           </div>
           <div class="flex flex-row space-x-2">
             <div class="text-gray-400 min-w-[120px]">Symbol</div>
-            <div>XAUUSD</div>
+            <div> {{ model.symbol }} </div>
           </div>
           <div class="flex flex-row space-x-2">
             <div class="text-gray-400 min-w-[120px]">Min Size</div>
@@ -30,7 +30,7 @@
           </div>
           <div class="flex flex-row space-x-2">
             <div class="text-gray-400 min-w-[120px]">Symbol</div>
-            <div>XAUUSD</div>
+            <div>{{ model.symbol }}</div>
           </div>
         </div>
         <div class="hidden lg:flex lg:flex-row lg:space-x-2">
@@ -190,6 +190,6 @@
   </div>
   <div class="flex justify-end gap-2">
     <p-button label="Cancel" severity="secondary" text="true" (click)="visible = false" />
-    <p-button label="Copy" (click)="visible = false" />
+    <p-button label="Copy" (click)="onCopyTrade()" />
   </div>
 </p-dialog>

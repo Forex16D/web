@@ -1,12 +1,28 @@
-from flask import request, Blueprint # type: ignore
+from flask import request, Blueprint  # type: ignore
 
 from application.container import container
 from application.controllers.model_controller import ModelController
-from application.services.middleware import admin_required
+from application.services.middleware import admin_required, token_required
 
 model_routes = Blueprint("model_routes", __name__)
 model_controller = ModelController(container.model_service)
 
+# Public Endpoints
+@model_routes.route("/v1/models/user", methods=["GET"])
+def get_user_models():
+  return model_controller.get_active_models()
+
+@model_routes.route("/v1/models/<model_id>", methods=["GET"])
+def get_model_detail(model_id):
+  return model_controller.get_model_detail(model_id)
+
+# User-Protected Endpoints
+@model_routes.route("/v1/models/<model_id>/copy", methods=["PUT"])
+@token_required
+def copy_trade(current_user_id, model_id):
+  return model_controller.copy_trade(request, model_id, current_user_id)
+
+# Admin-Protected Endpoints
 @model_routes.route("/v1/models", methods=["GET"])
 @admin_required
 def get_models(current_user_id):
@@ -15,7 +31,6 @@ def get_models(current_user_id):
 @model_routes.route("/v1/models", methods=["POST"])
 @admin_required
 def create_models(current_user_id):
-
   return model_controller.create_models(request, current_user_id)
 
 @model_routes.route("/v1/models/<model_id>", methods=["DELETE"])
@@ -48,11 +63,12 @@ def get_processes_status(current_user_id):
 def get_process_status(current_user_id, model_id):
   return model_controller.get_process_status(model_id)
 
-@model_routes.route("/v1/models/backtest/stream")
-def stream_status():
-  return model_controller.stream_backtest_status()
-
 @model_routes.route("/v1/models/<model_id>", methods=["PUT"])
 @admin_required
 def update_model(current_user_id, model_id):
   return model_controller.update_model(request, model_id)
+
+@model_routes.route("/v1/models/backtest/stream")
+@admin_required
+def stream_status():
+  return model_controller.stream_backtest_status()

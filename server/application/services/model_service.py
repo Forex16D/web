@@ -38,6 +38,37 @@ class ModelService:
     finally:
       self.db_pool.release_connection(conn)
 
+  def get_active_models(self):
+
+    conn = self.db_pool.get_connection()
+
+    try:
+      cursor = conn.cursor(cursor_factory=RealDictCursor)
+      cursor.execute("SELECT * FROM models WHERE active = true")
+      models = cursor.fetchall()
+
+      cursor.close()
+      return {"models": models}
+    except Exception as e:
+      raise RuntimeError(f"Something went wrong: {str(e)}")
+    finally:
+      self.db_pool.release_connection(conn)
+
+  def get_model_detail(self, model_id):
+    conn = self.db_pool.get_connection()
+
+    try:
+      cursor = conn.cursor(cursor_factory=RealDictCursor)
+      cursor.execute("SELECT * FROM models WHERE model_id = %s", (model_id, ))
+      model = cursor.fetchone()
+
+      cursor.close()
+      return {"model": model}
+    except Exception as e:
+      raise RuntimeError(f"Something went wrong: {str(e)}")
+    finally:
+      self.db_pool.release_connection(conn)
+
   def create_models(self, files):
     models_dir = Path("./models")
     models_dir.mkdir(parents=True, exist_ok=True)  # Ensure base directory exists
@@ -282,3 +313,23 @@ class ModelService:
     for model_id, process in self.processes.items():
       status[model_id] = process.poll()  # Get process status
     return status
+  
+  def copy_trade(self, portfolio_id, model_id, user_id):
+    try:
+      conn = self.db_pool.get_connection()
+      cursor = conn.cursor(cursor_factory=RealDictCursor)
+      
+      cursor.execute(
+          "UPDATE portfolios SET model_id = %s WHERE portfolio_id = %s AND user_id = %s",
+          (model_id, portfolio_id, user_id)
+      )
+      conn.commit()
+      
+      return {"message": "Copy trade successfully!"}
+    except Exception as e:
+      ServerLogHelper().error(f"Error updating model: {str(e)}")
+      conn.rollback()
+      raise RuntimeError(f"Something went wrong: {str(e)}")
+    finally:
+      cursor.close()
+      self.db_pool.release_connection(conn)

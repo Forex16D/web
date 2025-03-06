@@ -1,0 +1,78 @@
+from psycopg2.extras import RealDictCursor # type: ignore
+from datetime import datetime
+import calendar
+
+class BillingService:
+  def __init__(self, db_pool):
+    self.db_pool = db_pool
+  
+  def calculate_bill(self, portfolio_id, model_id):
+    try:
+      conn = self.db_pool.get_connection()
+      cursor = conn.cursor(cursor_factory=RealDictCursor)
+      
+      now = datetime.now()
+      first_day = now.replace(day=1).strftime('%Y-%m-%d')
+      last_day = now.replace(day=calendar.monthrange(now.year, now.month)[1]).strftime('%Y-%m-%d')
+
+      # Get total profit for unbilled orders
+      cursor.execute("""
+        SELECT SUM(profit) FROM orders 
+        WHERE portfolio_id = %s 
+        AND created_at BETWEEN %s AND %s
+        AND bill_id IS NULL
+      """, (portfolio_id, first_day, last_day))
+
+      profit = cursor.fetchone()["sum"] or 0
+
+      if profit == 0:  # No profit, no bill needed
+        return None  
+
+      # Get commission rate
+      cursor.execute("SELECT commission FROM models WHERE model_id = %s", (model_id,))
+      commission = cursor.fetchone()["commission"] or 0
+
+      net_amount = max(profit * commission, 0)  # Ensure non-negative
+
+      # Insert new bill
+      cursor.execute("""
+        INSERT INTO bills (portfolio_id, model_id, total_profit, commission, net_amount)
+        VALUES (%s, %s, %s, %s, %s)
+        RETURNING bill_id
+      """, (portfolio_id, model_id, profit, commission, net_amount))
+
+      bill_id = cursor.fetchone()["bill_id"]
+
+      # Update orders to reference this bill
+      cursor.execute("""
+        UPDATE orders SET bill_id = %s
+        WHERE portfolio_id = %s 
+        AND created_at BETWEEN %s AND %s
+        AND bill_id IS NULL
+      """, (bill_id, portfolio_id, first_day, last_day))
+
+      conn.commit()  # Commit transaction
+
+      return bill_id  # Return the created bill ID
+    except Exception as e:
+      conn.rollback()  # Rollback in case of failure
+      raise e
+    finally:
+      cursor.close()
+      self.db_pool.release_connection(conn)
+
+  def bill_all(self):
+    try:
+      conn = self.db_pool.get_connection()
+      cursor = conn.cursor(cursor_factory=RealDictCursor)
+      
+      cursor.execute("SELECT portfolio_id, model_id FROM portfolios")
+      portfolios = cursor.fetchall()
+
+      for portfolio in portfolios:
+        bill_id = self.calculate_bill(portfolio["portfolio_id"], portfolio["model_id"])
+        if bill_id:
+          print(f"Created Bill ID: {bill_id} for Portfolio {portfolio['portfolio_id']}")
+    finally:
+      cursor.close()
+      self.db_pool.release_connection(conn)

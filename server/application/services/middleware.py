@@ -5,6 +5,9 @@ from functools import wraps
 from dotenv import load_dotenv
 import datetime
 import os
+import hmac
+import hashlib
+import base64
 
 load_dotenv()
 
@@ -98,10 +101,16 @@ def bot_token_required(f):
       return jsonify({"status": 401, "message": "Unauthorized"}), 401
 
     try:
-      data = jwt.decode(token, SECRET_KEY_BOT_TOKEN, algorithms=["HS256"])
-      user_id = data["user"]
-      portfolio_id = data["portfolio"]
-      
+      user_id = None
+      portfolio_id = None
+
+      decoded = base64.urlsafe_b64decode(token.encode())
+      payload, received_signature = decoded.rsplit(b".", 1)
+      key = SECRET_KEY.encode() if isinstance(SECRET_KEY, str) else SECRET_KEY
+      expected_signature = hmac.new(key, payload, hashlib.sha256).digest()
+
+      if hmac.compare_digest(expected_signature, received_signature):
+        user_id, portfolio_id, _ = payload.rsplit(":")
     except jwt.ExpiredSignatureError:
       return jsonify({"status": 401, "message": "Unauthorized"}), 401
     except jwt.InvalidTokenError:

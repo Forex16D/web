@@ -1,7 +1,7 @@
 from flask import request, Blueprint, jsonify #type: ignore
 from application.controllers.mt_controller import MtController
 from application.container import container
-
+from application.services.middleware import bot_token_required
 mt_routes = Blueprint("mt_routes", __name__)
 mt_controller = MtController(container.mt_service)
 

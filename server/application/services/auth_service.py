@@ -101,13 +101,13 @@ class AuthService:
     if not token:
       raise ValueError
 
+    conn = self.db_pool.get_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+
     try:
       data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
       current_user_id = data["user"]
 
-      conn = self.db_pool.get_connection()
-      
-      cursor = conn.cursor(cursor_factory=RealDictCursor)
       cursor.execute("SELECT user_id FROM users WHERE user_id = %s", (current_user_id,))
       user = cursor.fetchone()
       

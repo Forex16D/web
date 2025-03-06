@@ -36,9 +36,14 @@ class MtService:
         conn = self.db_pool.get_connection()
         cursor = conn.cursor(cursor_factory=RealDictCursor)
         cursor.execute("""
-          SELECT portfolio_id FROM tokens
-          WHERE access_token = %s 
-          AND is_active = true
+          SELECT portfolio_id, model_id
+          FROM portfolios 
+          WHERE portfolio_id = (
+            SELECT portfolio_id 
+            FROM tokens 
+            WHERE access_token = %s 
+            AND is_active = true
+          );
         """, (token,))
         credential = cursor.fetchone()
 
@@ -49,3 +54,37 @@ class MtService:
         cursor.close()
         self.db_pool.release_connection(conn)
     return None
+  
+  def create_order(self, request):
+    try:
+      conn = self.db_pool.get_connection()
+      cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+      query = """
+      INSERT INTO ORDERS 
+      (order_id, portfolio_id, model_id, order_type, symbol, profit, volume, entry_price, exit_price, created_at) 
+      VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW());
+      """
+
+      cursor.execute(query, (
+        request["order_id"], 
+        request["portfolio_id"], 
+        request["model_id"], 
+        request["order_type"], 
+        request["symbol"], 
+        request["profit"], 
+        request["volume"], 
+        request["entry_price"], 
+        request["exit_price"]
+      ))
+
+      conn.commit()
+      return {"status": "success", "message": "Order recorded successfully"}
+
+    except Exception as e:
+      conn.rollback()
+      return {"status": "error", "message": str(e)}
+
+    finally:
+      cursor.close()
+      self.db_pool.release_connection(conn)

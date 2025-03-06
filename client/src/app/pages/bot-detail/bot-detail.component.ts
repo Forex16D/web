@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { PriceChartComponent } from '../price-chart/price-chart.component';
 import { NgClass, NgFor } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
@@ -15,9 +15,10 @@ import { EChartsCoreOption } from 'echarts/core';
 import { GridComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 import { NgxEchartsModule, provideEchartsCore, NgxEchartsDirective } from 'ngx-echarts';
+import { ActivatedRoute } from '@angular/router';
+import { ApiService } from '../../core/services/api.service';
 
 import * as echarts from 'echarts/core';
-import { ApiService } from '../../core/services/api.service';
 echarts.use([BarChart, LineChart, GridComponent, CanvasRenderer]);
 
 @Component({
@@ -35,7 +36,6 @@ echarts.use([BarChart, LineChart, GridComponent, CanvasRenderer]);
     ReactiveFormsModule,
     DatePipe,
     NgFor,
-
   ],
   templateUrl: './bot-detail.component.html',
   styleUrl: './bot-detail.component.css',
@@ -44,9 +44,8 @@ echarts.use([BarChart, LineChart, GridComponent, CanvasRenderer]);
   ],
 })
 
-export class BotDetailComponent {
+export class BotDetailComponent implements OnInit {
   visible = false;
-
 
   data = {
     backtest: '126D',
@@ -62,13 +61,28 @@ export class BotDetailComponent {
   }
 
   portfolios = signal<PortfolioResponse[]>([]);
+  model: any;
+  model_id!: string;
 
   selectedPortfolio: PortfolioResponse | null = null;
 
   constructor(
     private apiService: ApiService,
+    private route: ActivatedRoute
   ) { }
 
+  ngOnInit(): void {
+    this.route.paramMap.subscribe(params => {
+      this.model_id = params.get('model_id') || '';
+      this.getModels();
+    });
+  }
+
+  onCopyTrade(): void {
+    this.copy_trade();
+    this.visible = false;
+  }
+  
   showDialog(): void {
     this.getPortfolios();
     this.visible = !this.visible;
@@ -136,6 +150,30 @@ export class BotDetailComponent {
     this.apiService.get<PortfolioResponse[]>('v1/portfolios').subscribe({
       next: (response: PortfolioResponse[]) => {
         this.portfolios.set(response);
+        console.log(response);
+      },
+      error: (error) => {
+        console.error('Fetch failed:', error);
+      },
+    });
+  }
+
+  getModels(): void {
+    if (!this.model_id) return;
+
+    this.apiService.get(`v1/models/${this.model_id}`).subscribe({
+      next: (response: any) => this.model = response.model,
+      error: (error) => console.error('Failed to fetch models:', error),
+    });
+  }
+  
+  copy_trade(): void {
+    const body = {
+      portfolio_id: this.selectedPortfolio?.portfolio_id
+    };
+
+    this.apiService.put(`/v1/models/${this.model_id}/copy`, body).subscribe({
+      next: (response) => {
         console.log(response);
       },
       error: (error) => {

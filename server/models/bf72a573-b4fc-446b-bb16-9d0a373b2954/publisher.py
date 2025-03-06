@@ -23,7 +23,7 @@ if mode == "backtest":
 else:
   socket_recv = context.socket(zmq.PULL)
   socket_recv.bind("tcp://*:5557")
-  socket_send = context.socket(zmq.DEALER)
+  socket_send = context.socket(zmq.REP)
   socket_send.connect("tcp://*:5555")
 
 model_path = Path(__file__).parent / "model"
@@ -121,7 +121,7 @@ try:
 
       else:  # Deployment mode
         signal = evaluate_with_model(message)
-        ServerLogHelper().log(f"Publishing signal: {signal}")
+        ServerLogHelper().log(f"Sending signal: {signal}")
         socket_send.send_string(signal)
 
     except zmq.error.Again:

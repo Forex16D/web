@@ -11,11 +11,11 @@ class MtController:
       response = self.mt_service.verify_token(request)
       return jsonify(response), 200
 
-    except ValueError as ve:
-      self.server_log_service.error(ve)
+    except ValueError as e:
+      self.server_log_service.error(e)
       return jsonify({"status": 401, "message": "Unauthorized"}), 401
 
-    except RuntimeError as re:
+    except RuntimeError as e:
       return jsonify({"status": 500, "message": "Internal server error"}), 500
 
     except Exception as e:

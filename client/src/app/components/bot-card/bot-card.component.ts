@@ -14,23 +14,34 @@ import { RouterLink } from '@angular/router';
   providers: [CurrencyPipe],
 })
 export class BotCardComponent {
-  
+
   @Input() name?: string;
-  @Input() data = {
-    pnl: '',
-    winrate: '',
-    roi: '',
-    balance: '',
-  };
-  
+  @Input() data: {
+    pnl: string;
+    winrate: string;
+    roi: string;
+    balance: string;
+    commission: number | null;
+    symbol: string,
+    model_id: string,
+  } = {
+      pnl: '',
+      winrate: '',
+      roi: '',
+      balance: '',
+      commission: 0,
+      symbol: '',
+      model_id: '',
+    };
+
   pnlFormatted: string = '-';
   winrateFormatted: string = '-';
   roiFormatted: string = '-';
   balanceFormatted: string = '-';
   pnlTextColor: string = 'text-white';
-  
+
   constructor(private currency: CurrencyPipe) { }
-  
+
   ngOnChanges(): void {
     this.transformData();
   }
@@ -48,7 +59,7 @@ export class BotCardComponent {
       }
     ]
   };
-  
+
   options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -62,7 +73,7 @@ export class BotCardComponent {
         display: false
       },
       y: {
-        display:false
+        display: false
       }
     },
     layout: {
@@ -84,15 +95,15 @@ export class BotCardComponent {
       console.log(`Hovered over: ${label} - ${value}`);
     }
   }
-  
+
 
   transformData(): void {
-    const pnlValue  = parseFloat(this.data.pnl);
-    const winrateValue  = parseFloat(this.data.winrate);
-    const roiValue  = parseFloat(this.data.roi);
+    const pnlValue = parseFloat(this.data.pnl);
+    const winrateValue = parseFloat(this.data.winrate);
+    const roiValue = parseFloat(this.data.roi);
     const balanceValue = parseFloat(this.data.balance);
 
-    this.pnlTextColor = pnlValue > 0 ? 'text-green-400' : pnlValue < 0 ? 'text-red-400' : 'text-white'; 
+    this.pnlTextColor = pnlValue > 0 ? 'text-green-400' : pnlValue < 0 ? 'text-red-400' : 'text-white';
     this.pnlFormatted = isNaN(pnlValue) ? '-' : pnlValue >= 0 ? `+$${pnlValue}` : `-$${Math.abs(pnlValue)}`;
     this.winrateFormatted = isNaN(winrateValue) ? '-' : `${winrateValue}%`;
     this.roiFormatted = isNaN(roiValue) ? '-' : `${roiValue}%`;
@@ -100,5 +111,5 @@ export class BotCardComponent {
       ? '-'
       : this.currency.transform(balanceValue, 'USD', 'symbol', '.2-2') || '-';
   }
-  
+
 }
