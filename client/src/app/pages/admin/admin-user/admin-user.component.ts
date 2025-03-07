@@ -1,4 +1,4 @@
-import { Component, effect, OnInit, signal } from '@angular/core';
+import { Component, effect, inject, OnInit, signal } from '@angular/core';
 import { TableModule } from 'primeng/table';
 import { ToolbarModule } from 'primeng/toolbar';
 import { ButtonModule } from 'primeng/button';
@@ -37,6 +37,9 @@ interface UserResponse {
   styleUrl: './admin-user.component.css'
 })
 export class AdminUserComponent implements OnInit {
+  private activatedRoute = inject(ActivatedRoute);
+  private router = inject(Router);
+
   users = signal<any[]>([]);
   selectedUsers = signal<any[]>([]);
 
@@ -45,10 +48,15 @@ export class AdminUserComponent implements OnInit {
   fetchedUsers = 1;
 
   constructor(
-    private router: Router,
-    private activatedRoute: ActivatedRoute,
     private apiService: ApiService,
-  ) { }
+  ) { 
+    effect(() => {
+      console.log('something change')
+      const currentPage = this.page();
+      const currentLimit = this.limit();
+      this.updateQueryParams(currentPage, currentLimit);
+    });
+  }
 
   ngOnInit(): void {
     this.loadUsers(1, 100);
@@ -57,13 +65,6 @@ export class AdminUserComponent implements OnInit {
       const limit = params['limit'] ? parseInt(params['limit'], 10) : 10;
       this.page.set(page);
       this.limit.set(limit);
-    });
-
-    effect(() => {
-      console.log('something change')
-      const currentPage = this.page();
-      const currentLimit = this.limit();
-      this.updateQueryParams(currentPage, currentLimit);
     });
   }
 

@@ -1,15 +1,16 @@
 <ng-container *ngIf="isBrowser; else ssrPlaceholder">
   <p-toast />
-  <p-confirmdialog />
+  <p-confirmDialog [style]="{width: '30rem'}" [baseZIndex]="10000" rejectButtonStyleClass="p-button-text">
+  </p-confirmDialog>
   <app-navbar *ngIf="showNavbar"></app-navbar>
   <div [ngClass]="{ 'pl-14 mt-12': router.url !== '/' }" class="w-full">
     <router-outlet></router-outlet>
-    <div *ngIf="authService.authState" class="flex justify-center">
+    <!-- <div *ngIf="authService.authState" class="flex justify-center">
       <button (click)="logout()">Logout</button>
-    </div>
+    </div> -->
   </div>
 </ng-container>
 
-<ng-template #ssrPlaceholder>   
+<ng-template #ssrPlaceholder>
   <div class="loading-spinner">Loading...</div>
 </ng-template>

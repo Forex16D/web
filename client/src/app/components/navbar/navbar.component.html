@@ -8,7 +8,7 @@
       <i class="pi pi-bars min-w-14 h-14 flex justify-center items-center hover:text-green-400 cursor-pointer"
         style="font-size: 1.25rem" (click)="isVisible = !isVisible" [attr.aria-expanded]="isVisible">
       </i>
-      <div class="transition-opacity duration-300 overflow-hidden flex-shrink-0">
+      <div class="transition-opacity duration-300 overflow-hidden flex-shrink-0" [ngClass]="{'opacity-100':isVisible, 'opacity-0':!isVisible}">
         <app-logo size="28px" class="cursor-pointer" routerLink="/"></app-logo>
       </div>
     </header>
@@ -18,58 +18,82 @@
       <!-- Menu Item: Users -->
       <li class="relative group">
         <a class="flex items-center space-x-3 py-2 text-base text-white hover:text-green-400 cursor-pointer"
-          routerLink="/dashboard">
+          routerLink="/dashboard" routerLinkActive="text-green-400">
           <div class="flex flex-shrink-0 w-14 items-center justify-center">
             <div
-              class="absolute left-0 bottom-0 w-1 h-0 bg-green-400 transition-all duration-300 group-hover:h-full group-hover:bottom-0">
+              class="absolute left-0 bottom-0 w-1 h-0 bg-green-400 transition-all duration-300 group-hover:h-full group-hover:bottom-0"
+              [ngClass]="{'h-full':router.url === '/dashboard'}">
             </div>
             <i class="pi pi-gauge" style="font-size: 1.25rem"></i>
           </div>
-          <span class="flex-grow pl-2">Dashboard</span>
+          <span class="flex-grow pl-2 whitespace-nowrap" [ngClass]="{'opacity-100':isVisible, 'opacity-0':!isVisible}">Dashboard</span>
         </a>
       </li>
 
       <!-- Menu Item: Copy Trade -->
       <li class="relative group">
         <a class="flex items-center space-x-3 py-2 text-base text-white hover:text-green-400 cursor-pointer"
-          routerLink="/bot">
+          routerLink="/bot" routerLinkActive="text-green-400">
           <div class="flex flex-shrink-0 w-14 items-center justify-center">
             <div
-              class="absolute left-0 bottom-0 w-1 h-0 bg-green-400 transition-all duration-300 group-hover:h-full group-hover:bottom-0">
+              class="absolute left-0 bottom-0 w-1 h-0 bg-green-400 transition-all duration-300 group-hover:h-full group-hover:bottom-0"
+              [ngClass]="{'h-full':router.url === '/bot'}">
             </div>
             <i class="pi pi-microchip-ai" style="font-size: 1.25rem"></i>
           </div>
-          <span class="flex-grow pl-2 flex-shrink-0">Copy Trade</span>
+          <span class="flex-grow pl-2 whitespace-nowrap" [ngClass]="{'opacity-100':isVisible, 'opacity-0':!isVisible}">Copy Trade</span>
         </a>
       </li>
 
       <!-- Menu Item: Chart -->
       <li class="relative group">
         <a class="flex items-center space-x-3 py-2 text-base text-white hover:text-green-400 cursor-pointer"
-          routerLink="/price-chart">
+          routerLink="/price-chart" routerLinkActive="text-green-400">
           <div class="flex flex-shrink-0 w-14 items-center justify-center">
             <div
-              class="absolute left-0 bottom-0 w-1 h-0 bg-green-400 transition-all duration-300 group-hover:h-full group-hover:bottom-0">
+              class="absolute left-0 bottom-0 w-1 h-0 bg-green-400 transition-all duration-300 group-hover:h-full group-hover:bottom-0"
+              [ngClass]="{'h-full':router.url === '/price-chart'}">
             </div>
             <i class="pi pi-chart-line" style="font-size: 1.25rem"></i>
           </div>
-          <span class="flex-grow pl-2 flex-shrink-0">Price Chart</span>
+          <span class="flex-grow pl-2 whitespace-nowrap" [ngClass]="{'opacity-100':isVisible, 'opacity-0':!isVisible}">Price Chart</span>
         </a>
       </li>
-
-
+      
+      <!-- Menu Item: Bill -->
+      <li class="relative group">
+        <a class="flex items-center space-x-3 py-2 text-base text-white hover:text-green-400 cursor-pointer"
+          routerLink="/bill" routerLinkActive="text-green-400">
+          <div class="flex flex-shrink-0 w-14 items-center justify-center">
+            <div
+              class="absolute left-0 bottom-0 w-1 h-0 bg-green-400 transition-all duration-300 group-hover:h-full group-hover:bottom-0"
+              [ngClass]="{'h-full':router.url === '/bill'}">
+            </div>
+            <i class="pi pi-receipt" style="font-size: 1.25rem"></i>
+          </div>
+          <span class="flex-grow pl-2 whitespace-nowrap" [ngClass]="{'opacity-100':isVisible, 'opacity-0':!isVisible}">Bills</span>
+        </a>
+      </li>
     </ul>
   </div>
 
-  <!-- Menu Item: Log out -->
+  <!-- User Profile Section -->
   <div>
-    <div class="pl-14">
-      {{ profile.email }}
+    <!-- User Email Section -->
+    <div class="relative group">
+      <a class="flex items-center space-x-3 py-2 text-base text-white cursor-default">
+        <div class="flex flex-shrink-0 w-14 items-center justify-center">
+          <i class="pi pi-user" style="font-size: 1.25rem"></i>
+        </div>
+        <span class="flex-grow pl-2 truncate whitespace-nowrap text-white" [ngClass]="{'opacity-100':isVisible, 'opacity-0':!isVisible}">
+          {{ profile?.email || 'Guest' }}
+        </span>
+      </a>
     </div>
     <p-divider></p-divider>
 
     <!-- Show Log out if authenticated -->
-    <li class="relative group" *ngIf="authService.authState; else loginMenu">
+    <li class="relative group list-none" *ngIf="authService.authState; else loginMenu">
       <a class="flex items-center space-x-3 py-2 text-base text-white hover:text-red-400 cursor-pointer"
         (click)="logout($event)">
         <div class="flex flex-shrink-0 w-14 items-center justify-center">
@@ -78,12 +102,12 @@
           </div>
           <i class="pi pi-sign-out" style="font-size: 1.25rem"></i>
         </div>
-        <span class="flex-grow flex-shrink-0 pl-2">Log out</span>
+        <span class="flex-grow pl-2 whitespace-nowrap" [ngClass]="{'opacity-100':isVisible, 'opacity-0':!isVisible}">Log out</span>
       </a>
     </li>
 
     <ng-template #loginMenu>
-      <li class="relative group">
+      <li class="relative group list-none">
         <a class="flex items-center space-x-3 py-2 text-base text-white hover:text-green-400 cursor-pointer"
           (click)="login()">
           <div class="flex flex-shrink-0 w-14 items-center justify-center">
@@ -92,7 +116,7 @@
             </div>
             <i class="pi pi-sign-in" style="font-size: 1.25rem"></i>
           </div>
-          <span class="flex-grow flex-shrink-0 pl-2">Log in</span>
+          <span class="flex-grow pl-2 whitespace-nowrap" [ngClass]="{'opacity-100':isVisible, 'opacity-0':!isVisible}">Log in</span>
         </a>
       </li>
     </ng-template>

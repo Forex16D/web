@@ -11,6 +11,7 @@ import { BotComponent } from './pages/bot/bot.component';
 import { BotDetailComponent } from './pages/bot-detail/bot-detail.component';
 import { PriceChartComponent } from './pages/price-chart/price-chart.component';
 import { PortfolioDetailComponent } from './pages/portfolio-detail/portfolio-detail.component';
+import { BillComponent } from './pages/bill/bill.component';
 
 export const routes: Routes = [
   {
@@ -51,5 +52,9 @@ export const routes: Routes = [
   {
     path: 'portfolio/:portfolio_id',
     component: PortfolioDetailComponent,
-  }
+  },  
+  {
+    path: 'bill',
+    component: BillComponent,
+  },
 ];

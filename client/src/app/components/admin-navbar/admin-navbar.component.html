@@ -1,37 +1,36 @@
 <nav
   class="flex flex-col justify-between w-56 h-full pb-4 bg-gray-800 bg-opacity-50 backdrop-blur fixed transition-all duration-300 overflow-hidden">
-
-  <!-- Sidebar Header -->
+  <!--* Sidebar Header *-->
   <div>
     <header class="flex flex-row w-full h-14 items-center mb-8 p-3 gap-2">
       <div class="transition-opacity duration-300 overflow-hidden flex-shrink-0">
         <app-logo size="28px" class="cursor-pointer" routerLink="/"></app-logo>
       </div>
     </header>
-
-    <!-- Sidebar Menu -->
+    <!--* Sidebar Menu *-->
     <ul class="space-y-4">
-      <!-- Menu Item: Users -->
+      <!--* Menu Item: Users *-->
       <li class="relative group">
         <a class="flex items-center space-x-3 py-2 text-base text-white hover:text-green-400 cursor-pointer"
-        (click)="updateQueryParams('users')">
+          (click)="updateQueryParams('users')">
           <div class="flex flex-shrink-0 w-14 items-center justify-center">
             <div
-              class="absolute left-0 bottom-0 w-1 h-0 bg-green-400 transition-all duration-300 group-hover:h-full group-hover:bottom-0">
+              class="absolute left-0 bottom-0 w-1 h-0 bg-green-400 transition-all duration-300 group-hover:h-full group-hover:bottom-0"
+              [ngClass]="{'h-full': queryparam == 'users'}">
             </div>
             <i class="pi pi-users" style="font-size: 1.25rem"></i>
           </div>
           <span class="flex-grow pl-2">Users</span>
         </a>
       </li>
-
-      <!-- Menu Item: Models -->
+      <!--* Menu Item: Models *-->
       <li class="relative group">
         <a class="flex items-center space-x-3 py-2 text-base text-white hover:text-green-400 cursor-pointer"
           (click)="updateQueryParams('models')">
           <div class="flex flex-shrink-0 w-14 items-center justify-center">
             <div
-              class="absolute left-0 bottom-0 w-1 h-0 bg-green-400 transition-all duration-300 group-hover:h-full group-hover:bottom-0">
+              class="absolute left-0 bottom-0 w-1 h-0 bg-green-400 transition-all duration-300 group-hover:h-full group-hover:bottom-0"
+              [ngClass]="{'h-full': queryparam == 'models'}">
             </div>
             <i class="pi pi-microchip-ai" style="font-size: 1.25rem"></i>
           </div>
@@ -40,14 +39,20 @@
       </li>
     </ul>
   </div>
-
-  <!-- Menu Item: Log out -->
+  <!--* Menu Item: Log out *-->
   <div>
-    {{ profile.email }}
+    <!-- User profile section -->
+    <div class="relative group">
+      <div class="flex items-center space-x-3 py-2 text-base text-white">
+        <div class="flex flex-shrink-0 w-14 items-center justify-center">
+          <i class="pi pi-user" style="font-size: 1.25rem"></i>
+        </div>
+        <span class="flex-grow pl-2 truncate">{{ profile.email }}</span>
+      </div>
+    </div>
     <p-divider></p-divider>
-
-    <!-- Show Log out if authenticated -->
-    <li class="relative group" *ngIf="authService.authState; else loginMenu">
+    <!--* Show Log out if authenticated *-->
+    <li class="relative group list-none" *ngIf="authService.authState; else loginMenu">
       <a class="flex items-center space-x-3 py-2 text-base text-white hover:text-red-400 cursor-pointer"
         (click)="logout($event)">
         <div class="flex flex-shrink-0 w-14 items-center justify-center">
@@ -59,9 +64,8 @@
         <span class="flex-grow flex-shrink-0 pl-2">Log out</span>
       </a>
     </li>
-
     <ng-template #loginMenu>
-      <li class="relative group">
+      <li class="relative group list-none">
         <a class="flex items-center space-x-3 py-2 text-base text-white hover:text-green-400 cursor-pointer"
           (click)="login()">
           <div class="flex flex-shrink-0 w-14 items-center justify-center">

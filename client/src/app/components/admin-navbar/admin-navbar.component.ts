@@ -26,6 +26,7 @@ import { ApiService } from '../../core/services/api.service';
 export class AdminNavbarComponent {
   isVisible = true;
   profile: any = {};
+  queryparam: string | null = null;
 
   constructor(
     public authService: AuthService,
@@ -36,6 +37,10 @@ export class AdminNavbarComponent {
     private activatedRoute: ActivatedRoute,
   ) { 
     this.getProfile()
+
+    this.activatedRoute.queryParams.subscribe(params => {
+      this.queryparam = params['view'] || null;
+    });
   }
 
   logout(event: Event): void {

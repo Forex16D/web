@@ -1,27 +1,28 @@
-<!-- Header -->
-<div class="flex flex-col min-h-80 justify-center items-center bg-contain bg-center"
-  [style.background-image]="'url(' + backgroundImage + ')'">
-  <h1 class="flex flex-col text-6xl font-bold text-center">
-    <span>Boost Your Trading Efficiency</span>
-    <span>
-      With
-      <span class="text-green-400">AI-Powered</span> Experts
-    </span>
-  </h1>
-</div>
-
-<div class="my-5 pl-14">
-  <div class="grid grid-cols-1 ml:grid-cols-3">
-    <app-mini-price-chart [symbol]="'OANDA:XAUUSD'"/>
-    <app-mini-price-chart [symbol]="'FX:USDJPY'"/>
-    <app-mini-price-chart [symbol]="'FX:EURUSD'"/>
+<div class="pl-14 sm:pl-0">
+  <div class="flex flex-col min-h-80 justify-center items-center bg-contain bg-center"
+    [style.background-image]="'url(' + backgroundImage + ')'">
+    <h1 class="flex flex-col text-6xl font-bold text-center">
+      <span>Boost Your Trading Efficiency</span>
+      <span>
+        With
+        <span class="text-green-400">AI-Powered</span> Experts
+      </span>
+    </h1>
   </div>
-</div>
-
-<div class="flex flex-col items-center py-6 md:py-12 lg:py-16 bg-gray-1000">
-  <div class="mb-10 text-headline4 md:mb-m md:text-headline3 lg:mb-xl lg:text-headline2">
-    <div>Start Earning <span class="text-green-400">Now</span></div>
+  
+  <div class="my-5 pl-0 sm:pl-14">
+    <div class="grid grid-cols-1 ml:grid-cols-3">
+      <app-mini-price-chart [symbol]="'OANDA:XAUUSD'" />
+      <app-mini-price-chart [symbol]="'FX:USDJPY'" />
+      <app-mini-price-chart [symbol]="'FX:EURUSD'" />
+    </div>
   </div>
-  <p-button routerLink="/bot"><span class="mr-1">Start Browsing</span><i class="pi pi-arrow-right"
-      style="font-size: 14px;"></i></p-button>
+  
+  <div class="flex flex-col items-center py-6 md:py-12 lg:py-16 bg-gray-1000">
+    <div class="mb-10 text-headline4 md:mb-m md:text-headline3 lg:mb-xl lg:text-headline2">
+      <div>Start Earning <span class="text-green-400">Now</span></div>
+    </div>
+    <p-button routerLink="/bot"><span class="mr-1">Start Browsing</span><i class="pi pi-arrow-right"
+        style="font-size: 14px;"></i></p-button>
+  </div>
 </div>

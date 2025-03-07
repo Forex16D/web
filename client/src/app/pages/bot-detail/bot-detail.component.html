@@ -158,7 +158,7 @@
 </div>
 
 <p-dialog header="Copy trade" [modal]="true" [(visible)]="visible" [style]="{ width: '25rem' }">
-  <span class="p-text-secondary block mb-8">Scalper XAUUSD 1.2</span>
+  <span class="p-text-secondary block mb-8"> {{ model.name }} </span>
   <div class="flex items-center gap-4 mb-4">
     <label for="portfolio" class="font-semibold w-24">Portfolio</label>
     <p-dropdown [options]="portfolios()" [(ngModel)]="selectedPortfolio" optionLabel="name" [filter]="true"

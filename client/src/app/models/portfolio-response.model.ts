@@ -3,6 +3,7 @@ export interface PortfolioResponse {
   create_at: string
   login: string
   model_id: string | null
+  model_name: string | null
   name: string
   portfolio_id: string
   token_id: string | null

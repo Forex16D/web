@@ -68,17 +68,6 @@
         text="Name must be between 1-20 characters"></p-message>
     </div>
 
-    <!-- Token -->
-    <div class="flex flex-col gap-4 mb-4">
-      <label for="token" class="text-sm">Token</label>
-      <input pInputText id="token" class="flex-auto" readonly="true" autocomplete="off" placeholder="Token"
-        formControlName="token" />
-    </div>
-
-    <div class="mb-8">
-      <p-button label="Generate Token" (click)="generateToken()" />
-    </div>
-
     <div class="flex justify-end gap-2">
       <p-button label="Cancel" severity="secondary" text="true" (click)="isDialogVisible = false" />
       <p-button label="Save" type="submit" />

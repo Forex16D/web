@@ -29,7 +29,7 @@ export class NavbarComponent {
 
   constructor(
     public authService: AuthService,
-    private router: Router,
+    public router: Router,
     private confirmationService: ConfirmationService,
     private messageService: MessageService,
     private apiService: ApiService,

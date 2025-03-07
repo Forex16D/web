@@ -37,11 +37,17 @@ import { MenuItem, MenuItemCommandEvent } from 'primeng/api';
   providers: [CurrencyPipe]
 })
 export class PortfolioCardComponent {
-  @Input() credential = {
+ @Input() credential: {
+    portfolio_id: string;
+    name: string;
+    login: string;
+    model_name: string | null;
+  } = {
     portfolio_id: '0',
     name: 'Portfolio',
     login: 'login',
-  }
+    model_name: null,
+  };
 
   @Input() data = {
     pnl: '',

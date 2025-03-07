@@ -19,6 +19,7 @@ import { ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
 
 import * as echarts from 'echarts/core';
+import { MessageService } from 'primeng/api';
 echarts.use([BarChart, LineChart, GridComponent, CanvasRenderer]);
 
 @Component({
@@ -68,7 +69,8 @@ export class BotDetailComponent implements OnInit {
 
   constructor(
     private apiService: ApiService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private messageService: MessageService,
   ) { }
 
   ngOnInit(): void {
@@ -175,6 +177,11 @@ export class BotDetailComponent implements OnInit {
     this.apiService.put(`/v1/models/${this.model_id}/copy`, body).subscribe({
       next: (response) => {
         console.log(response);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Copy trade Successfully'
+        });
       },
       error: (error) => {
         console.error('Fetch failed:', error);

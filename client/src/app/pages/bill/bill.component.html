@@ -1,0 +1,143 @@
+<div class="flex flex-1 flex-col items-center w-full max-w-7xl mx-auto px-4">
+  <div class="w-full mb-2">
+    <h1 class="text-headline4 font-medium"><i class="pi pi-receipt text-green-400"></i> Bills</h1>
+    
+    <!-- Overview Cards -->
+    <div
+      class="flex flex-col md:flex-row justify-between rounded-xl shadow-xl border border-gray-700 p-6 w-full min-h-80 gap-6 mx-auto my-5 bg-gray-900">
+      <!-- Total Bills Card -->
+      <div class="flex flex-col items-center justify-center bg-gray-800 rounded-lg p-6 shadow-md w-full">
+        <h2 class="text-xl font-medium text-gray-300">Total Bills</h2>
+        <div class="text-3xl font-bold text-white mt-2">{{ bills.length }}</div>
+      </div>
+      <!-- Current Month Card -->
+      <div class="flex flex-col items-center justify-center bg-gray-800 rounded-lg p-6 shadow-md w-full">
+        <h2 class="text-xl font-medium text-gray-300">Current Month</h2>
+        <div class="text-3xl font-bold text-white mt-2">${{ currentMonthTotal.toFixed(2) }}</div>
+      </div>
+      <!-- Pending Payment Card -->
+      <div class="flex flex-col items-center justify-center bg-gray-800 rounded-lg p-6 shadow-md w-full">
+        <h2 class="text-xl font-medium text-gray-300">Pending Payments</h2>
+        <div class="text-3xl font-bold text-red-400 mt-2">${{ pendingPayments.toFixed(2) }}</div>
+      </div>
+    </div>
+    
+    <!-- Toolbar -->
+    <div class="mb-6">
+      <p-toolbar>
+        <ng-template #start>
+          <p-button icon="pi pi-plus" label="Add New Bill" class="mr-2" text severity="secondary"
+            (click)="showBillDialog()" />
+        </ng-template>
+        <ng-template #end>
+          <div class="flex gap-2">
+            <p-dropdown [options]="filterOptions" optionLabel="name" placeholder="Filter by Status" 
+              (onChange)="filterBills($event)"></p-dropdown>
+            <p-button icon="pi pi-filter" (onClick)="clearFilters()" pTooltip="Clear Filters" tooltipPosition="bottom"></p-button>
+          </div>
+        </ng-template>
+      </p-toolbar>
+    </div>
+    
+    <!-- Bills Table -->
+    <p-table [value]="bills" [paginator]="true" [rows]="10" [showCurrentPageReport]="true"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} bills"
+      [rowsPerPageOptions]="[5, 10, 25]" styleClass="p-datatable-sm p-datatable-gridlines p-datatable-striped"
+      [tableStyle]="{'min-width': '50rem'}">
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="id" style="width: 10%">ID <p-sortIcon field="id"></p-sortIcon></th>
+          <th pSortableColumn="description" style="width: 30%">Description <p-sortIcon field="description"></p-sortIcon></th>
+          <th pSortableColumn="amount" style="width: 15%">Amount <p-sortIcon field="amount"></p-sortIcon></th>
+          <th pSortableColumn="dueDate" style="width: 15%">Due Date <p-sortIcon field="dueDate"></p-sortIcon></th>
+          <th pSortableColumn="status" style="width: 15%">Status <p-sortIcon field="status"></p-sortIcon></th>
+          <th style="width: 15%">Actions</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-bill>
+        <tr>
+          <td>{{ bill.id }}</td>
+          <td>{{ bill.description }}</td>
+          <td>${{ bill.amount.toFixed(2) }}</td>
+          <td>{{ bill.dueDate | date:'MMM dd, yyyy' }}</td>
+          <td>
+            <p-tag [severity]="getStatusSeverity(bill.status)" [value]="bill.status"></p-tag>
+          </td>
+          <td>
+            <div class="flex gap-2">
+              <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-text p-button-sm" 
+                (click)="editBill(bill)" pTooltip="Edit" tooltipPosition="top"></button>
+              <button pButton icon="pi pi-check" class="p-button-rounded p-button-text p-button-success p-button-sm" 
+                (click)="markAsPaid(bill)" [disabled]="bill.status === 'Paid'" 
+                pTooltip="Mark as Paid" tooltipPosition="top"></button>
+              <button pButton icon="pi pi-trash" class="p-button-rounded p-button-text p-button-danger p-button-sm" 
+                (click)="deleteBill(bill)" pTooltip="Delete" tooltipPosition="top"></button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="6" class="text-center py-4">No bills found.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>
+
+<!-- Add/Edit Bill Dialog -->
+<p-dialog [modal]="true" [(visible)]="isBillDialogVisible" [style]="{ width: '30rem' }" (onHide)="resetBillForm()">
+  <ng-template pTemplate="header">
+    <h1 class="text-2xl font-medium">{{ editMode ? 'Edit Bill' : 'Add New Bill' }}</h1>
+  </ng-template>
+  <form pFocusTrap [formGroup]="billForm" (ngSubmit)="saveBill()">
+    <!-- Description -->
+    <div class="flex flex-col gap-2 mb-4">
+      <label for="description" class="text-sm">Description</label>
+      <input pInputText id="description" class="flex-auto" autocomplete="off" 
+        placeholder="Bill description" formControlName="description" />
+      <p-message *ngIf="submitted && billForm.get('description')?.invalid" severity="error"
+        text="Please enter a description"></p-message>
+    </div>
+    
+    <!-- Amount -->
+    <div class="flex flex-col gap-2 mb-4">
+      <label for="amount" class="text-sm">Amount</label>
+      <p-inputNumber id="amount" mode="currency" currency="USD" 
+        placeholder="0.00" formControlName="amount" />
+      <p-message *ngIf="submitted && billForm.get('amount')?.invalid" severity="error"
+        text="Please enter a valid amount"></p-message>
+    </div>
+    
+    <!-- Due Date -->
+    <div class="flex flex-col gap-2 mb-4">
+      <label for="dueDate" class="text-sm">Due Date</label>
+      <p-datepicker id="dueDate" formControlName="dueDate" 
+        [showIcon]="true" placeholder="Select date"></p-datepicker>
+      <p-message *ngIf="submitted && billForm.get('dueDate')?.invalid" severity="error"
+        text="Please select a due date"></p-message>
+    </div>
+    
+    <!-- Status -->
+    <div class="flex flex-col gap-2 mb-4">
+      <label for="status" class="text-sm">Status</label>
+      <p-dropdown id="status" [options]="statusOptions" optionLabel="label" optionValue="value"
+        placeholder="Select status" formControlName="status" [style]="{'width': '100%'}"></p-dropdown>
+      <p-message *ngIf="submitted && billForm.get('status')?.invalid" severity="error"
+        text="Please select a status"></p-message>
+    </div>
+    
+    <!-- Notes (Optional) -->
+    <div class="flex flex-col gap-2 mb-4">
+      <label for="notes" class="text-sm">Notes (Optional)</label>
+      <textarea pTextarea id="notes" rows="3" formControlName="notes" 
+        placeholder="Additional information"></textarea>
+    </div>
+    
+    <!-- Form Actions -->
+    <div class="flex justify-end gap-2">
+      <p-button label="Cancel" severity="secondary" text="true" (click)="isBillDialogVisible = false" />
+      <p-button label="Save" type="submit" />
+    </div>
+  </form>
+</p-dialog>

@@ -1,0 +1,260 @@
+import { DatePipe } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ConfirmationService, MessageService } from 'primeng/api';
+import { ButtonModule } from 'primeng/button';
+import { DatePickerModule } from 'primeng/datepicker';
+import { DialogModule } from 'primeng/dialog';
+import { DropdownModule } from 'primeng/dropdown';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { InputTextModule } from 'primeng/inputtext';
+import { MessageModule } from 'primeng/message';
+import { TableModule } from 'primeng/table';
+import { TagModule } from 'primeng/tag';
+import { ToolbarModule } from 'primeng/toolbar';
+import { TextareaModule } from 'primeng/textarea';
+import { ApiService } from '../../core/services/api.service';
+
+interface Bill {
+  id: number;
+  description: string;
+  amount: number;
+  dueDate: Date;
+  status: string;
+  notes?: string;
+}
+
+@Component({
+  selector: 'app-bill',
+  templateUrl: './bill.component.html',
+  imports: [
+     ToolbarModule,
+     ButtonModule,
+     DropdownModule,
+     TableModule,
+     MessageModule,
+     TagModule,
+     DatePipe,
+     DialogModule,
+     InputNumberModule,
+     InputTextModule,
+     FormsModule,
+     ReactiveFormsModule,
+     DatePickerModule,
+     TextareaModule,
+    ]
+})
+export class BillComponent implements OnInit {
+  bills: Bill[] = [];
+  isBillDialogVisible: boolean = false;
+  billForm!: FormGroup;
+  submitted: boolean = false;
+  editMode: boolean = false;
+  currentBillId: number = 0;
+  currentMonthTotal: number = 0;
+  pendingPayments: number = 0;
+
+  statusOptions = [
+    { label: 'Pending', value: 'Pending' },
+    { label: 'Paid', value: 'Paid' },
+    { label: 'Overdue', value: 'Overdue' }
+  ];
+
+  filterOptions = [
+    { name: 'All', value: null },
+    { name: 'Pending', value: 'Pending' },
+    { name: 'Paid', value: 'Paid' },
+    { name: 'Overdue', value: 'Overdue' }
+  ];
+
+  constructor(
+    private fb: FormBuilder,
+    private confirmationService: ConfirmationService,
+    private messageService: MessageService,
+    private apiService: ApiService,
+  ) {}
+
+  ngOnInit(): void {
+    this.initForm();
+    this.loadBills();
+    this.calculateTotals();
+  }
+
+  initForm(): void {
+    this.billForm = this.fb.group({
+      description: ['', [Validators.required]],
+      amount: [null, [Validators.required, Validators.min(0.01)]],
+      dueDate: [null, [Validators.required]],
+      status: ['Pending', [Validators.required]],
+      notes: ['']
+    });
+  }
+
+  loadBills(): void {
+    // Mock data - in a real app, this would come from a service
+    this.bills = [
+      {
+        id: 1,
+        description: 'Server Hosting',
+        amount: 29.99,
+        dueDate: new Date(2025, 2, 15),
+        status: 'Pending'
+      },
+      {
+        id: 2,
+        description: 'Trading Platform Subscription',
+        amount: 49.99,
+        dueDate: new Date(2025, 2, 5),
+        status: 'Paid'
+      },
+      {
+        id: 3,
+        description: 'Data Provider',
+        amount: 99.99,
+        dueDate: new Date(2025, 2, 20),
+        status: 'Pending'
+      },
+      {
+        id: 4,
+        description: 'VPS Service',
+        amount: 15.99,
+        dueDate: new Date(2025, 1, 28),
+        status: 'Overdue'
+      }
+    ];
+  }
+
+  calculateTotals(): void {
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+
+    this.currentMonthTotal = this.bills
+      .filter(bill => {
+        const billDate = new Date(bill.dueDate);
+        return billDate.getMonth() === currentMonth && billDate.getFullYear() === currentYear;
+      })
+      .reduce((sum, bill) => sum + bill.amount, 0);
+
+    this.pendingPayments = this.bills
+      .filter(bill => bill.status === 'Pending' || bill.status === 'Overdue')
+      .reduce((sum, bill) => sum + bill.amount, 0);
+  }
+
+  showBillDialog(): void {
+    this.editMode = false;
+    this.submitted = false;
+    this.billForm.reset();
+    this.billForm.patchValue({ status: 'Pending' });
+    this.isBillDialogVisible = true;
+  }
+
+  editBill(bill: Bill): void {
+    this.editMode = true;
+    this.currentBillId = bill.id;
+    this.billForm.setValue({
+      description: bill.description,
+      amount: bill.amount,
+      dueDate: new Date(bill.dueDate),
+      status: bill.status,
+      notes: bill.notes || ''
+    });
+    this.isBillDialogVisible = true;
+  }
+
+  saveBill(): void {
+    this.submitted = true;
+
+    if (this.billForm.invalid) {
+      return;
+    }
+
+    const billData = this.billForm.value;
+    
+    if (this.editMode) {
+      // Update existing bill
+      const index = this.bills.findIndex(b => b.id === this.currentBillId);
+      if (index !== -1) {
+        this.bills[index] = {
+          ...this.bills[index],
+          description: billData.description,
+          amount: billData.amount,
+          dueDate: billData.dueDate,
+          status: billData.status,
+          notes: billData.notes
+        };
+        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Bill updated successfully' });
+      }
+    } else {
+      // Add new bill
+      const newId = this.bills.length > 0 ? Math.max(...this.bills.map(b => b.id)) + 1 : 1;
+      this.bills.push({
+        id: newId,
+        description: billData.description,
+        amount: billData.amount,
+        dueDate: billData.dueDate,
+        status: billData.status,
+        notes: billData.notes
+      });
+      this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Bill added successfully' });
+    }
+
+    this.calculateTotals();
+    this.isBillDialogVisible = false;
+    this.resetBillForm();
+  }
+
+  deleteBill(bill: Bill): void {
+    this.confirmationService.confirm({
+      message: `Are you sure you want to delete the bill "${bill.description}"?`,
+      header: 'Confirm Delete',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        this.bills = this.bills.filter(b => b.id !== bill.id);
+        this.calculateTotals();
+        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Bill deleted successfully' });
+      }
+    });
+  }
+
+  markAsPaid(bill: Bill): void {
+    const index = this.bills.findIndex(b => b.id === bill.id);
+    if (index !== -1) {
+      this.bills[index].status = 'Paid';
+      this.calculateTotals();
+      this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Bill marked as paid' });
+    }
+  }
+
+  resetBillForm(): void {
+    this.submitted = false;
+    this.billForm.reset();
+  }
+
+  getStatusSeverity(status: string): "success" | "info" | "warn" | "danger" | "secondary" | "contrast" | undefined {
+    switch (status) {
+      case 'Paid':
+        return 'success';
+      case 'Pending':
+        return 'warn';
+      case 'Overdue':
+        return 'danger';
+      default:
+        return 'info';
+    }
+  }
+
+  filterBills(event: any): void {
+    // In a real app, you would call a service with filter parameters
+    // For this demo, we'll just pretend to filter and show a message
+    this.messageService.add({ 
+      severity: 'info', 
+      summary: 'Filter Applied', 
+      detail: `Showing ${event.value || 'All'} bills` 
+    });
+  }
+
+  clearFilters(): void {
+    // Reset filters logic would go here
+    this.messageService.add({ severity: 'info', summary: 'Filters Cleared', detail: 'Showing all bills' });
+  }
+}
