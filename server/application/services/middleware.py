@@ -1,5 +1,4 @@
 from flask import request, jsonify # type: ignore
-from psycopg2.extras import RealDictCursor # type: ignore
 import jwt # type: ignore
 from functools import wraps
 from dotenv import load_dotenv

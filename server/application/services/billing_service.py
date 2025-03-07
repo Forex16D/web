@@ -76,3 +76,52 @@ class BillingService:
     finally:
       cursor.close()
       self.db_pool.release_connection(conn)
+      
+  def get_bills(self, user_id):
+    try:
+      conn = self.db_pool.get_connection()
+      cursor = conn.cursor(cursor_factory=RealDictCursor)
+      
+      cursor.execute("""
+        SELECT * FROM bills
+        LEFT JOIN portfolios ON bills.portfolio_id = portfolios.portfolio_id
+        WHERE user_id = %s
+      """, (user_id,))
+      bills = cursor.fetchall()
+
+      return {"bills": bills}
+    finally:
+      cursor.close()
+      self.db_pool.release_connection(conn)
+
+  def get_bill(self, user_id, bill_id):
+    try:
+      conn = self.db_pool.get_connection()
+      cursor = conn.cursor(cursor_factory=RealDictCursor)
+      
+      cursor.execute("""
+        SELECT bills.*, portfolios.user_id 
+        FROM bills
+        LEFT JOIN portfolios ON bills.portfolio_id = portfolios.portfolio_id 
+        WHERE bill_id = %s AND portfolios.user_id = %s
+      """, (bill_id, user_id))
+      bill = cursor.fetchone()
+
+      return {"bill": bill}
+    finally:
+      cursor.close()
+      self.db_pool.release_connection(conn)
+
+  def pay_bill(self, bill_id):
+    try:
+      conn = self.db_pool.get_connection()
+      cursor = conn.cursor(cursor_factory=RealDictCursor)
+      
+      cursor.execute("SELECT * FROM bills")
+      bills = cursor.fetchall()
+
+      return {"bills": bills}
+    finally:
+      cursor.close()
+      self.db_pool.release_connection(conn)
+      

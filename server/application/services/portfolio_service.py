@@ -11,7 +11,14 @@ class PortfolioService:
     conn = self.db_pool.get_connection()
     try:
       cursor = conn.cursor(cursor_factory=RealDictCursor)
-      cursor.execute("SELECT * FROM portfolios WHERE user_id = %s ORDER BY created_at ASC", (user_id,))
+      cursor.execute("""
+        SELECT portfolios.*, models.name AS model_name 
+        FROM portfolios 
+        LEFT JOIN models ON portfolios.model_id = models.model_id 
+        WHERE portfolios.user_id = %s 
+        ORDER BY portfolios.created_at ASC
+      """, (user_id,))
+
       portfolios = cursor.fetchall()
 
       if not portfolios:
