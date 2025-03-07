@@ -1,4 +1,4 @@
-import { DatePipe } from '@angular/common';
+import { DatePipe, NgIf } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ConfirmationService, MessageService } from 'primeng/api';
@@ -16,33 +16,38 @@ import { TextareaModule } from 'primeng/textarea';
 import { ApiService } from '../../core/services/api.service';
 
 interface Bill {
-  id: number;
-  description: string;
-  amount: number;
-  dueDate: Date;
+  bill_id: number;
+  created_at: string;
+  net_amount: number;
+  due_date: Date | null;
   status: string;
   notes?: string;
+  commission?: number;
+  total_profit?: number;
+  model_id?: string;
+  portfolio_id?: string;
 }
 
 @Component({
   selector: 'app-bill',
   templateUrl: './bill.component.html',
   imports: [
-     ToolbarModule,
-     ButtonModule,
-     DropdownModule,
-     TableModule,
-     MessageModule,
-     TagModule,
-     DatePipe,
-     DialogModule,
-     InputNumberModule,
-     InputTextModule,
-     FormsModule,
-     ReactiveFormsModule,
-     DatePickerModule,
-     TextareaModule,
-    ]
+    ToolbarModule,
+    ButtonModule,
+    DropdownModule,
+    TableModule,
+    MessageModule,
+    TagModule,
+    DatePipe,
+    DialogModule,
+    InputNumberModule,
+    InputTextModule,
+    FormsModule,
+    ReactiveFormsModule,
+    DatePickerModule,
+    TextareaModule,
+    NgIf
+  ]
 })
 export class BillComponent implements OnInit {
   bills: Bill[] = [];
@@ -72,73 +77,41 @@ export class BillComponent implements OnInit {
     private confirmationService: ConfirmationService,
     private messageService: MessageService,
     private apiService: ApiService,
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.initForm();
-    this.loadBills();
-    this.calculateTotals();
+    this.loadBills().then(() => {
+      this.calculateTotals();
+    }).catch(error => {
+      console.error('Error loading bills:', error);
+    });
   }
 
   initForm(): void {
     this.billForm = this.fb.group({
-      description: ['', [Validators.required]],
-      amount: [null, [Validators.required, Validators.min(0.01)]],
-      dueDate: [null, [Validators.required]],
+      net_amount: [null, [Validators.required, Validators.min(0.01)]],
+      due_date: [null, [Validators.required]],
       status: ['Pending', [Validators.required]],
       notes: ['']
     });
   }
 
-  loadBills(): void {
-    // Mock data - in a real app, this would come from a service
-    this.bills = [
-      {
-        id: 1,
-        description: 'Server Hosting',
-        amount: 29.99,
-        dueDate: new Date(2025, 2, 15),
-        status: 'Pending'
-      },
-      {
-        id: 2,
-        description: 'Trading Platform Subscription',
-        amount: 49.99,
-        dueDate: new Date(2025, 2, 5),
-        status: 'Paid'
-      },
-      {
-        id: 3,
-        description: 'Data Provider',
-        amount: 99.99,
-        dueDate: new Date(2025, 2, 20),
-        status: 'Pending'
-      },
-      {
-        id: 4,
-        description: 'VPS Service',
-        amount: 15.99,
-        dueDate: new Date(2025, 1, 28),
-        status: 'Overdue'
-      }
-    ];
+  loadBills(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.apiService.get('/v1/bills').subscribe({
+        next: (response: any) => {
+          this.bills = response.bills;
+          resolve(); // Resolves the Promise after loading bills
+        },
+        error: (error) => {
+          console.error(error);
+          reject(error); // Rejects the Promise on error
+        }
+      });
+    });
   }
-
-  calculateTotals(): void {
-    const currentMonth = new Date().getMonth();
-    const currentYear = new Date().getFullYear();
-
-    this.currentMonthTotal = this.bills
-      .filter(bill => {
-        const billDate = new Date(bill.dueDate);
-        return billDate.getMonth() === currentMonth && billDate.getFullYear() === currentYear;
-      })
-      .reduce((sum, bill) => sum + bill.amount, 0);
-
-    this.pendingPayments = this.bills
-      .filter(bill => bill.status === 'Pending' || bill.status === 'Overdue')
-      .reduce((sum, bill) => sum + bill.amount, 0);
-  }
+  
 
   showBillDialog(): void {
     this.editMode = false;
@@ -148,18 +121,6 @@ export class BillComponent implements OnInit {
     this.isBillDialogVisible = true;
   }
 
-  editBill(bill: Bill): void {
-    this.editMode = true;
-    this.currentBillId = bill.id;
-    this.billForm.setValue({
-      description: bill.description,
-      amount: bill.amount,
-      dueDate: new Date(bill.dueDate),
-      status: bill.status,
-      notes: bill.notes || ''
-    });
-    this.isBillDialogVisible = true;
-  }
 
   saveBill(): void {
     this.submitted = true;
@@ -169,16 +130,15 @@ export class BillComponent implements OnInit {
     }
 
     const billData = this.billForm.value;
-    
+
     if (this.editMode) {
       // Update existing bill
-      const index = this.bills.findIndex(b => b.id === this.currentBillId);
+      const index = this.bills.findIndex(b => b.bill_id === this.currentBillId);
       if (index !== -1) {
         this.bills[index] = {
           ...this.bills[index],
-          description: billData.description,
-          amount: billData.amount,
-          dueDate: billData.dueDate,
+          net_amount: billData.net_amount,
+          due_date: billData.due_date,
           status: billData.status,
           notes: billData.notes
         };
@@ -186,12 +146,12 @@ export class BillComponent implements OnInit {
       }
     } else {
       // Add new bill
-      const newId = this.bills.length > 0 ? Math.max(...this.bills.map(b => b.id)) + 1 : 1;
+      const newId = this.bills.length > 0 ? Math.max(...this.bills.map(b => b.bill_id)) + 1 : 1;
       this.bills.push({
-        id: newId,
-        description: billData.description,
-        amount: billData.amount,
-        dueDate: billData.dueDate,
+        bill_id: newId,
+        created_at: '',
+        net_amount: billData.net_amount,
+        due_date: billData.due_date,
         status: billData.status,
         notes: billData.notes
       });
@@ -203,26 +163,86 @@ export class BillComponent implements OnInit {
     this.resetBillForm();
   }
 
+  getStatusSeverity(status: string): "success" | "info" | "warn" | "danger" | "secondary" | "contrast" | undefined {
+    switch (status.toLowerCase()) {  // Convert to lowercase for comparison
+      case 'paid':
+        return 'success';
+      case 'pending':
+        return 'warn';
+      case 'overdue':
+        return 'danger';
+      default:
+        return 'info';
+    }
+  }
+
+  // Update the mark as paid function
+  markAsPaid(bill: Bill): void {
+    const index = this.bills.findIndex(b => b.bill_id === bill.bill_id);
+    if (index !== -1) {
+      this.bills[index].status = 'paid';  // Using lowercase to match API
+      this.calculateTotals();
+      this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Bill marked as paid' });
+    }
+  }
+
+  // Update the editBill function
+  editBill(bill: Bill): void {
+    this.editMode = true;
+    this.currentBillId = bill.bill_id;
+    this.billForm.setValue({
+      net_amount: bill.net_amount,
+      due_date: bill.due_date ? new Date(bill.due_date) : null,
+      status: bill.status.charAt(0).toUpperCase() + bill.status.slice(1), // Convert first char to uppercase for form
+      notes: bill.notes || ''
+    });
+    this.isBillDialogVisible = true;
+  }
+
+  // Update the deleteBill function
   deleteBill(bill: Bill): void {
     this.confirmationService.confirm({
-      message: `Are you sure you want to delete the bill "${bill.description}"?`,
+      message: `Are you sure you want to delete the bill "${bill.bill_id}"?`,
       header: 'Confirm Delete',
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
-        this.bills = this.bills.filter(b => b.id !== bill.id);
+        this.bills = this.bills.filter(b => b.bill_id !== bill.bill_id);
         this.calculateTotals();
         this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Bill deleted successfully' });
       }
     });
   }
 
-  markAsPaid(bill: Bill): void {
-    const index = this.bills.findIndex(b => b.id === bill.id);
-    if (index !== -1) {
-      this.bills[index].status = 'Paid';
-      this.calculateTotals();
-      this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Bill marked as paid' });
-    }
+  // Update the calculateTotals method
+  calculateTotals(): void {
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    console.log(this.bills)
+    this.currentMonthTotal = this.bills
+      .filter(bill => {
+        if (!bill.due_date) return false;
+        const billDate = new Date(bill.due_date);
+        return billDate.getMonth() === currentMonth && billDate.getFullYear() === currentYear;
+      })
+      .reduce((sum, bill) => sum + bill.net_amount, 0);
+    
+    console.log(this.currentMonthTotal);
+    this.pendingPayments = this.bills
+      .filter(bill => bill.status.toLowerCase() === 'pending' || bill.status.toLowerCase() === 'overdue')
+      .reduce((sum, bill) => sum + bill.net_amount, 0);
+  }
+
+  makePayment(bill: Bill): void {
+    // In a real app, this would open a payment gateway or process payment
+    this.confirmationService.confirm({
+      message: `Process payment of $${bill.net_amount} for Bill #${bill.bill_id}?`,
+      header: 'Confirm Payment',
+      icon: 'pi pi-credit-card',
+      accept: () => {
+        // Navigate to payment page with bill_id as query parameter
+        window.location.href = `/payment?bill_id=${bill.bill_id}&amount=${bill.net_amount}`;
+      }
+    });
   }
 
   resetBillForm(): void {
@@ -230,26 +250,13 @@ export class BillComponent implements OnInit {
     this.billForm.reset();
   }
 
-  getStatusSeverity(status: string): "success" | "info" | "warn" | "danger" | "secondary" | "contrast" | undefined {
-    switch (status) {
-      case 'Paid':
-        return 'success';
-      case 'Pending':
-        return 'warn';
-      case 'Overdue':
-        return 'danger';
-      default:
-        return 'info';
-    }
-  }
-
   filterBills(event: any): void {
     // In a real app, you would call a service with filter parameters
     // For this demo, we'll just pretend to filter and show a message
-    this.messageService.add({ 
-      severity: 'info', 
-      summary: 'Filter Applied', 
-      detail: `Showing ${event.value || 'All'} bills` 
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Filter Applied',
+      detail: `Showing ${event.value || 'All'} bills`
     });
   }
 

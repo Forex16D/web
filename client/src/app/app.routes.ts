@@ -12,6 +12,7 @@ import { BotDetailComponent } from './pages/bot-detail/bot-detail.component';
 import { PriceChartComponent } from './pages/price-chart/price-chart.component';
 import { PortfolioDetailComponent } from './pages/portfolio-detail/portfolio-detail.component';
 import { BillComponent } from './pages/bill/bill.component';
+import { PaymentComponent } from './pages/payment/payment.component';
 
 export const routes: Routes = [
   {
@@ -54,7 +55,11 @@ export const routes: Routes = [
     component: PortfolioDetailComponent,
   },  
   {
-    path: 'bill',
+    path: 'bills',
     component: BillComponent,
   },
+  {
+    path: 'payment',
+    component: PaymentComponent,
+  }
 ];

@@ -1,0 +1,101 @@
+<div class="flex flex-1 flex-col items-center w-full max-w-3xl mx-auto px-4 py-6">
+  <div class="w-full mb-2">
+    <h1 class="text-headline4 font-medium mb-4"><i class="pi pi-credit-card text-blue-400 mr-2"></i> Payment</h1>
+
+    <p-card>
+      <div class="p-4">
+        <div class="flex flex-col md:flex-row gap-6">
+          <!-- Payment Details -->
+          <div class="w-full md:w-1/2">
+            <h2 class="text-xl font-medium mb-4">Payment Details</h2>
+            
+            <!-- Payment Type -->
+            <div class="mb-4">
+              <span class="text-lg font-medium">
+                {{ isBulkPayment ? 'Bulk Payment' : 'Single Bill Payment' }}
+              </span>
+            </div>
+            
+            <!-- Bill ID(s) -->
+            <div class="mb-4">
+              <span class="text-sm text-gray-500">
+                {{ isBulkPayment ? 'Bill IDs: ' + billIds.join(', ') : 'Bill ID: ' + billId }}
+              </span>
+            </div>
+            
+            <!-- Amount -->
+            <div class="p-4 border border-gray-700 rounded-lg mb-4">
+              <span class="text-sm text-gray-600">Amount Due</span>
+              <div class="text-2xl font-bold">${{ amount.toFixed(2) }}</div>
+            </div>
+            
+            <!-- Payment Form -->
+            <form [formGroup]="paymentForm" (ngSubmit)="submitPayment()">
+              <!-- Payment Method -->
+              <div class="mb-4">
+                <label for="paymentMethod" class="block text-sm font-medium mb-1">Payment Method*</label>
+                <p-dropdown id="paymentMethod" [options]="paymentMethods" optionLabel="label" optionValue="value"
+                  formControlName="paymentMethod" [style]="{'width': '100%'}" placeholder="Select payment method">
+                </p-dropdown>
+              </div>
+              
+              <!-- Reference Number -->
+              <div class="mb-4">
+                <label for="referenceNumber" class="block text-sm font-medium mb-1">Reference Number*</label>
+                <input pInputText id="referenceNumber" class="w-full" formControlName="referenceNumber" 
+                  placeholder="Enter transaction reference number" />
+              </div>
+              
+              <!-- Notes -->
+              <div class="mb-4">
+                <label for="notes" class="block text-sm font-medium mb-1">Notes (Optional)</label>
+                <textarea pTextarea id="notes" rows="3" formControlName="notes" class="w-full"
+                  placeholder="Any additional payment information"></textarea>
+              </div>
+            </form>
+          </div>
+          
+          <!-- Receipt Upload -->
+          <div class="w-full md:w-1/2">
+            <h2 class="text-xl font-medium mb-4">Upload Receipt*</h2>
+            
+            <!-- File Upload -->
+            <div class="mb-4">
+              <p-fileUpload #fileUpload mode="basic" chooseLabel="Select Receipt Image" 
+                accept="image/*" [maxFileSize]="5000000" [auto]="false" 
+                (onSelect)="onFileSelect($event)" [showUploadButton]="false" [showCancelButton]="false"
+                *ngIf="!imagePreview">
+              </p-fileUpload>
+            </div>
+            
+            <!-- Image Preview -->
+            <div class="mb-4" *ngIf="imagePreview">
+              <div class="relative">
+                <p-image [src]="imagePreview" [preview]="true" [alt]="'Receipt'" [width]="'100%'" [height]="'auto'">
+                </p-image>
+                <button pButton icon="pi pi-times" class="p-button-rounded p-button-danger p-button-sm absolute top-2 right-2"
+                  (click)="clearImage()"></button>
+              </div>
+            </div>
+            
+            <div class="text-sm text-gray-500 mb-4" *ngIf="!imagePreview">
+              <p>Please upload a clear image of your payment receipt.</p>
+              <p>Maximum file size: 5MB. Supported formats: JPG, PNG, GIF.</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="flex justify-end gap-3 mt-6">
+          <p-button label="Cancel" icon="pi pi-times" severity="secondary" (click)="cancelPayment()"></p-button>
+          <p-button label="Submit Payment" icon="pi pi-check" (click)="submitPayment()" 
+            [disabled]="isSubmitting || paymentForm.invalid || !receiptImage">
+            <span *ngIf="isSubmitting" class="ml-2">
+              <i class="pi pi-spin pi-spinner"></i>
+            </span>
+          </p-button>
+        </div>
+      </div>
+    </p-card>
+  </div>
+</div>

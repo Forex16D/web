@@ -1,0 +1,39 @@
+.p-fileupload-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  border: 2px dashed #dee2e6;
+  border-radius: 0.5rem;
+  background-color: #f8f9fa;
+  transition: background-color 0.3s;
+}
+
+.p-fileupload-content:hover {
+  background-color: #e9ecef;
+}
+
+.p-fileupload .p-button {
+  width: 100%;
+}
+
+.required-field::after {
+  content: "*";
+  color: red;
+  margin-left: 4px;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 768px) {
+  .p-card {
+    padding: 1rem 0.5rem;
+  }
+}
+
+/* Image preview styling */
+.receipt-preview {
+  max-height: 300px;
+  object-fit: contain;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
