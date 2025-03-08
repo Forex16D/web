@@ -172,9 +172,7 @@ export class AdminModelComponent implements OnInit {
     } else {
       this.expandedRows[model.model_id] = true;
     }
-    console.log(this.expandedRows);
   }
-  
   
   expandAll() {
     const expandedState = this.filteredModels.reduce((acc: { [key: string]: boolean }, model) => {
