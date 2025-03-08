@@ -240,7 +240,7 @@ export class BillComponent implements OnInit {
       icon: 'pi pi-credit-card',
       accept: () => {
         // Navigate to payment page with bill_id as query parameter
-        window.location.href = `/payment?bill_id=${bill.bill_id}&amount=${bill.net_amount}`;
+        window.location.href = `/payment?bill_id=${bill.bill_id}`;
       }
     });
   }

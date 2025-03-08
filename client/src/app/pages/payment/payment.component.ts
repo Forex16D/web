@@ -104,11 +104,6 @@ export class PaymentComponent implements OnInit {
           this.billId = parseInt(params['bill_id'], 10);
         }
       }
-      
-      // Get amount
-      if (params['amount']) {
-        this.amount = parseFloat(params['amount']);
-      }
     });
   }
 
@@ -150,34 +145,33 @@ export class PaymentComponent implements OnInit {
     formData.append('reference_number', this.paymentForm.value.referenceNumber);
     formData.append('payment_date', this.paymentForm.value.paymentDate.toISOString());
     formData.append('notes', this.paymentForm.value.notes || '');
-    
+
     if (this.isBulkPayment) {
       formData.append('bill_ids', JSON.stringify(this.billIds));
     } else {
       formData.append('bill_id', this.billId!.toString());
     }
-    
+
     formData.append('amount', this.amount.toString());
 
     // In a real app, this would submit to your API
     // For demo purposes, we'll just simulate a successful submission
-    setTimeout(() => {
-      this.isSubmitting = false;
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Payment Successful',
-        detail: `Your payment of $${this.amount.toFixed(2)} has been processed successfully`
-      });
+
+    // setTimeout(() => {
+    //   this.messageService.add({
+    //     severity: 'success',
+    //     summary: 'Payment Successful',
+    //     detail: `Your payment of $${this.amount.toFixed(2)} has been processed successfully`
+    //   });
       
-      // Navigate back to bills page after 2 seconds
-      setTimeout(() => {
-        this.router.navigate(['/bills']);
-      }, 2000);
-    }, 1500);
-    
-    // Actual API call would be like:
-    /*
-    this.apiService.post('/v1/payments', formData).subscribe({
+    //   // Navigate back to bills page after 2 seconds
+    //   setTimeout(() => {
+    //     this.isSubmitting = false;
+    //     this.router.navigate(['/bills']);
+    //   }, 2000);
+    // }, 1500);
+    const headers = {}
+    this.apiService.post('/v1/payments', formData, headers, true).subscribe({
       next: (response) => {
         this.isSubmitting = false;
         this.messageService.add({
@@ -196,7 +190,6 @@ export class PaymentComponent implements OnInit {
         });
       }
     });
-    */
   }
 
   cancelPayment(): void {

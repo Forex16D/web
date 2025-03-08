@@ -112,16 +112,35 @@ class BillingService:
       cursor.close()
       self.db_pool.release_connection(conn)
 
-  def pay_bill(self, bill_id):
+  def pay_bill(self, user_id, bill_id, image_path, payment_method, reference_number, payment_date, notes):
     try:
-      conn = self.db_pool.get_connection()
-      cursor = conn.cursor(cursor_factory=RealDictCursor)
-      
-      cursor.execute("SELECT * FROM bills")
-      bills = cursor.fetchall()
+        conn = self.db_pool.get_connection()
+        cursor = conn.cursor()
 
-      return {"bills": bills}
+        cursor.execute("SELECT net_amount FROM bills WHERE bill_id = %s", (bill_id,))
+        bill = cursor.fetchone()
+
+        if not bill:
+          raise ValueError("Bill not found!")
+
+        amount_paid = bill[0]
+
+        cursor.execute("UPDATE bills SET status = 'paid' WHERE bill_id = %s", (bill_id,))
+        cursor.execute("""
+          INSERT INTO receipts (
+            bill_id, user_id, amount_paid, receipt_image, payment_method, reference_number, payment_date, notes
+          ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        """, (bill_id, user_id, amount_paid, image_path, payment_method, reference_number, payment_date, notes))
+
+        conn.commit()
+        return {"message": "Payment Success!"}
+
+    except Exception as e:
+      conn.rollback()
+      raise Exception(f"Error processing payment: {str(e)}")
+    
     finally:
       cursor.close()
       self.db_pool.release_connection(conn)
-      
+
+        
