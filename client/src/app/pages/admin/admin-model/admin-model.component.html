@@ -1,14 +1,4 @@
 <div class="text-headline4">Models</div>
-<!-- <p-toolbar styleClass="mb-6">
-  <ng-template #start>
-    <p-button label="New" icon="pi pi-plus" class="mr-2" />
-    <p-button severity="danger" label="Delete" icon="pi pi-trash" outlined
-      [disabled]="!selectedModels || !selectedModels.length" />
-  </ng-template>
-
-  <ng-template #end>
-  </ng-template>
-</p-toolbar> -->
 <div class="flex flex-col justify-start gap-2 mb-6">
   <div class="text-subtitle1">
     Upload a new model
@@ -20,14 +10,22 @@
   </div>
 </div>
 
-<p-table [value]="models" dataKey="model_id" [tableStyle]="{ 'min-width': '50rem' }" [expandedRowKeys]="expandedRows"
-  [rows]="10" [rowsPerPageOptions]="[1, 10, 25, 50]" [paginator]="true" (onPage)="onPageChange($event)">
+<p-table 
+  [value]="models" 
+  dataKey="model_id" 
+  [tableStyle]="{ 'min-width': '50rem' }" 
+  [expandedRowKeys]="expandedRows"
+  [rows]="10" 
+  [rowsPerPageOptions]="[1, 10, 25, 50]" 
+  [paginator]="true" 
+  (onPage)="onPageChange($event)">
   <ng-template #caption>
     <div class="flex flex-wrap justify-end gap-2">
       <p-button label="Expand All" icon="pi pi-plus" text (click)="expandAll()" />
       <p-button label="Collapse All" icon="pi pi-minus" text (click)="collapseAll()" />
     </div>
   </ng-template>
+
   <ng-template #header>
     <tr>
       <th style="width: 1rem"></th>

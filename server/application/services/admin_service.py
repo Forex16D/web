@@ -20,10 +20,41 @@ class AdminService:
       dashboard_data = cursor.fetchone()
 
       return {
-        "totalUsers": dashboard_data["user_count"],
-        "totalModels": dashboard_data["model_count"],
-        "totalRevenue": dashboard_data["revenue"],
-        "activeSubscriptions": dashboard_data["subscriptions"]
+          "total_users": dashboard_data["user_count"],
+          "total_models": dashboard_data["model_count"],
+          "total_revenue": dashboard_data["revenue"],
+          "active_subscriptions": dashboard_data["subscriptions"],
+      }
+    
+    except ValueError as ve:
+      raise ve
+    
+    except Exception as e:
+      raise RuntimeError("An error occurred while fetching the dashboard data.") from e
+
+    finally:
+      cursor.close()
+      self.db_pool.release_connection(conn)
+      
+  def get_revenue(self):
+    try:
+      conn = self.db_pool.get_connection()
+      cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+      cursor.execute("""
+        SELECT 
+          DATE_TRUNC('month', payment_date) AS month, 
+          COALESCE(SUM(amount_paid), 0) AS total_revenue
+        FROM receipts
+        WHERE payment_date >= NOW() - INTERVAL '9 months'
+        GROUP BY month
+        ORDER BY month ASC
+      """)
+
+      revenue_by_month = cursor.fetchall()
+
+      return {
+        "revenue_by_month": revenue_by_month
       }
     
     except ValueError as ve:

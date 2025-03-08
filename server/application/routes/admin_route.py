@@ -10,3 +10,7 @@ admin_controller = AdminController(container.admin_service)
 def get_dashboard():
   return admin_controller.get_dashboard()
 
+@admin_routes.route("/v1/admin/revenue", methods=["GET"])
+def get_revenue():
+  return admin_controller.get_revenue()
+

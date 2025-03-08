@@ -19,7 +19,8 @@
   <!-- Stats Cards -->
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
     <!-- Users Card -->
-    <div class="p-4 rounded-lg bg-gray-800 border border-gray-700 flex flex-col">
+    <div class="p-4 rounded-lg bg-gray-800 border border-gray-700 flex flex-col cursor-pointer" 
+    (click)="updateQueryParams('users')">
       <div class="flex items-center justify-between mb-2">
         <span class="text-gray-400">Total Users</span>
         <i class="pi pi-users text-blue-400 text-xl"></i>
@@ -27,13 +28,14 @@
       <div class="flex items-baseline">
         <h2 class="text-3xl font-bold" *ngIf="!loading">{{ totalUsers | number }}</h2>
         <p-skeleton width="100px" height="40px" *ngIf="loading"></p-skeleton>
-        <span class="ml-2 text-green-400" *ngIf="!loading">+5.2%</span>
+        <!-- <span class="ml-2 text-green-400" *ngIf="!loading">+5.2%</span> -->
       </div>
-      <span class="text-xs text-gray-400 mt-2" *ngIf="!loading">+124 this month</span>
+      <!-- <span class="text-xs text-gray-400 mt-2" *ngIf="!loading">+124 this month</span> -->
     </div>
 
     <!-- Models Card -->
-    <div class="p-4 rounded-lg bg-gray-800 border border-gray-700 flex flex-col">
+    <div class="p-4 rounded-lg bg-gray-800 border border-gray-700 flex flex-col cursor-pointer"
+    (click)="updateQueryParams('models')">
       <div class="flex items-center justify-between mb-2">
         <span class="text-gray-400">AI Models</span>
         <i class="pi pi-microchip-ai text-green-400 text-xl"></i>
@@ -41,9 +43,9 @@
       <div class="flex items-baseline">
         <h2 class="text-3xl font-bold" *ngIf="!loading">{{ totalModels | number }}</h2>
         <p-skeleton width="100px" height="40px" *ngIf="loading"></p-skeleton>
-        <span class="ml-2 text-green-400" *ngIf="!loading">+2</span>
+        <!-- <span class="ml-2 text-green-400" *ngIf="!loading">+2</span> -->
       </div>
-      <span class="text-xs text-gray-400 mt-2" *ngIf="!loading">2 new models added</span>
+      <!-- <span class="text-xs text-gray-400 mt-2" *ngIf="!loading">2 new models added</span> -->
     </div>
 
     <!-- Revenue Card -->
@@ -55,9 +57,9 @@
       <div class="flex items-baseline">
         <h2 class="text-3xl font-bold" *ngIf="!loading">${{ totalRevenue | number }}</h2>
         <p-skeleton width="100px" height="40px" *ngIf="loading"></p-skeleton>
-        <span class="ml-2 text-green-400" *ngIf="!loading">+12.8%</span>
+        <!-- <span class="ml-2 text-green-400" *ngIf="!loading">+12.8%</span> -->
       </div>
-      <span class="text-xs text-gray-400 mt-2" *ngIf="!loading">+$5,380 this month</span>
+      <!-- <span class="text-xs text-gray-400 mt-2" *ngIf="!loading">+$5,380 this month</span> -->
     </div>
 
     <!-- Subscriptions Card -->
@@ -69,9 +71,9 @@
       <div class="flex items-baseline">
         <h2 class="text-3xl font-bold" *ngIf="!loading">{{ activeSubscriptions | number }}</h2>
         <p-skeleton width="100px" height="40px" *ngIf="loading"></p-skeleton>
-        <span class="ml-2 text-green-400" *ngIf="!loading">+3.5%</span>
+        <!-- <span class="ml-2 text-green-400" *ngIf="!loading">+3.5%</span> -->
       </div>
-      <span class="text-xs text-gray-400 mt-2" *ngIf="!loading">+29 this month</span>
+      <!-- <span class="text-xs text-gray-400 mt-2" *ngIf="!loading">+29 this month</span> -->
     </div>
   </div>
 
