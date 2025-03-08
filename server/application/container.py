@@ -6,6 +6,7 @@ from application.services.mt_services import MtService
 from application.services.model_service import ModelService
 from application.services.market_data_service import MarketDataService
 from application.services.billing_service import BillingService
+from application.services.admin_service import AdminService
 
 from argon2 import PasswordHasher # type: ignore
 
@@ -20,5 +21,6 @@ class AppContainer:
     self.model_service = ModelService(self.db_pool)
     self.market_data_service = MarketDataService(self.db_pool)
     self.billing_service = BillingService(self.db_pool)
+    self.admin_service = AdminService(self.db_pool)
 
 container = AppContainer()

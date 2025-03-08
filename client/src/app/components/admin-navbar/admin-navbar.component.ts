@@ -81,7 +81,7 @@ export class AdminNavbarComponent {
       {
         relativeTo: this.activatedRoute,
         queryParams: { view: value },
-        queryParamsHandling: 'merge'
+        queryParamsHandling: 'replace'
       }
     );
   }

@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
 import { NgIf } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AdminSidebarComponent } from '../../components/admin-sidebar/admin-sidebar.component';
 import { AdminUserComponent } from './admin-user/admin-user.component';
 import { AdminModelComponent } from './admin-model/admin-model.component';
-import { AdminReportComponent } from './admin-report/admin-report.component';
 import { AdminNavbarComponent } from '../../components/admin-navbar/admin-navbar.component';
+import { AdminHomeComponent } from './admin-home/admin-home.component';
 
 @Component({
   selector: 'app-admin',
@@ -13,8 +13,8 @@ import { AdminNavbarComponent } from '../../components/admin-navbar/admin-navbar
     AdminSidebarComponent, 
     AdminUserComponent, 
     AdminModelComponent, 
-    AdminReportComponent, 
     AdminNavbarComponent,
+    AdminHomeComponent,
     NgIf
   ],
   templateUrl: './admin.component.html',
@@ -26,11 +26,23 @@ export class AdminComponent {
   isMouseOver = false;
   view: string | null = null;
 
-  constructor(private activatedRoute: ActivatedRoute) {}
+  constructor(private activatedRoute: ActivatedRoute, private router: Router) {}
 
   ngOnInit() {
     this.activatedRoute.queryParams.subscribe(params => {
       this.view = params['view'] || null;
     });
+    const queryParams = this.activatedRoute.snapshot.queryParams;
+    
+    if (Object.keys(queryParams).length === 0) {
+      this.router.navigate(
+        [],
+        {
+          relativeTo: this.activatedRoute,
+          queryParams: { view: 'home' },
+          queryParamsHandling: 'replace'
+        }
+      );
+    }
   }
 }

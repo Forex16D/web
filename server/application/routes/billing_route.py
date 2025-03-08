@@ -1,4 +1,4 @@
-from flask import request, Blueprint, g
+from flask import request, Blueprint # type: ignore
 
 from application.controllers.billing_controller import BillingController
 from application.container import container

@@ -1,4 +1,4 @@
-from flask import request, Blueprint, g
+from flask import request, Blueprint # type: ignore
 
 from application.controllers.auth_controller import AuthController
 from application.container import container

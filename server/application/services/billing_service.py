@@ -1,5 +1,5 @@
 from psycopg2.extras import RealDictCursor # type: ignore
-from datetime import datetime
+from datetime import datetime, timedelta
 import calendar
 
 class BillingService:
@@ -14,7 +14,7 @@ class BillingService:
       now = datetime.now()
       first_day = now.replace(day=1).strftime('%Y-%m-%d')
       last_day = now.replace(day=calendar.monthrange(now.year, now.month)[1]).strftime('%Y-%m-%d')
-
+      due_date = (now + timedelta(days=5)).strftime('%Y-%m-%d')
       # Get total profit for unbilled orders
       cursor.execute("""
         SELECT SUM(profit) FROM orders 
@@ -33,13 +33,14 @@ class BillingService:
       commission = cursor.fetchone()["commission"] or 0
 
       net_amount = max(profit * commission, 0)  # Ensure non-negative
+      net_amount = round(net_amount, 2)
 
       # Insert new bill
       cursor.execute("""
-        INSERT INTO bills (portfolio_id, model_id, total_profit, commission, net_amount)
-        VALUES (%s, %s, %s, %s, %s)
+        INSERT INTO bills (portfolio_id, model_id, total_profit, commission, net_amount, due_date, status)
+        VALUES (%s, %s, %s, %s, %s, %s, 'pending')
         RETURNING bill_id
-      """, (portfolio_id, model_id, profit, commission, net_amount))
+      """, (portfolio_id, model_id, profit, commission, net_amount, due_date))
 
       bill_id = cursor.fetchone()["bill_id"]
 

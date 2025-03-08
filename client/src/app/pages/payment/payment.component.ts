@@ -154,26 +154,9 @@ export class PaymentComponent implements OnInit {
 
     formData.append('amount', this.amount.toString());
 
-    // In a real app, this would submit to your API
-    // For demo purposes, we'll just simulate a successful submission
-
-    // setTimeout(() => {
-    //   this.messageService.add({
-    //     severity: 'success',
-    //     summary: 'Payment Successful',
-    //     detail: `Your payment of $${this.amount.toFixed(2)} has been processed successfully`
-    //   });
-      
-    //   // Navigate back to bills page after 2 seconds
-    //   setTimeout(() => {
-    //     this.isSubmitting = false;
-    //     this.router.navigate(['/bills']);
-    //   }, 2000);
-    // }, 1500);
     const headers = {}
     this.apiService.post('/v1/payments', formData, headers, true).subscribe({
       next: (response) => {
-        this.isSubmitting = false;
         this.messageService.add({
           severity: 'success',
           summary: 'Payment Successful',

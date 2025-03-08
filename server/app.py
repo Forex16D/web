@@ -10,6 +10,7 @@ from application.routes.mt_route import mt_routes
 from application.routes.model_route import model_routes
 from application.routes.market_data_route import market_data_routes
 from application.routes.billing_route import bill_routes
+from application.routes.admin_route import admin_routes
 
 from application.services.middleware import token_required
 from application.helpers.server_log_helper import ServerLogHelper
@@ -31,6 +32,7 @@ def create_app():
   app.register_blueprint(model_routes)
   app.register_blueprint(market_data_routes)
   app.register_blueprint(bill_routes)
+  app.register_blueprint(admin_routes)
   
   return app
 
