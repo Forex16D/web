@@ -1,106 +1,174 @@
-<div class="text-headline4">Models</div>
-<div class="flex flex-col justify-start gap-2 mb-6">
-  <div class="text-subtitle1">
-    Upload a new model
-  </div>
-  <div class="flex gap-2">
-    <p-fileupload #fu [multiple]="true" mode="basic" chooseLabel="Choose" chooseIcon="pi pi-upload" name="demo[]"
-      accept=".zip" maxFileSize="10000000" (onSelect)="onFileSelected($event)" />
-    <p-button label="Upload" (click)="uploadFile()" severity="secondary" class="flex justify-center" />
-  </div>
-</div>
+<div class="p-4 md:p-6 w-full min-h-screen bg-gray-900 text-white">
 
-<p-table 
-  [value]="models" 
-  dataKey="model_id" 
-  [tableStyle]="{ 'min-width': '50rem' }" 
-  [expandedRowKeys]="expandedRows"
-  [rows]="10" 
-  [rowsPerPageOptions]="[1, 10, 25, 50]" 
-  [paginator]="true" 
-  (onPage)="onPageChange($event)">
-  <ng-template #caption>
-    <div class="flex flex-wrap justify-end gap-2">
-      <p-button label="Expand All" icon="pi pi-plus" text (click)="expandAll()" />
-      <p-button label="Collapse All" icon="pi pi-minus" text (click)="collapseAll()" />
+  <div class="text-headline4 mb-4 text-2xl font-bold">Models</div>
+
+  <p-toolbar styleClass="mb-6 bg-gray-800 border-gray-700">
+    <ng-template pTemplate="start">
+      <p-button label="New" icon="pi pi-plus" class="mr-2" (click)="createNewModel()" />
+      <p-button severity="danger" label="Delete" icon="pi pi-trash" outlined
+        [disabled]="!selectedModels || !selectedModels.length" (click)="confirmDeleteMultiple()" />
+    </ng-template>
+
+    <ng-template pTemplate="end">
+      <div class="flex items-center">
+        <span class="p-input-icon-left mr-2 space-x-2">
+          <i class="pi pi-search"></i>
+          <input pInputText type="text" placeholder="Search models..." [(ngModel)]="searchQuery"
+            (input)="onSearch($event)" />
+        </span>
+        <p-button *ngIf="searchQuery" icon="pi pi-times" (click)="clearSearch()" text styleClass="p-button-sm" />
+      </div>
+    </ng-template>
+  </p-toolbar>
+
+  <div class="flex flex-col justify-start gap-2 mb-6">
+    <div class="text-subtitle1">
+      Upload a new model
     </div>
-  </ng-template>
+    <div class="flex gap-2">
+      <p-fileupload #fu [multiple]="true" mode="basic" chooseLabel="Choose" chooseIcon="pi pi-upload" name="demo[]"
+        accept=".zip" maxFileSize="10000000" (onSelect)="onFileSelected($event)" />
+      <p-button label="Upload" (click)="uploadFile()" severity="secondary" class="flex justify-center" />
+    </div>
+  </div>
 
-  <ng-template #header>
-    <tr>
-      <th style="width: 1rem"></th>
-      <th style="width: 16rem;">Id</th>
-      <th>Name</th>
-      <th>Symbol</th>
-      <th>Commision</th>
-      <th style="width: 8rem">
-    </tr>
-  </ng-template>
-  <ng-template #body let-model let-expanded="expanded">
-    <tr>
-      <td style="width: 1rem">
-        <p-button pRipple (click)="toggleRow(model)" [text]="true" [rounded]="true" [plain]="true"
-          [icon]="expandedRows[model.model_id] ? 'pi pi-chevron-down' : 'pi pi-chevron-right'" />
-      </td>
-      <td>{{ model.model_id }}</td>
-      <td>{{ model.name }}</td>
-      <td>{{ model.symbol }}</td>
-      <td>{{ model.commission || 'N/A' }}</td>
-      <td>
-        <p-button icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true" (click)="editModel(model)" />
-        <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [outlined]="true"
-          (click)="deleteModel(model)" />
-      </td>
-    </tr>
-  </ng-template>
-
-  <ng-template #expandedrow let-model>
-    <tr>
-      <td colspan="4">
-        <div class="p-4">
-          <p>ID: {{ model.model_id }}</p>
-          <p>Name: {{ model.name }}</p>
-          <p>Running: {{ model.running }}</p>
-          <p></p>
-        </div>
-      </td>
-      <td colspan="2">
+  <p-table 
+    [value]="filteredModels" 
+    dataKey="model_id" 
+    [tableStyle]="{ 'min-width': '50rem' }"
+    [expandedRowKeys]="expandedRows" 
+    [rows]="10" 
+    [rowsPerPageOptions]="[10, 25, 50]" 
+    [paginator]="true"
+    [loading]="loading"
+    [(selection)]="selectedModels"
+    (onPage)="onPageChange($event)">
+    <ng-template #caption>
+      <div class="flex flex-wrap justify-between gap-2">
+        <span class="text-sm text-gray-300">
+          {{ selectedModels && selectedModels.length ? selectedModels.length + ' models selected' : 'Select models to
+          perform actions' }}
+        </span>
         <div class="flex gap-2">
-          <button pButton (click)="trainModel(model)" [disabled]="model.running" label="Train"
-            [icon]="model.running ? 'pi pi-spin pi-spinner' : 'pi pi-play'"></button>
-          <button pButton (click)="backtestModel(model)" [disabled]="model.running" label="Backtest"
-            [icon]="model.running ? 'pi pi-spin pi-spinner' : 'pi pi-play'"></button>
-          <button pButton (click)="stopEvaluate(model)">Stop</button>
+          <p-button label="Expand All" icon="pi pi-plus" text (click)="expandAll()" />
+          <p-button label="Collapse All" icon="pi pi-minus" text (click)="collapseAll()" />
         </div>
-      </td>
-    </tr>
-  </ng-template>
-</p-table>
+      </div>
+    </ng-template>
 
-<p-dialog [modal]="true" [(visible)]="isEditVisible" [style]="{ width: '30rem' }">
-  <ng-template pTemplate="header">
-    <h1 class="text-2xl font-medium">Edit Model</h1>
-  </ng-template>
+    <ng-template #header>
+      <tr>
+        <th style="width: 3rem">
+          <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+        </th>
+        <th style="width: 1rem"></th>
+        <th style="width: 16rem;">Id</th>
+        <th>Name</th>
+        <th>Symbol</th>
+        <th>Commission</th>
+        <th style="width: 8rem">Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template #body let-model let-expanded="expanded">
+      <tr>
+        <td>
+          <p-tableCheckbox [value]="model"></p-tableCheckbox>
+        </td>
+        <td style="width: 1rem">
+          <p-button pRipple (click)="toggleRow(model)" [text]="true" [rounded]="true" [plain]="true"
+            [icon]="expandedRows[model.model_id] ? 'pi pi-chevron-down' : 'pi pi-chevron-right'" />
+        </td>
+        <td>{{ model.model_id }}</td>
+        <td>{{ model.name }}</td>
+        <td>{{ model.symbol }}</td>
+        <td>{{ model.commission || 'N/A' }}</td>
+        <td>
+          <div class="flex gap-1">
+            <p-button icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true" (click)="editModel(model)" />
+            <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [outlined]="true"
+              (click)="confirmDelete(model)" />
+          </div>
+        </td>
+      </tr>
+    </ng-template>
 
-  <form pFocusTrap [formGroup]="modelEditForm" (ngSubmit)="saveModel()">
-    <div class="flex items-center gap-4 mb-8">
-      <label for="model_id" class="w-20 text-sm">model_id</label>
-      <input pInputText id="model_id" class="flex-auto" autocomplete="off" formControlName="model_id" />
-    </div>
+    <ng-template #expanded let-model let-expanded="expanded">
+      <tr>
+        <td colspan="7">
+          <div class="p-4 grid grid-cols-2 gap-4">
+            <div>
+              <div class="mb-2">
+                <p><span class="font-medium text-gray-300">ID:</span> {{ model.model_id }}</p>
+                <p><span class="font-medium text-gray-300">Name:</span> {{ model.name }}</p>
+                <p><span class="font-medium text-gray-300">Symbol:</span> {{ model.symbol }}</p>
+                <p><span class="font-medium text-gray-300">Running:</span> {{ model.running ? 'Yes' : 'No' }}</p>
+              </div>
+            </div>
+            <div class="flex justify-end items-start gap-2">
+              <p-button (click)="trainModel(model)" [disabled]="model.running" label="Train"
+                [icon]="model.running ? 'pi pi-spin pi-spinner' : 'pi pi-play'" />
+              <p-button (click)="backtestModel(model)" [disabled]="model.running" label="Backtest"
+                [icon]="model.running ? 'pi pi-spin pi-spinner' : 'pi pi-play'" />
+              <p-button (click)="stopEvaluate(model)" [disabled]="!model.running" label="Stop" icon="pi pi-stop"
+                severity="danger" />
+            </div>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
 
-    <div class="flex items-center gap-4 mb-8">
-      <label for="name" class="w-20 text-sm">Name</label>
-      <input pInputText id="name" class="flex-auto" autocomplete="off" formControlName="name" />
-    </div>
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="7" class="text-center p-4">
+          <div class="flex flex-col items-center justify-center p-6">
+            <i class="pi pi-folder-open text-4xl text-gray-400 mb-4"></i>
+            <span class="text-gray-400 mb-2">
+              {{ searchQuery ? 'No models match your search criteria' : 'No models found' }}
+            </span>
+            <p-button *ngIf="searchQuery" label="Clear Search" icon="pi pi-times" (click)="clearSearch()"
+              class="mb-2"></p-button>
+            <p-button label="Create New Model" icon="pi pi-plus" (click)="createNewModel()"></p-button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
 
-    <div class="flex items-center gap-4 mb-8">
-      <label for="comision" class="w-20 text-sm">commission</label>
-      <input pInputText id="commision" class="flex-auto" autocomplete="off" formControlName="commission" />
-    </div>
+  <!-- Edit Dialog -->
+  <p-dialog [modal]="true" [(visible)]="isEditVisible" [style]="{ width: '30rem' }">
+    <ng-template pTemplate="header">
+      <h1 class="text-2xl font-medium">{{ editingNewModel ? 'Create Model' : 'Edit Model' }}</h1>
+    </ng-template>
 
-    <div class="flex justify-end gap-2">
-      <p-button label="Cancel" severity="secondary" text="true" (click)="isEditVisible = false"></p-button>
-      <p-button label="Save" type="submit"></p-button>
-    </div>
-  </form>
-</p-dialog>
+    <form pFocusTrap [formGroup]="modelEditForm" (ngSubmit)="saveModel()">
+      <div class="flex items-center gap-4 mb-8">
+        <label for="model_id" class="w-20 text-sm">Model ID</label>
+        <input pInputText id="model_id" class="flex-auto" autocomplete="off" formControlName="model_id" />
+      </div>
+
+      <div class="flex items-center gap-4 mb-8">
+        <label for="name" class="w-20 text-sm">Name</label>
+        <input pInputText id="name" class="flex-auto" autocomplete="off" formControlName="name" />
+      </div>
+
+      <div class="flex items-center gap-4 mb-8">
+        <label for="symbol" class="w-20 text-sm">Symbol</label>
+        <input pInputText id="symbol" class="flex-auto" autocomplete="off" formControlName="symbol" />
+      </div>
+
+      <div class="flex items-center gap-4 mb-8">
+        <label for="commission" class="w-20 text-sm">Commission</label>
+        <input pInputText id="commission" class="flex-auto" autocomplete="off" formControlName="commission" />
+      </div>
+
+      <div class="flex justify-end gap-2">
+        <p-button label="Cancel" severity="secondary" text="true" (click)="isEditVisible = false"></p-button>
+        <p-button label="Save" type="submit" [disabled]="modelEditForm.invalid"></p-button>
+      </div>
+    </form>
+  </p-dialog>
+
+  <!-- Delete Confirmation Dialog -->
+  <p-confirmDialog [style]="{width: '450px'}" header="Confirm" icon="pi pi-exclamation-triangle"
+    acceptButtonStyleClass="p-button-danger"></p-confirmDialog>
+</div>

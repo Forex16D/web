@@ -169,6 +169,7 @@ class ModelService:
   def update_model(self, request, model_id):
     name = request.json.get("name")
     commission = request.json.get("commission")
+    symbol = request.json.get("symbol").upper()
     
     if not name or not commission:
       raise ValueError("Missing required fields.")
@@ -179,9 +180,9 @@ class ModelService:
 
     try:
       cursor.execute(""" UPDATE models 
-                     SET name = %s, commission = %s, updated_at = NOW()
-                     WHERE model_id = %s 
-                     """, (name, commission, model_id))
+        SET name = %s, commission = %s, symbol = %s, updated_at = NOW()
+        WHERE model_id = %s 
+      """, (name, commission, symbol, model_id))
       conn.commit()
       return {"message": "Model updated successfully!"}
     except Exception as e:
