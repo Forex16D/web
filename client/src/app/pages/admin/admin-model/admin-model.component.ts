@@ -363,7 +363,7 @@ export class AdminModelComponent implements OnInit {
 
             this.getBacktestEndStatus().subscribe({
               next: (status) => {
-                console.log('Model training status:', status === "completed");
+                console.log('Model training completed:', status === "completed");
                 if (status === 'completed') {
                   model.running = false;
                   this.messageService.add({ severity: 'success', summary: 'Model training completed', detail: 'The model training has completed successfully.' });
@@ -395,7 +395,7 @@ export class AdminModelComponent implements OnInit {
 
             this.getBacktestEndStatus().subscribe({
               next: (status) => {
-                console.log('Model backtesting status:', status === "completed");
+                console.log('Model backtesting completed:', status === "completed");
                 if (status === 'completed') {
                   model.running = false;
                   this.messageService.add({ severity: 'success', summary: 'Model backtesting completed', detail: 'The model backtesting has completed successfully.' });

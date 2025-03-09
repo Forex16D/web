@@ -12,6 +12,12 @@
       <p-button label="Upload" (click)="uploadFile()" severity="secondary" class="flex justify-center" />
     </div>
   </div>
+  <p-toolbar styleClass="mb-6 bg-gray-800 border-gray-700">
+    <ng-template pTemplate="start">
+      <p-button severity="danger" label="Delete" icon="pi pi-trash" outlined
+        [disabled]="!selectedModels || !selectedModels.length" (click)="confirmDeleteMultiple()" />
+    </ng-template>
+  </p-toolbar>
 
   <p-table 
     [value]="filteredModels" 
@@ -23,7 +29,8 @@
     [paginator]="true"
     [loading]="loading"
     [(selection)]="selectedModels"
-    (onPage)="onPageChange($event)">
+    (onPage)="onPageChange($event)"
+    paginatorDropdownAppendTo="body">
     <ng-template #caption>
       <div class="flex flex-wrap justify-between gap-2">
         <span class="text-sm text-gray-300">

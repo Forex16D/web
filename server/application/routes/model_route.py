@@ -68,7 +68,7 @@ def get_process_status(current_user_id, model_id):
 def update_model(current_user_id, model_id):
   return model_controller.update_model(request, model_id)
 
-@model_routes.route("/v1/models/backtest/stream")
+@model_routes.route("/v1/models/backtest/stream", methods=["GET"])
 @admin_required
-def stream_status():
+def stream_status(current_user_id):
   return model_controller.stream_backtest_status()

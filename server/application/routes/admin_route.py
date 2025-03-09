@@ -14,3 +14,7 @@ def get_dashboard():
 def get_revenue():
   return admin_controller.get_revenue()
 
+@admin_routes.route("/v1/admin/model-usage", methods=["GET"])
+def get_model_usage():
+  return admin_controller.get_model_usage()
+

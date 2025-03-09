@@ -66,3 +66,32 @@ class AdminService:
     finally:
       cursor.close()
       self.db_pool.release_connection(conn)
+      
+  def get_model_usage(self):
+    try:
+      conn = self.db_pool.get_connection()
+      cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+      cursor.execute("""
+        SELECT models.name, COUNT(*) AS value
+        FROM portfolios
+        LEFT JOIN models ON portfolios.model_id = models.model_id
+        GROUP BY models.name
+        ORDER BY value DESC
+      """)
+
+      model_usage = cursor.fetchall()
+
+      return {
+        "model_usage": model_usage
+      }
+    
+    except ValueError as ve:
+      raise ve
+    
+    except Exception as e:
+      raise RuntimeError("An error occurred while fetching the dashboard data.") from e
+
+    finally:
+      cursor.close()
+      self.db_pool.release_connection(conn)

@@ -1,8 +1,9 @@
 import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
-import * as echarts from 'echarts/core';
 import { BarChart, LineChart } from 'echarts/charts';
-import { provideEchartsCore } from 'ngx-echarts';
 import { SkeletonModule } from 'primeng/skeleton';
+import { catchError } from 'rxjs/operators';
+import * as echarts from 'echarts/core';
+import { forkJoin, of } from 'rxjs';
 import {
   TitleComponent,
   TooltipComponent,
@@ -44,10 +45,6 @@ echarts.use([
     NgClass,
     NgIf,
   ],
-  providers: [
-    provideEchartsCore({ echarts }),
-  ],
-
 })
 export class AdminHomeComponent implements OnInit {
   @ViewChild('profitChart') profitChartElement!: ElementRef;
@@ -59,6 +56,7 @@ export class AdminHomeComponent implements OnInit {
   totalRevenue: number = 0;
   activeSubscriptions: number = 0;
   revenueData: { month: string; total_revenue: number }[] = [];
+  modelUsage: { value: number; name: string }[] = [];
 
   // Charts
   profitChart: any;
@@ -76,79 +74,50 @@ export class AdminHomeComponent implements OnInit {
 
   ngOnInit(): void {
     this.fetchDashboardData().then(() => {
-      // Initialize charts after data is fetched
       this.initProfitChart();
       this.initUsageChart();
     });
   }
 
   fetchDashboardData(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      // Simulate API call with setTimeout
-      setTimeout(() => {
-        // Demo data - Replace with actual API calls
-        this.totalUsers = 1254;
-        this.totalModels = 18;
-        this.totalRevenue = 58750;
-        this.activeSubscriptions = 867;
+    return new Promise((resolve) => {
+      forkJoin({
+        dashboard: this.apiService.get<any>('/v1/admin/dashboard').pipe(
+          catchError((error) => {
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load dashboard data' });
+            return of({ total_users: 0, total_models: 0, total_revenue: 0, active_subscriptions: 0 }); // Default values
+          })
+        ),
+        revenue: this.apiService.get<any>('/v1/admin/revenue').pipe(
+          catchError((error) => {
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load revenue data' });
+            return of({ revenue_by_month: [] }); // Default value
+          })
+        ),
+        modelUsage: this.apiService.get<any>('/v1/admin/model-usage').pipe(
+          catchError((error) => {
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load model usage data' });
+            return of({ model_usage: [] }); // Default value
+          })
+        )
+      }).subscribe(({ dashboard, revenue, modelUsage }) => {
+        this.totalUsers = dashboard.total_users;
+        this.totalModels = dashboard.total_models;
+        this.totalRevenue = dashboard.total_revenue;
+        this.activeSubscriptions = dashboard.active_subscriptions;
+
+        this.revenueData = revenue.revenue_by_month;
+        this.modelUsage = modelUsage.model_usage;
 
         this.loading = false;
-
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Data Loaded',
-          detail: 'Dashboard data has been updated'
-        });
-
-        this.apiService.get('/v1/admin/dashboard').subscribe({
-          next: (response: any) => {
-            this.totalUsers = response.total_users;
-            this.totalModels = response.total_models;
-            this.totalRevenue = response.total_revenue;
-            this.activeSubscriptions = response.active_subscriptions;
-            this.loading = false;
-          },
-          error: (error) => {
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Error',
-              detail: 'Failed to load dashboard data'
-            });
-            this.loading = false;
-          }
-        });
-
-        this.apiService.get('/v1/admin/revenue').subscribe({
-          next: (response: any) => {
-            // Assuming response.revenue_by_month has the necessary structure
-            this.revenueData = response.revenue_by_month;
-            this.loading = false;
-            resolve();  // Resolve the promise when data fetching is complete
-          },
-          error: (error) => {
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Error',
-              detail: 'Failed to load revenue data'
-            });
-            this.loading = false;
-            reject(error); // Reject the promise if there's an error
-          }
-        });
-      }, 1000);
+        resolve(); // Resolve the promise even if some APIs failed
+      });
     });
   }
-
 
   initProfitChart(): void {
     if (this.profitChartElement && this.profitChartElement.nativeElement) {
       this.profitChart = echarts.init(this.profitChartElement.nativeElement);
-
-      // Demo data for profit chart
-      const revenueData = [
-        { month: "Sat, 01 Mar 2025 00:00:00 GMT", total_revenue: 417.08 },
-        { month: "Sat, 01 Feb 2025 00:00:00 GMT", total_revenue: 500 }
-      ];
 
       // Map the revenue data to months and revenue values
       const months = this.revenueData.map(item => new Date(item.month).toLocaleString('en-US', { month: 'short' }));
@@ -242,9 +211,23 @@ export class AdminHomeComponent implements OnInit {
 
   initUsageChart(): void {
     if (this.usageChartElement && this.usageChartElement.nativeElement) {
+      // Dispose existing chart instance to prevent duplicate initialization
+      if (this.usageChart) {
+        this.usageChart.dispose();
+      }
+
       this.usageChart = echarts.init(this.usageChartElement.nativeElement);
 
-      // Demo data for model usage chart
+      // Define a dynamic color palette
+      const colorPalette = ['#4ade80', '#60a5fa', '#f97316', '#a78bfa', '#facc15', '#ef4444', '#14b8a6'];
+
+      // Map colors dynamically to model usage data
+      const chartData = this.modelUsage.map((item, index) => ({
+        ...item,
+        itemStyle: { color: colorPalette[index % colorPalette.length] } // Assign color from palette
+      }));
+
+      console.log(chartData);
       const option = {
         title: {
           text: 'Model Usage Distribution',
@@ -289,12 +272,7 @@ export class AdminHomeComponent implements OnInit {
             labelLine: {
               show: false
             },
-            data: [
-              { value: 48, name: 'GPT-4', itemStyle: { color: '#4ade80' } },
-              { value: 32, name: 'Claude', itemStyle: { color: '#60a5fa' } },
-              { value: 15, name: 'Llama 3', itemStyle: { color: '#f97316' } },
-              { value: 5, name: 'Other', itemStyle: { color: '#a78bfa' } }
-            ]
+            data: chartData // Use dynamically colored data
           }
         ]
       };
@@ -308,15 +286,13 @@ export class AdminHomeComponent implements OnInit {
     }
   }
 
+
   refresh(): void {
     this.loading = true;
-    this.fetchDashboardData();
-
-    // Refresh charts with new data
-    setTimeout(() => {
+    this.fetchDashboardData().then(() => {
       this.initProfitChart();
       this.initUsageChart();
-    }, 1100);
+    })
   }
 
   updateQueryParams(value: string) {

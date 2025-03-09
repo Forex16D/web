@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
+import { from, Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../../../environment/environment';
 
@@ -66,17 +66,33 @@ export class ApiService {
   }
 
   getStream(endpoint: string, customHeaders?: object): Observable<string> {
-    return new Observable((observer) => {
-      fetch(`${this.apiUrl}/${endpoint}`, {
+    return new Observable<string>((observer) => {
+      const token = localStorage.getItem('authToken');
+
+      const headers: Record<string, string> = {
+        Accept: 'text/event-stream',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(customHeaders as Record<string, string> ?? {}),
+      };
+
+      const controller = new AbortController(); // Support cancellation
+      const request = fetch(`${this.apiUrl}/${endpoint}`, {
         method: 'GET',
-        headers: {
-          'Accept': 'text/event-stream',
-          ...(customHeaders || {}),
-        },
-      })
-        .then((response) => {
+        headers,
+        signal: controller.signal,
+      });
+
+      from(request)
+        .pipe(
+          catchError((error) => {
+            observer.error(error);
+            return throwError(() => new Error('Failed to fetch stream.'));
+          })
+        )
+        .subscribe((response) => {
           if (!response.ok || !response.body) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
+            observer.error(new Error(`HTTP error! Status: ${response.status}`));
+            return;
           }
 
           const reader = response.body.getReader();
@@ -99,20 +115,23 @@ export class ApiService {
           };
 
           readStream();
-        })
-        .catch((error) => observer.error(error));
+        });
+
+      return () => {
+        controller.abort();
+      };
     });
   }
 
   private handleError(error: any) {
-  console.error('API request error:', error);
+    console.error('API request error:', error);
 
-  const errorMessage = error?.error?.message || 'Server error';
-  const errorStatus = error?.status || 500;
+    const errorMessage = error?.error?.message || 'Server error';
+    const errorStatus = error?.status || 500;
 
-  return throwError(() => ({
-    message: errorMessage,
-    status: errorStatus,
-  }));
-}
+    return throwError(() => ({
+      message: errorMessage,
+      status: errorStatus,
+    }));
+  }
 }
