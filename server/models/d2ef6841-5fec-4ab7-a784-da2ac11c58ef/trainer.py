@@ -1,4 +1,4 @@
-from flask import json
+from flask import json # type: ignore
 import sys
 import gymnasium as gym
 import numpy as np
@@ -10,6 +10,7 @@ from ta.trend import EMAIndicator, MACD
 from ta.momentum import RSIIndicator
 from ta.volatility import BollingerBands
 from pathlib import Path
+import time
 
 class StockTradingEnv(gym.Env):
   def __init__(self, data, window_size=60, initial_balance=10000, volume=100):

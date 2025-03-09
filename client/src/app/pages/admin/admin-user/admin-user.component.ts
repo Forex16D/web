@@ -11,9 +11,10 @@ import { FormsModule } from '@angular/forms';
 import { JsonPipe, NgIf } from '@angular/common';
 import { FileUploadModule } from 'primeng/fileupload';
 import { Router, ActivatedRoute } from '@angular/router';
-import { MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { ApiService } from '../../../core/services/api.service';
 import { TagModule } from 'primeng/tag';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
 interface User {
   user_id: string;
@@ -42,6 +43,7 @@ interface UserResponse {
     JsonPipe,
     FileUploadModule,
     NgIf,
+    ConfirmDialogModule
   ],
   templateUrl: './admin-user.component.html',
   styleUrls: ['./admin-user.component.css']
@@ -59,7 +61,7 @@ export class AdminUserComponent implements OnInit {
   totalRecords = signal<number>(0);
   loading = signal<boolean>(false);
 
-  constructor() {
+  constructor(private confirmationService: ConfirmationService) {
     effect(() => {
       this.updateQueryParams(this.page(), this.limit());
     });
@@ -91,15 +93,24 @@ export class AdminUserComponent implements OnInit {
   }
 
   deleteUser(userId: string): void {
-    if (confirm(`Are you sure you want to delete user ${userId}?`)) {
-      this.apiService.delete(`v1/users/${userId}`).subscribe({
-        next: () => {
-          this.messageService.add({ severity: 'success', summary: 'Success', detail: `User ${userId} has been deleted` });
-          this.loadUsers();
-        },
-        error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to delete user' })
-      });
-    }
+    this.confirmationService.confirm({
+      message: `Are you sure you want to delete selected user?`,
+      header: 'Delete Confirmation',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Delete',
+      rejectLabel: 'Cancel',
+      acceptButtonStyleClass: 'p-button-danger',
+      rejectButtonStyleClass: 'p-button-secondary p-button-text',
+      accept: () => {
+        this.apiService.delete(`v1/users/${userId}`).subscribe({
+          next: () => {
+            this.messageService.add({ severity: 'success', summary: 'Success', detail: `User ${userId} has been deleted` });
+            this.loadUsers();
+          },
+          error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to delete user' })
+        });
+      }
+    });
   }
 
   bulkDeleteUsers(): void {

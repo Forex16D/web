@@ -10,21 +10,21 @@ class ModelController:
     try:
       response = self.model_service.get_all_models(request)
       return jsonify(response), 200
-    except:
+    except Exception:
       return {"status": 500, "message": "Internal server error"}, 500
 
   def get_active_models(self): 
     try:
       response = self.model_service.get_active_models()
       return jsonify(response), 200
-    except:
+    except Exception:
       return {"status": 500, "message": "Internal server error"}, 500
   
   def get_model_detail(self, model_id):
     try:
       response = self.model_service.get_model_detail(model_id)
       return jsonify(response), 200
-    except:
+    except Exception:
       return {"status": 500, "message": "Internal server error"}, 500
   
   def create_models(self, request, current_user_id):
