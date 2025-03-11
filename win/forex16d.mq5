@@ -1,7 +1,7 @@
 #include <Zmq/Zmq.mqh>
 #include <Trade\Trade.mqh>
 
-#define SERVER_URL "http://forex16d.com:5000"
+#define SERVER_URL "http://127.0.0.1:5000"
 
 input string zmq_address = "tcp://127.0.0.1:5557";
 input double lot_size = 0.01;
@@ -63,8 +63,7 @@ int OnInit()
   Print(model_id);
   Print(portfolio_id);
  
-  req_socket.setLinger(100);  // Allow up to 100ms for messages to send before closing
-  req_socket.setIdentity(portfolio_id);
+  req_socket.setLinger(100);
  
   if (!req_socket.connect(zmq_address)) {
     Print("Failed to connect to ZeroMQ server at ", zmq_address);
@@ -74,7 +73,6 @@ int OnInit()
   Print("Connected to ZeroMQ server at ", zmq_address);
   ZmqMsg request_msg("init");
 
-  // Non-blocking send
   if (req_socket.send(request_msg, ZMQ_DONTWAIT)) {
     Print("Data sent: ", "init");
   } else {
@@ -87,7 +85,7 @@ int OnInit()
   } else {
     Print("No message available for receive.");
   }
- 
+  
   EventSetTimer(5);
     
   return INIT_SUCCEEDED;
@@ -134,10 +132,13 @@ void sendData()
   } else {
     Print("No message received.");
   }
-
-  string response = reply_msg.getData();
+  
+  uchar replyMessage[];
+   
+  reply_msg.getData(replyMessage);
+  string response = CharArrayToString(replyMessage);
   Print(response);
- 
+  Print(response == "buy");
   // Set up trade request
   MqlTradeRequest request = {};
   request.action = TRADE_ACTION_DEAL;       
@@ -154,7 +155,7 @@ void sendData()
   MqlTradeResult result = {};
  
   // Handle trade execution
-  if (!StringCompare(response, "buy"))
+  if (StringCompare(response, "buy"))
   {
     request.type = ORDER_TYPE_BUY;
   }
