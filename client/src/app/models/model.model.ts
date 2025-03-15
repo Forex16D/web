@@ -7,4 +7,5 @@ export interface Model {
   created_at: string
   updated_at: string | null
   file_path: string
+  roi: string
 }

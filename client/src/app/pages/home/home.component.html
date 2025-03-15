@@ -1,28 +1,131 @@
-<div class="pl-14 sm:pl-0">
-  <div class="flex flex-col min-h-80 justify-center items-center bg-contain bg-center"
-    [style.background-image]="'url(' + backgroundImage + ')'">
-    <h1 class="flex flex-col text-6xl font-bold text-center">
-      <span>Boost Your Trading Efficiency</span>
-      <span>
-        With
-        <span class="text-green-400">AI-Powered</span> Experts
-      </span>
-    </h1>
-  </div>
-  
-  <div class="my-5 pl-0 sm:pl-14">
-    <div class="grid grid-cols-1 ml:grid-cols-3">
-      <app-mini-price-chart [symbol]="'OANDA:XAUUSD'" />
-      <app-mini-price-chart [symbol]="'FX:USDJPY'" />
-      <app-mini-price-chart [symbol]="'FX:EURUSD'" />
+<div class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
+  <!-- Hero Section with Gradient Overlay -->
+  <div class="relative flex flex-col min-h-[500px] justify-center items-center rounded-xl overflow-hidden my-8">
+    <!-- Background with gradient overlay -->
+    <div class="absolute inset-0 bg-gradient-to-r from-gray-900/80 to-gray-800/80 z-10"></div>
+
+    <!-- Background image (you can keep your dynamic binding) -->
+    <div class="absolute inset-0 bg-cover bg-center" [style.background-image]="'url(' + backgroundImage + ')'"></div>
+
+    <!-- Content -->
+    <div class="relative z-20 text-center px-4">
+      <h1 class="flex flex-col text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight">
+        <span class="mb-2">Boost Your Trading Efficiency</span>
+        <span>
+          With
+          <span class="text-green-400 inline-block relative">
+            AI-Powered
+            <span class="absolute bottom-0 left-0 w-full h-1 bg-green-400 opacity-70"></span>
+          </span>
+          <span> Experts</span>
+        </span>
+      </h1>
+
+      <p class="mt-6 text-lg text-gray-200 max-w-xl mx-auto">
+        Advanced analytics and AI-driven insights to help you make smarter trading decisions.
+      </p>
+
+      <div class="mt-8">
+        <p-button styleClass="p-button-lg p-button-success" [rounded]="true">
+          <span class="px-2">Start Trading</span>
+          <i class="pi pi-arrow-right ml-2"></i>
+        </p-button>
+      </div>
     </div>
   </div>
-  
-  <div class="flex flex-col items-center py-6 md:py-12 lg:py-16 bg-gray-1000">
-    <div class="mb-10 text-headline4 md:mb-m md:text-headline3 lg:mb-xl lg:text-headline2">
-      <div>Start Earning <span class="text-green-400">Now</span></div>
+
+  <!-- Live Market Section -->
+  <div class="my-12">
+    <h2 class="text-2xl font-bold text-center mb-8">Live Market Updates</h2>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Chart Cards with improved styling -->
+      <div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+        <div class="p-4 border-b border-gray-700">
+          <div class="flex justify-between items-center">
+            <h3 class="font-bold text-xl">Gold</h3>
+            <p-tag styleClass="p-tag-success" value="XAUUSD"></p-tag>
+          </div>
+        </div>
+        <app-mini-price-chart [symbol]="'OANDA:XAUUSD'" />
+      </div>
+
+      <div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+        <div class="p-4 border-b border-gray-700">
+          <div class="flex justify-between items-center">
+            <h3 class="font-bold text-xl">USD/JPY</h3>
+            <p-tag styleClass="p-tag-info" value="USDJPY"></p-tag>
+          </div>
+        </div>
+        <app-mini-price-chart [symbol]="'FX:USDJPY'" />
+      </div>
+
+      <div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+        <div class="p-4 border-b border-gray-700">
+          <div class="flex justify-between items-center">
+            <h3 class="font-bold text-xl">EUR/USD</h3>
+            <p-tag styleClass="p-tag-warning" value="EURUSD"></p-tag>
+          </div>
+        </div>
+        <app-mini-price-chart [symbol]="'FX:EURUSD'" />
+      </div>
     </div>
-    <p-button routerLink="/bot"><span class="mr-1">Start Browsing</span><i class="pi pi-arrow-right"
-        style="font-size: 14px;"></i></p-button>
+  </div>
+
+  <!-- Features Section -->
+  <div class="my-16">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl font-bold mb-4">Why Choose Our Platform</h2>
+      <p class="text-gray-400 max-w-2xl mx-auto">Our AI-powered trading platform gives you the edge in today's competitive markets</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div class="p-6 rounded-lg bg-gray-800/50 hover:bg-gray-800 transition duration-300">
+        <div class="h-12 w-12 rounded-full bg-green-500/20 flex items-center justify-center mb-4">
+          <i class="pi pi-bolt text-green-400 text-xl"></i>
+        </div>
+        <h3 class="text-xl font-bold mb-2">Real-Time Analysis</h3>
+        <p class="text-gray-400">Get instant market insights and trading signals powered by advanced algorithms.</p>
+      </div>
+
+      <div class="p-6 rounded-lg bg-gray-800/50 hover:bg-gray-800 transition duration-300">
+        <div class="h-12 w-12 rounded-full bg-blue-500/20 flex items-center justify-center mb-4">
+          <i class="pi pi-chart-line text-blue-400 text-xl"></i>
+        </div>
+        <h3 class="text-xl font-bold mb-2">Smart Predictions</h3>
+        <p class="text-gray-400">AI-driven market predictions to help you spot opportunities before others.</p>
+      </div>
+
+      <div class="p-6 rounded-lg bg-gray-800/50 hover:bg-gray-800 transition duration-300">
+        <div class="h-12 w-12 rounded-full bg-purple-500/20 flex items-center justify-center mb-4">
+          <i class="pi pi-cog text-purple-400 text-xl"></i>
+        </div>
+        <h3 class="text-xl font-bold mb-2">Copy Trading</h3>
+        <p class="text-gray-400">Automatically replicate the trades of top-performing traders with ease.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA Section with improved styling -->
+  <div
+    class="flex flex-col items-center py-12 px-4 my-12 bg-gradient-to-r from-gray-900 to-gray-800 rounded-xl text-center">
+    <h2 class="text-3xl md:text-4xl font-bold mb-6">
+      Start Earning <span class="text-green-400">Now</span>
+    </h2>
+
+    <p class="max-w-2xl mb-8 text-gray-300">
+      Join thousands of traders who are already leveraging our AI technology to maximize their returns.
+    </p>
+
+    <div class="flex gap-4">
+      <p-button styleClass="p-button-lg" routerLink="/bot">
+        <span class="mr-2">Start Browsing</span>
+        <i class="pi pi-arrow-right"></i>
+      </p-button>
+
+      <p-button styleClass="p-button-lg p-button-outlined" [outlined]="true">
+        <span>Learn More</span>
+      </p-button>
+    </div>
   </div>
 </div>

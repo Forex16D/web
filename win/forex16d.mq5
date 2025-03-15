@@ -28,37 +28,32 @@ struct TickData
   long volume;
 };
 
+struct WebResponse {
+  string result;
+  int code;
+};
+
 TickData tick_buffer[109];
 int tick_count = 0;
 
-
-
 int OnInit()
 {
-  string headers = StringFormat("Authorization: Bearer %s\r\n", token);
-  char result[];
-  char response_body[];
-  string response_headers;
+  WebResponse response = webRequest("GET", SERVER_URL + "/v1/mt/auth");
   
-  int timeout = 5000;
-
-  int response_code = WebRequest("GET", SERVER_URL + "/v1/mt/auth", headers, timeout, response_body, result, response_headers);
-  
-  if (response_code == 403) {
+  if (response.code == 403) {
     Print("Pay! you prick!");
     return INIT_FAILED;
   }
   
-  if (response_code != 200) {
-    Print("Request failed. Response code: ", response_code);
+  if (response.code != 200) {
+    Print("Request failed. Response code: ", response.code);
     return INIT_FAILED;
   }
   
-  string jsonString = CharArrayToString(result);
-  Print("Request succeeded. Response: ", jsonString);
+  Print("Request succeeded. Response: ", response.result);
  
-  model_id = ExtractJsonValue(jsonString, "model_id");
-  portfolio_id = ExtractJsonValue(jsonString, "portfolio_id");
+  model_id = ExtractJsonValue(response.result, "model_id");
+  portfolio_id = ExtractJsonValue(response.result, "portfolio_id");
   
   Print(model_id);
   Print(portfolio_id);
@@ -69,7 +64,7 @@ int OnInit()
     Print("Failed to connect to ZeroMQ server at ", zmq_address);
     return INIT_FAILED;
   }
-  
+ 
   Print("Connected to ZeroMQ server at ", zmq_address);
   ZmqMsg request_msg("init");
 
@@ -79,12 +74,12 @@ int OnInit()
     Print("Failed to send message or operation was non-blocking.");
   }
  
-  ZmqMsg reply_msg;
-  if (req_socket.recv(reply_msg, ZMQ_DONTWAIT)) {
-    Print("Received reply: ", reply_msg.getData());
-  } else {
-    Print("No message available for receive.");
-  }
+//  ZmqMsg reply_msg;
+//  if (req_socket.recv(reply_msg, ZMQ_DONTWAIT)) {
+//    Print("Received reply: ", reply_msg.getData());
+//  } else {
+//    Print("No message available for receive.");
+//  }
   
   EventSetTimer(5);
     
@@ -134,7 +129,7 @@ void sendData()
   }
   
   uchar replyMessage[];
-   
+
   reply_msg.getData(replyMessage);
   string response = CharArrayToString(replyMessage);
   Print(response);
@@ -234,7 +229,7 @@ void sendData()
   {
     return;
   }
-
+ 
   // Send trade request
   if (!OrderSend(request, result))
   {
@@ -242,6 +237,7 @@ void sendData()
   }
   else
   {
+    
     Print("Order placed successfully. Order ID: ", result.order);
   }
 }
@@ -296,3 +292,26 @@ string ExtractJsonValue(string json, string key)
   return value;
 }
 
+WebResponse webRequest(string method, string url) {
+  string headers = "Authorization: Bearer " + token + "\r\n";
+  char result[];
+  char response_body[];
+  string response_headers;
+  int timeout = 5000;
+  int response_code;
+  
+  ResetLastError();
+
+  // Perform the web request
+  response_code = WebRequest(method, url, headers, timeout, response_body, result, response_headers);
+  
+  WebResponse response;
+  response.result = CharArrayToString(result);
+  response.code = response_code;
+
+  if(response_code != 200) {
+    PrintFormat("Error in WebRequest: %d - %s", response_code, GetLastError());
+  }
+
+  return response;
+}

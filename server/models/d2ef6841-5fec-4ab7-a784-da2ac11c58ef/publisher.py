@@ -3,40 +3,21 @@ from ta.volatility import BollingerBands
 from ta.trend import EMAIndicator, MACD
 from ta.momentum import RSIIndicator
 from stable_baselines3 import PPO
-import zmq
-import time
-import numpy as np
 import json
 import pandas as pd
-from pathlib import Path
 import sys
- 
-mode = sys.argv[1] if len(sys.argv) > 1 else "backtest"
-assert mode in ["backtest", "deploy"], "Invalid mode. Use 'backtest' or 'deploy'."
+from pathlib import Path
 
-context = zmq.Context()
+# Ensure correct command-line arguments
+if len(sys.argv) < 2:
+  print("Usage: python -m models.<model_id>.publisher '<ohlc_json>'")
+  sys.exit(1)
 
-if mode == "backtest":
-  socket_recv = context.socket(zmq.REP)
-  socket_recv.bind("tcp://*:5557")
-  socket_send = None
-else:
-  socket_recv = context.socket(zmq.PULL)
-  socket_recv.bind("tcp://*:5557")
-  socket_send = context.socket(zmq.REP)
-  socket_send.connect("tcp://*:5555")
+ohlc_json = sys.argv[1]
 
+# Load model
 model_path = Path(__file__).parent / "model"
 model = PPO.load(model_path)
-
-def close_connection():
-  ServerLogHelper().log("Cleaning up ZeroMQ...")
-  socket_recv.close()
-  if socket_send:
-    socket_send.close()
-  context.term()
-  context.term()
-  ServerLogHelper().log("Server shut down gracefully.")
 
 def evaluate_with_model(json_str):
   try:
@@ -46,7 +27,7 @@ def evaluate_with_model(json_str):
     df.drop(columns=['time'], errors='ignore', inplace=True)
     df.rename(columns={"volumn": "tick_volume"}, inplace=True)
 
-    numeric_cols = ['open', 'high', 'low','close']
+    numeric_cols = ['open', 'high', 'low', 'close']
     df[numeric_cols] = df[numeric_cols].astype(float)
 
     if len(df) < 109:
@@ -80,55 +61,6 @@ def evaluate_with_model(json_str):
     ServerLogHelper().log(f"Error in evaluate_with_model: {e}")
     return "ERROR"
 
-ServerLogHelper().log(f"Python server running in '{mode}' mode... Press Ctrl+C to stop.")
+result = evaluate_with_model(ohlc_json)
+print(result.encode("utf-8"), flush=True)
 
-try:
-  while True:
-    try:
-      message = socket_recv.recv_string(flags=zmq.NOBLOCK)
-      ServerLogHelper().log(f"Received message. Length: {len(message)}")
-
-      if message == "init":
-        socket_recv.send_string("ACK")
-        continue
-        
-      if mode == "backtest":
-        if message == "end":
-          ServerLogHelper().log("End of backtest.")
-          socket_recv.send_string("ACK")
-          break
-
-        try:
-          ohlc_data = json.loads(message)
-          if len(ohlc_data) != 109:
-            ServerLogHelper().log("Invalid number of rows. Expected 109 rows.")
-            socket_recv.send_string("ERROR")
-            continue
-
-          signal = evaluate_with_model(json.dumps(ohlc_data))
-        except json.JSONDecodeError:
-          ServerLogHelper().log("Invalid JSON format. Skipping...")
-          signal = "ERROR"
-        except KeyError as e:
-          ServerLogHelper().log(f"Missing key in data: {e}")
-          signal = "ERROR"
-        except Exception as e:
-          ServerLogHelper().log(f"Error processing data: {e}")
-          signal = "ERROR"
-
-        ServerLogHelper().log(f"Sending signal: {signal}")
-        socket_recv.send_string(signal)
-
-      else:  # Deployment mode
-        signal = evaluate_with_model(message)
-        ServerLogHelper().log(f"Sending signal: {signal}")
-        socket_send.send_string(signal)
-
-    except zmq.error.Again:
-      time.sleep(0.1)
-
-except KeyboardInterrupt:
-  ServerLogHelper().log("\nServer interrupted. Closing...")
-
-finally:
-  close_connection()

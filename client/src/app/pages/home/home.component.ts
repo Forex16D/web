@@ -3,10 +3,17 @@ import { ButtonModule } from 'primeng/button';
 import { RouterLink } from '@angular/router';
 import { PriceChartComponent } from '../price-chart/price-chart.component';
 import { MiniPriceChartComponent } from '../../components/mini-price-chart/mini-price-chart.component';
+import { TagModule } from 'primeng/tag';
 
 @Component({
   selector: 'app-home',
-  imports: [ButtonModule, RouterLink, PriceChartComponent, MiniPriceChartComponent],
+  imports: [
+    ButtonModule, 
+    RouterLink, 
+    PriceChartComponent, 
+    MiniPriceChartComponent,
+    TagModule,
+  ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'
 })

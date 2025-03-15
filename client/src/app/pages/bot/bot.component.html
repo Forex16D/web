@@ -1,16 +1,124 @@
 <div class="flex flex-1 flex-col w-full max-w-7xl mx-auto px-4">
-  <h1 class="text-headline4 font-medium"><i class="pi pi-microchip-ai text-green-400" style="font-size: 32px"></i> Copy
-    Trade</h1>
-  <div class="w-full mx-auto my-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-    <app-bot-card *ngFor="let model of models" [data]="{ 
-        pnl: '200', 
-        winrate: '1', 
-        roi: '1', 
-        balance: '100', 
-        commission: model.commission,
-        symbol: model.symbol,
-        model_id: model.model_id,
-      }" [name]="model.name">
-    </app-bot-card>
+  <!-- Header with enhanced styling -->
+  <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
+    <div class="flex items-center gap-3">
+      <i class="pi pi-microchip-ai text-green-400" style="font-size: 32px"></i>
+      <h1 class="text-2xl md:text-3xl font-medium">Copy Trade</h1>
+    </div>
+    
+    <!-- Search and filter options -->
+    <div class="flex flex-col sm:flex-row gap-2">
+      <span class="p-input-icon-left space-x-2">
+        <i class="pi pi-search"></i>
+        <input type="text" pInputText placeholder="Search bots" class="p-inputtext-sm" 
+               [(ngModel)]="searchQuery" (keyup.enter)="onSearch()">
+      </span>
+      
+      <p-dropdown [options]="[
+        {label: 'All Symbols', value: 'all'},
+        {label: 'Forex', value: 'forex'},
+        {label: 'Crypto', value: 'crypto'},
+        {label: 'Commodities', value: 'commodities'}
+      ]" placeholder="Filter by" styleClass="p-dropdown-sm" 
+      [(ngModel)]="symbolFilter" (onChange)="onSymbolFilterChange($event)"></p-dropdown>
+    </div>
+  </div>
+  
+  <!-- Stats summary cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div class="bg-gray-800 rounded-lg p-4 flex items-center">
+      <div class="flex flex-col mr-4">
+        <span class="text-gray-400 text-sm">Total Active Bots</span>
+        <span class="text-2xl font-medium">{{stats.activeBots}}</span>
+      </div>
+      <div class="ml-auto bg-blue-500/20 p-2 rounded-full">
+        <i class="fas fa-solid fa-robot text-blue-400"></i>
+        <i class="fa-solid fa-robot"></i>
+      </div>
+    </div>
+    
+    <div class="bg-gray-800 rounded-lg p-4 flex items-center">
+      <div class="flex flex-col mr-4">
+        <span class="text-gray-400 text-sm">Performance Today</span>
+        <span class="text-2xl font-medium text-green-400">{{stats.performance}}</span>
+      </div>
+      <div class="ml-auto bg-green-500/20 p-2 rounded-full">
+        <i class="pi pi-chart-line text-green-400"></i>
+      </div>
+    </div>
+    
+    <div class="bg-gray-800 rounded-lg p-4 flex items-center">
+      <div class="flex flex-col mr-4">
+        <span class="text-gray-400 text-sm">Active Traders</span>
+        <span class="text-2xl font-medium">{{stats.activeTraders}}</span>
+      </div>
+      <div class="ml-auto bg-purple-500/20 p-2 rounded-full">
+        <i class="pi pi-users text-purple-400"></i>
+      </div>
+    </div>
+    
+    <div class="bg-gray-800 rounded-lg p-4 flex items-center">
+      <div class="flex flex-col mr-4">
+        <span class="text-gray-400 text-sm">Volume (24h)</span>
+        <span class="text-2xl font-medium">{{stats.volume}}</span>
+      </div>
+      <div class="ml-auto bg-amber-500/20 p-2 rounded-full">
+        <i class="pi pi-dollar text-amber-400"></i>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Bot cards with improved layout -->
+  <div>
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-4">
+      <h2 class="text-xl font-medium">Available Trading Bots</h2>
+      <p-selectButton [options]="[
+        {label: 'All', value: 'all'},
+        {label: 'Top Performers', value: 'top'},
+        {label: 'New', value: 'new'}
+      ]" [(ngModel)]="selectedView" (onChange)="onViewTypeChange($event)" optionLabel="label"></p-selectButton>
+    </div>
+    
+    <!-- Loading state -->
+    <div *ngIf="filteredModels.length === 0 && models.length === 0" class="text-center py-12">
+      <i class="pi pi-spin pi-spinner text-4xl text-gray-400 mb-4"></i>
+      <p class="text-gray-400">Loading trading bots...</p>
+    </div>
+    
+    <!-- No results state -->
+    <div *ngIf="filteredModels.length === 0 && models.length > 0" class="text-center py-12">
+      <i class="pi pi-search text-4xl text-gray-400 mb-4"></i>
+      <p class="text-gray-400">No trading bots match your search criteria</p>
+      <button pButton label="Clear Filters" class="p-button-outlined mt-4" (click)="searchQuery = ''; symbolFilter = 'all'; selectedView = {label: 'All', value: 'all'}; applyFilters()"></button>
+    </div>
+    
+    <!-- Actual grid with bot cards -->
+    <div *ngIf="filteredModels.length > 0" class="w-full mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <app-bot-card 
+        *ngFor="let model of filteredModels.slice(first, first + rows)" 
+        [data]="{
+          pnl: '200',
+          winrate: '1',
+          roi: '1',
+          balance: '100',
+          commission: model.commission,
+          symbol: model.symbol,
+          model_id: model.model_id,
+        }" 
+        [name]="model.name"
+        class="transform transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
+      >
+      </app-bot-card>
+    </div>
+  </div>
+  
+  <!-- Pagination -->
+  <div *ngIf="filteredModels.length > rows" class="flex justify-center mt-8">
+    <p-paginator 
+      [rows]="rows" 
+      [totalRecords]="totalRecords" 
+      [first]="first"
+      (onPageChange)="onPageChange($event)">
+    </p-paginator>
   </div>
 </div>
