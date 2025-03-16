@@ -6,9 +6,11 @@
 input string zmq_address = "tcp://127.0.0.1:5557";
 input double lot_size = 0.01;
 input int magic_number = 1987;
-input string   token="MjJhYjg5YTgtMzkzYy00MmEyLThlOTAtYzY3NTRmOTgyZDM4OjA3NTJkMDcxLTc3NjctNDViMS04ZDlkLWYyNGM4OGQyNDdjOTowNzZmY2QzOS1lNmRhLTRkYmMtYjc3Yy1iZmNhMzgxNGYxYmI6MTc0MTAwNzkxNy64Su9hFmtZfGxb4b_F4f8szzR2GqW14sRVXJtnha7qwg==";
+input string token="MjJhYjg5YTgtMzkzYy00MmEyLThlOTAtYzY3NTRmOTgyZDM4OjA3NTJkMDcxLTc3NjctNDViMS04ZDlkLWYyNGM4OGQyNDdjOTowNzZmY2QzOS1lNmRhLTRkYmMtYjc3Yy1iZmNhMzgxNGYxYmI6MTc0MTAwNzkxNy64Su9hFmtZfGxb4b_F4f8szzR2GqW14sRVXJtnha7qwg==";
+
 string portfolio_id;
 string model_id;
+string is_expert;
 
 ENUM_TIMEFRAMES timeframe = PERIOD_H1;
 
@@ -54,10 +56,8 @@ int OnInit()
  
   model_id = ExtractJsonValue(response.result, "model_id");
   portfolio_id = ExtractJsonValue(response.result, "portfolio_id");
-  
-  Print(model_id);
-  Print(portfolio_id);
- 
+  is_expert = ExtractJsonValue(response.result, "is_expert");
+
   req_socket.setLinger(100);
  
   if (!req_socket.connect(zmq_address)) {
@@ -105,7 +105,7 @@ void OnTick()
 
 void sendData()
 {
-  string json_data = StringFormat("{\"type\":\"signal_request\", \"portfolio_id\":\"%s\", \"model_id\":\"%s\"}", portfolio_id, model_id);
+  string json_data = StringFormat("{\"type\":\"signal_request\", \"portfolio_id\":\"%s\", \"model_id\":\"%s\", \"is_expert\":\"%s\"}", portfolio_id, model_id, is_expert);
 
   // Send request via ZeroMQ
   ZmqMsg request_msg(json_data);
@@ -133,30 +133,16 @@ void sendData()
   reply_msg.getData(replyMessage);
   string response = CharArrayToString(replyMessage);
   Print(response);
-  Print(response == "buy");
   // Set up trade request
-  MqlTradeRequest request = {};
-  request.action = TRADE_ACTION_DEAL;       
-  request.magic = magic_number;             
-  request.symbol = "EURUSD";               
-  request.volume = lot_size;               
-  request.sl = 0;                         
-  request.tp = 0;                         
-  request.deviation = 10;                  
-  request.type_filling = ORDER_FILLING_IOC;
-  request.type_time = ORDER_TIME_GTC;      
-  request.price = iClose(Symbol(), timeframe, 1);
-
-  MqlTradeResult result = {};
  
   // Handle trade execution
-  if (StringCompare(response, "buy"))
+  if (response == "buy")
   {
-    request.type = ORDER_TYPE_BUY;
+    ExecuteTrade(response, "EURUSD", 1.3);
   }
   else if (response == "sell")
   {
-    request.type = ORDER_TYPE_SELL;
+    
   }
   else if (response == "close_buy" || response == "close_sell")
   {
@@ -229,19 +215,7 @@ void sendData()
   {
     return;
   }
- 
-  // Send trade request
-  if (!OrderSend(request, result))
-  {
-    Print("OrderSend failed. Error code: ", GetLastError());
-  }
-  else
-  {
-    
-    Print("Order placed successfully. Order ID: ", result.order);
-  }
 }
-
 
 void OnDeinit(const int reason)
 {
@@ -314,4 +288,42 @@ WebResponse webRequest(string method, string url) {
   }
 
   return response;
+}
+
+void ExecuteTrade(string action, string symbol, double price)
+{
+  MqlTradeRequest request;
+  MqlTradeResult result;
+  ZeroMemory(request);
+
+  // Get real-time price
+  double bid_price = SymbolInfoDouble(symbol, SYMBOL_BID);
+  double ask_price = SymbolInfoDouble(symbol, SYMBOL_ASK);
+
+  // Determine the correct price
+  double order_price = (action == "BUY") ? ask_price : bid_price;
+  order_price = NormalizeDouble(order_price, _Digits);
+
+  // Validate the price
+  if (order_price <= 0) {
+    Print("Trade failed: Invalid price for ", symbol);
+    return;
+  }
+
+  request.action = TRADE_ACTION_DEAL;
+  request.symbol = symbol;
+  request.magic = magic_number;
+  request.volume = lot_size;
+  request.type = (action == "BUY") ? ORDER_TYPE_BUY : ORDER_TYPE_SELL;
+  request.price = order_price;
+  request.deviation = 30; // Increased slippage
+  request.type_filling = SymbolInfoInteger(symbol, SYMBOL_FILLING_MODE); // Use broker-supported filling mode
+  request.type_time = ORDER_TIME_GTC;
+
+  // Send the trade request
+  if (!OrderSend(request, result)) {
+    Print("Trade failed: ", result.comment, " Code: ", result.retcode);
+  } else {
+    Print("Trade executed: ", action, " ", symbol, " @ ", order_price);
+  }
 }

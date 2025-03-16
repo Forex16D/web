@@ -8,3 +8,8 @@ mt_controller = MtController(container.mt_service)
 @mt_routes.route("/v1/mt/auth", methods=["GET"])
 def verify_token():
   return mt_controller.verify_token(request)
+
+@mt_routes.route("/v1/mt/order", methods=["POST"])
+@bot_token_required
+def create_order():
+  return mt_controller.create_order(request)

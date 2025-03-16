@@ -36,7 +36,7 @@ class MtService:
         conn = self.db_pool.get_connection()
         cursor = conn.cursor(cursor_factory=RealDictCursor)
         cursor.execute("""
-          SELECT portfolio_id, model_id
+          SELECT portfolio_id, model_id, expert_id, is_expert
           FROM portfolios 
           WHERE portfolio_id = (
             SELECT portfolio_id 

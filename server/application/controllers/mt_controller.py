@@ -22,4 +22,18 @@ class MtController:
       self.server_log_service.error(e)
       return jsonify({"status": 500, "message": "Internal server error"}), 500
 
-      
+  def create_order(self, request):
+    try:
+      response = self.mt_service.create_order(request)
+      return jsonify(response), 200
+
+    except ValueError as e:
+      self.server_log_service.error(e)
+      return jsonify({"status": 400, "message": "Bad request"}), 400
+
+    except RuntimeError as e:
+      return jsonify({"status": 500, "message": "Internal server error"}), 500
+
+    except Exception as e:
+      self.server_log_service.error(e)
+      return jsonify({"status": 500, "message": "Internal server error"}), 500

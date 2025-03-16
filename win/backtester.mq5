@@ -5,12 +5,13 @@
 input string zmq_address = "tcp://127.0.0.1:5557";
 input double lot_size = 0.01;
 input int magic_number = 1987;
+input string model_id = "";
 ENUM_TIMEFRAMES timeframe = PERIOD_H1;
 
 Context context("OHCLSender");
-Socket req_socket(context, ZMQ_REQ);
+Socket req_socket(context, ZMQ_DEALER);
 
-int MAX_TICK = 109;
+int MAX_TICK = 1;
 
 datetime last_bar_time = 0;
 struct TickData
@@ -23,7 +24,7 @@ struct TickData
   long volume;
 };
 
-TickData tick_buffer[109];
+TickData tick_buffer[1];
 int tick_count = 0;
 
 int OnInit()
@@ -36,7 +37,7 @@ int OnInit()
   Print("Connected to ZeroMQ server at ", zmq_address);
   ZmqMsg request_msg("init");
 
-  if (req_socket.send(request_msg)) {
+  if (req_socket.send(request_msg, ZMQ_DONTWAIT)) {
     Print("Data sent: ", "init");
   } else {
     Print("Failed to initialize.");
@@ -44,7 +45,7 @@ int OnInit()
  
   ZmqMsg reply_msg;
   
-  if (!req_socket.recv(reply_msg)) {
+  if (!req_socket.recv(reply_msg, ZMQ_DONTWAIT)) {
     Print("No reply received.");
   }
 
@@ -68,10 +69,10 @@ void OnTick()
 string getLastNBarOHLC(int N)
 {
   if (N <= 0)
-    return "[]";
+    return "\"[]\""; // Return an escaped empty array
 
   string json_data = "[";
-
+  
   for (int i = 0; i < N; i++)
   {
     datetime time = iTime(Symbol(), timeframe, i);
@@ -81,7 +82,8 @@ string getLastNBarOHLC(int N)
     double close = iClose(Symbol(), timeframe, i);
     long volume = iVolume(Symbol(), timeframe, i);
 
-    json_data += StringFormat("{\"time\":\"%s\", \"open\":%.5f, \"high\":%.5f, \"low\":%.5f, \"close\":%.5f, \"volume\":%d}",
+    // Manually escape double quotes by wrapping with backslashes
+    json_data += StringFormat("{\\\"time\\\":\\\"%s\\\", \\\"open\\\":%.5f, \\\"high\\\":%.5f, \\\"low\\\":%.5f, \\\"close\\\":%.5f, \\\"volume\\\":%d}",
                               TimeToString(time, TIME_DATE | TIME_MINUTES),
                               open, high, low, close, volume);
 
@@ -90,17 +92,21 @@ string getLastNBarOHLC(int N)
   }
 
   json_data += "]";
+
+  // Wrap the entire JSON data in escaped double quotes for correct formatting
   return json_data;
 }
 
 void sendData()
 {
-  string json_data = getLastNBarOHLC(109);
+  string ohlc_data = getLastNBarOHLC(1);
+  string json_data = StringFormat("{\"type\":\"signal_request\", \"model_id\": \"%s\", \"data\": \"%s\"}", model_id, ohlc_data);
+  
 
   // Send the data via ZeroMQ
   ZmqMsg request_msg(json_data);
 
-  if (req_socket.send(request_msg))
+  if (req_socket.send(request_msg, ZMQ_DONTWAIT))
   {
     Print("Data sent successfully.");
   }
@@ -112,7 +118,7 @@ void sendData()
 
   ZmqMsg reply_msg;
 
-  if (!req_socket.recv(reply_msg))
+  if (!req_socket.recv(reply_msg, ZMQ_DONTWAIT))
   {
     Print("No reply received.");
     return;
@@ -120,32 +126,15 @@ void sendData()
 
   string response = reply_msg.getData();
   Print("Received reply: ", response);
-
-  // Set up trade request
-  MqlTradeRequest request = {};
-  request.action = TRADE_ACTION_DEAL;       
-  request.magic = magic_number;             
-  request.symbol = "EURUSD";               
-  request.volume = lot_size;               
-  request.sl = 0;                         
-  request.tp = 0;                         
-  request.deviation = 10;                  
-  request.type_filling = ORDER_FILLING_IOC;
-  request.type_time = ORDER_TIME_GTC;      
-  request.price = iClose(Symbol(), timeframe, 1);
-  
-  MqlTradeResult result = {};
  
   // Execute trade based on received signal
   if (response == "buy")
   {
-    request.type = ORDER_TYPE_BUY;
-//    request.price = SymbolInfoDouble("EURUSD", SYMBOL_ASK); // Buy at ask price
+    ExecuteTrade("BUY", "EURUSD", 0);
   }
   else if (response == "sell")
   {
-    request.type = ORDER_TYPE_SELL;
-//    request.price = SymbolInfoDouble("EURUSD", SYMBOL_BID); // Sell at bid price
+    ExecuteTrade("SELL", "EURUSD", 0);
   }
   else if (response == "close_buy" || response == "close_sell")
   {
@@ -182,24 +171,64 @@ void sendData()
     return;
   }
 
-  // Send trade request
-  if (!OrderSend(request, result))
-  {
-    Print("OrderSend failed. Error code: ", GetLastError());
-  }
-  else
-  {
-    Print("Order placed successfully. Order ID: ", result.order);
-  }
-
-  // Debugging trade result details
-  Print("Trade Result: retcode = ", result.retcode);
-  Print("Trade Details: bid = ", result.bid, " ask = ", result.ask, " price = ", result.price);
 }
 
 void OnDeinit(const int reason)
 {
+  ZmqMsg request_msg("end");
+
+  if (req_socket.send(request_msg))
+  {
+    Print("End message sent successfully.");
+  }
+  else
+  {
+    Print("Failed to send message.");
+    return;
+  }
   req_socket.disconnect("close");
   Print("ZeroMQ connection closed.");
   EventKillTimer();
+}
+
+
+void ExecuteTrade(string action, string symbol, double price)
+{
+  MqlTradeRequest request;
+  MqlTradeResult result;
+  ZeroMemory(request);
+
+  // Get real-time price
+  double bid_price = SymbolInfoDouble(symbol, SYMBOL_BID);
+  double ask_price = SymbolInfoDouble(symbol, SYMBOL_ASK);
+
+  // Determine the correct price
+  double order_price = (action == "BUY") ? ask_price : bid_price;
+  order_price = NormalizeDouble(order_price, _Digits);
+
+  // Validate the price
+  if (order_price <= 0) {
+    Print("Trade failed: Invalid price for ", symbol);
+    return;
+  }
+
+  request.action = TRADE_ACTION_DEAL;
+  request.symbol = symbol;
+  request.magic = magic_number;
+  request.volume = lot_size;
+  request.type = (action == "BUY") ? ORDER_TYPE_BUY : ORDER_TYPE_SELL;
+  request.price = order_price;
+  request.deviation = 30; // Increased slippage
+  request.type_filling = SymbolInfoInteger(symbol, SYMBOL_FILLING_MODE); // Use broker-supported filling mode
+  request.type_time = ORDER_TIME_GTC;
+
+  // Send the trade request
+  if (!OrderSend(request, result)) {
+    Print("Trade failed: ", result.comment, " Code: ", result.retcode);
+  } else {
+    Print("Trade executed: ", action, " ", symbol, " @ ", order_price);
+  }
+
+  Print("Trade Result: retcode = ", result.retcode);
+  Print("Trade Details: bid = ", result.bid, " ask = ", result.ask, " price = ", result.price);
 }

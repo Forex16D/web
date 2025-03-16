@@ -1,52 +1,43 @@
 import zmq
-import time
 import json
-import signal
-from application.helpers.server_log_helper import ServerLogHelper
+import time
+import random
+from datetime import datetime, timezone
 
-class ZeroMQPublisher:
-  def __init__(self):
-    self.context = zmq.Context()
-    self.receiver_socket = self.context.socket(zmq.ROUTER)
-    self.sender_socket = self.context.socket(zmq.PUB)
-    self.kill_now = False
+# Initialize ZeroMQ context
+context = zmq.Context()
+socket = context.socket(zmq.PUB)
+socket.bind("tcp://*:5555")  # Publishing on TCP port 5555
 
-    signal.signal(signal.SIGTERM, self.handle_termination)
-    signal.signal(signal.SIGINT, self.handle_termination)
+print("ZeroMQ publisher is running...")
 
-  def start_zmq(self):
-    try:
-      self.sender_socket.bind("tcp://*:5555")
-      ServerLogHelper().log("ZeroMQ sender bound to tcp://*:5555")
+# List of possible trade symbols
+symbols = ["EURUSD"]
 
-      while not self.kill_now:
-        expert_id = "expert_123"
-        trade_signal = {
-          "symbol": "EURUSD",
-          "action": "BUY",
-          "lot_size": 0.1,
-          "price": 1.2
-        }
+while True:
+  try:
+    # Simulating a model prediction
+    model_id = "20dcda30-486c-42e1-a8d0-908be1a18f86"  # Unique expert ID
+    signal = random.choice(["BUY", "SELL"])  # Trading signal (no HOLD)
+    symbol = random.choice(symbols)  # Random trading pair
+    price = round(random.uniform(1.1000, 1.5000), 5)  # Simulated price
+    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S %Z")
 
-        message = f"{expert_id} {json.dumps(trade_signal)}"
-        self.sender_socket.send_string(message)
-        ServerLogHelper().log(f"Sent: {message}")
+    # Construct message payload
+    message = {
+      "model_id": model_id,
+      "signal": signal,
+      "symbol": symbol,
+      "price": price,
+      "timestamp": timestamp
+    }
 
-        time.sleep(3)
-    except Exception as e:
-      ServerLogHelper().error(f"Error in ZeroMQ service: {str(e)}")
-    finally:
-      self.cleanup()
+    # Use multipart send: First part = `model_id`, Second part = JSON message
+    socket.send_multipart([model_id.encode(), json.dumps(message).encode()])
+    print(f"Published: {message}")
 
-  def handle_termination(self, signum, frame):
-    ServerLogHelper().log(f"Received termination signal: {signum}")
-    self.kill_now = True
+    time.sleep(5)  # Simulate delay before sending the next prediction
 
-  def cleanup(self):
-    self.sender_socket.close()
-    self.context.term()
-    ServerLogHelper().log("ZeroMQ service terminated.")
-
-if __name__ == "__main__":
-  zmq_service = ZeroMQPublisher()
-  zmq_service.start_zmq()
+  except KeyboardInterrupt:
+    print("Publisher shutting down...")
+    break
