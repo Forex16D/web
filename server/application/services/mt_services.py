@@ -57,33 +57,37 @@ class MtService:
   
   def create_order(self, request):
     try:
+      data = request.get_json()
+      if not data:
+        raise ValueError("Invalid request data")
+      
       conn = self.db_pool.get_connection()
       cursor = conn.cursor(cursor_factory=RealDictCursor)
 
       query = """
-      INSERT INTO ORDERS 
+      INSERT INTO orders 
       (order_id, portfolio_id, model_id, order_type, symbol, profit, volume, entry_price, exit_price, created_at) 
       VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW());
       """
 
       cursor.execute(query, (
-        request["order_id"], 
-        request["portfolio_id"], 
-        request["model_id"], 
-        request["order_type"], 
-        request["symbol"], 
-        request["profit"], 
-        request["volume"], 
-        request["entry_price"], 
-        request["exit_price"]
+        data["order_id"], 
+        data["portfolio_id"], 
+        data["model_id"], 
+        data["order_type"].lower(), 
+        data["symbol"], 
+        data["profit"], 
+        data["volume"], 
+        data["entry_price"], 
+        data["exit_price"]
       ))
 
       conn.commit()
-      return {"status": "success", "message": "Order recorded successfully"}
+      return {"message": "Order recorded successfully"}
 
     except Exception as e:
       conn.rollback()
-      return {"status": "error", "message": str(e)}
+      raise e
 
     finally:
       cursor.close()

@@ -25,7 +25,7 @@ class BillingService:
 
       profit = cursor.fetchone()["sum"] or 0
 
-      if profit == 0:  # No profit, no bill needed
+      if profit <= 0:  # No profit, no bill needed
         return None  
 
       # Get commission rate

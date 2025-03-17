@@ -11,5 +11,5 @@ def verify_token():
 
 @mt_routes.route("/v1/mt/order", methods=["POST"])
 @bot_token_required
-def create_order():
+def create_order(user_id, portfolio_id):
   return mt_controller.create_order(request)

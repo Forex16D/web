@@ -147,7 +147,7 @@ void sendData()
   else if (action == "close_buy" || action == "close_sell")
   {
     ENUM_POSITION_TYPE closeType = (response == "close_buy") ? POSITION_TYPE_BUY : POSITION_TYPE_SELL;
-    ExecuteCloseOrder(closeType);
+    ExecuteCloseOrder(closeType, symbol);
   }
   else
     return;
@@ -264,61 +264,62 @@ void ExecuteTrade(string action, string symbol, double price)
   }
 }
 
-void ExecuteCloseOrder(ENUM_POSITION_TYPE closeType)
+void ExecuteCloseOrder(ENUM_POSITION_TYPE closeType, string symbol)
 {
     ulong oldestTicket = 0;
     datetime oldestTime = LONG_MAX;
     double entry_price = 0.0, exit_price = 0.0, volume = 0.0, profit = 0.0;
-    string symbol;
 
     // Find the oldest position matching the close type
     for (int i = 0; i < PositionsTotal(); i++) {
       
-      if (PositionSelect(Symbol())) {
+      if (PositionSelect(symbol)) {
         datetime openTime = PositionGetInteger(POSITION_TIME);
         if (openTime < oldestTime) {
-            oldestTime = openTime;
-            oldestTicket = PositionGetInteger(POSITION_TICKET);
-            symbol = PositionGetString(POSITION_SYMBOL);
-            volume = PositionGetDouble(POSITION_VOLUME);
-            entry_price = PositionGetDouble(POSITION_PRICE_OPEN);
+          oldestTime = openTime;
+          oldestTicket = PositionGetInteger(POSITION_TICKET);
+          volume = PositionGetDouble(POSITION_VOLUME);
+          entry_price = PositionGetDouble(POSITION_PRICE_OPEN);
         }
       }
     }
     
     
     if (oldestTicket > 0) {
-        CTrade trade;
-        if (trade.PositionClose(oldestTicket)) {
-            Sleep(1000); // Allow history to update
-
-            for (int i = 0; i < HistoryDealsTotal(); i++) {
-                ulong dealTicket = HistoryDealGetTicket(i);
-                if (HistoryDealSelect(dealTicket) && HistoryDealGetInteger(dealTicket, DEAL_POSITION_ID) == oldestTicket) {
-                    exit_price = HistoryDealGetDouble(dealTicket, DEAL_PRICE);
-                    profit = HistoryDealGetDouble(dealTicket, DEAL_PROFIT);
-                    datetime close_time = (datetime)HistoryDealGetInteger(dealTicket, DEAL_TIME);
-
-                    sendOrder(oldestTicket, closeType == POSITION_TYPE_BUY ? "BUY" : "SELL", symbol, profit, volume, entry_price, exit_price, close_time);
-                    Print("✅ Closed order sent to database: ", oldestTicket);
-                    break;
-                }
+      CTrade trade;
+      if (trade.PositionClose(oldestTicket)) {
+          Sleep(1000); // Allow history to update
+          
+          datetime startTime = TimeCurrent() - (30 * 86400);
+          HistorySelect(startTime, TimeCurrent());
+ 
+          for (int i = HistoryDealsTotal() - 1; i >= 0; i--) {
+            ulong dealTicket = HistoryDealGetTicket(i);
+            if (HistoryDealGetInteger(dealTicket, DEAL_POSITION_ID) == oldestTicket) {
+              exit_price = HistoryDealGetDouble(dealTicket, DEAL_PRICE);
+              profit = HistoryDealGetDouble(dealTicket, DEAL_PROFIT);
+              datetime close_time = (datetime)HistoryDealGetInteger(dealTicket, DEAL_TIME);
+              
+              Print(profit);
+              sendOrder(oldestTicket, closeType == POSITION_TYPE_BUY ? "BUY" : "SELL", symbol, profit, volume, entry_price, exit_price, close_time);
+              Print("✅ Closed order sent to database: ", oldestTicket);
+              break;
             }
-        } else {
-            Print("❌ Failed to close position: ", oldestTicket);
-        }
+          }
+      } else {
+          Print("❌ Failed to close position: ", oldestTicket);
+      }
     } else {
-        Print("⚠ No position found to close.");
+      Print("⚠ No position found to close.");
     }
 }
-
 
 void sendOrder(ulong order_id, string order_type, string symbol, 
                double profit, double volume, double entry_price, double exit_price, datetime created_at) 
 {
   string json_data = StringFormat(
-    "{\"type\":\"order\", \"order_id\":%d, \"portfolio_id\":\"%s\", \"model_id\":\"%s\", \"order_type\":\"%s\", \"symbol\":\"%s\", \"profit\":%.2f, \"volume\":%.2f, \"entry_price\":%.5f, \"exit_price\":%.5f, \"created_at\":%d}",
-    order_id, portfolio_id, model_id, order_type, symbol, profit, volume, entry_price, exit_price, created_at
+    "{\"type\":\"order\", \"order_id\":%lu, \"portfolio_id\":\"%s\", \"model_id\":\"%s\", \"order_type\":\"%s\", \"symbol\":\"%s\", \"profit\":%.2f, \"volume\":%.2f, \"entry_price\":%.5f, \"exit_price\":%.5f, \"token\":\"%s\", \"created_at\":%d}",
+    order_id, portfolio_id, model_id, order_type, symbol, profit, volume, entry_price, exit_price, token, created_at
   );
 
   ZmqMsg request_msg(json_data);
@@ -330,22 +331,4 @@ void sendOrder(ulong order_id, string order_type, string symbol,
   }
 }
 
-double FindEntryPrice(ulong position_id)
-{
-  for (int i = 0; i < HistoryDealsTotal(); i++)
-  {
-    ulong dealTicket = HistoryDealGetTicket(i);
-    if (HistoryDealSelect(dealTicket))
-    {
-      ulong dealOrder = HistoryDealGetInteger(dealTicket, DEAL_POSITION_ID);
-      int dealEntryType = HistoryDealGetInteger(dealTicket, DEAL_ENTRY);
-      
-      // Check if it's the same position AND it's an entry deal
-      if (dealOrder == position_id && dealEntryType == DEAL_ENTRY_IN)
-      {
-        return HistoryDealGetDouble(dealTicket, DEAL_PRICE);
-      }
-    }
-  }
-  return 0.0; // Default if not found
-}
+

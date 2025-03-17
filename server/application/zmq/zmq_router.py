@@ -72,14 +72,20 @@ while True:
         print(f"Raw message received: {message_str}")
         data = None
 
-      requests.post("http://localhost:5000/v1/mt/order", json=data)
+      token = data.pop("token", None)
+      headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+      }
+
+      requests.post("http://localhost:5000/v1/mt/order", json=data, headers=headers)
 
     if response:
       # Correctly send response **immediately** with identity
       socket.send_multipart([identity, response])
       print(f"Sent to {identity.hex()}: {response}")
       
-      if is_expert:
+      if "signal_request" in message_str and is_expert:
         socket_publisher.send_multipart([model_id.encode(), response])
         print(f"Published: {response}")
     time.sleep(0.001)  # Prevent CPU overuse

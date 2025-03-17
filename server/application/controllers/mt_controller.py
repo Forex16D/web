@@ -25,7 +25,7 @@ class MtController:
   def create_order(self, request):
     try:
       response = self.mt_service.create_order(request)
-      return jsonify(response), 200
+      return jsonify(response), 201
 
     except ValueError as e:
       self.server_log_service.error(e)
