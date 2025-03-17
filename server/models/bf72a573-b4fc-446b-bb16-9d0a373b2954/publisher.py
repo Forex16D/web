@@ -20,7 +20,7 @@ model_path = Path(__file__).parent / "model"
 model = PPO.load(model_path)
 
 def evaluate_with_model(json_str):
-  return "buy"
+  return '{"action": "close_buy", "symbol": "EURUSD", "price": 1.1}'
   # try:
   #   data_list = json.loads(json_str)
   #   df = pd.DataFrame(data_list)
@@ -63,5 +63,5 @@ def evaluate_with_model(json_str):
   #   return "ERROR"
 
 result = evaluate_with_model(ohlc_json)
-print(result.encode("utf-8"), flush=True)
+print(result, flush=True)
 

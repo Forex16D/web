@@ -56,11 +56,11 @@ while True:
           
           command = ["python", "-m", f"models.{model_id}.publisher", model_id]
           result = subprocess.run(command, capture_output=True, text=True)
-          response = result.stdout.strip() if result.returncode == 0 else ""
+          response = result.stdout.strip().encode() if result.returncode == 0 else ""
           prediction_cache[model_id] = (response, current_time)  # Store response with timestamp
 
-      else:
-        response = "Invalid JSON"
+    elif "init" in message_str:
+      response = b"Server is running..."
 
     elif "order" in message_str:
       try:
@@ -76,11 +76,11 @@ while True:
 
     if response:
       # Correctly send response **immediately** with identity
-      socket.send_multipart([identity, response.encode("utf-8")])
+      socket.send_multipart([identity, response])
       print(f"Sent to {identity.hex()}: {response}")
       
       if is_expert:
-        socket_publisher.send_multipart([model_id.encode(), response.encode("utf-8")])
+        socket_publisher.send_multipart([model_id.encode(), response])
         print(f"Published: {response}")
     time.sleep(0.001)  # Prevent CPU overuse
 
