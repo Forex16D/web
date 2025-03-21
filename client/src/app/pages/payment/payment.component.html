@@ -26,26 +26,11 @@
             <!-- Amount -->
             <div class="p-4 border border-gray-700 rounded-lg mb-4">
               <span class="text-sm text-gray-600">Amount Due</span>
-              <div class="text-2xl font-bold">${{ amount.toFixed(2) }}</div>
+              <div class="text-2xl font-bold">฿{{ amount.toFixed(2) }}</div>
             </div>
             
-            <!-- Payment Form -->
+            <!-- Payment Form - Notes Only -->
             <form [formGroup]="paymentForm" (ngSubmit)="submitPayment()">
-              <!-- Payment Method -->
-              <div class="mb-4">
-                <label for="paymentMethod" class="block text-sm font-medium mb-1">Payment Method*</label>
-                <p-dropdown id="paymentMethod" [options]="paymentMethods" optionLabel="label" optionValue="value"
-                  formControlName="paymentMethod" [style]="{'width': '100%'}" placeholder="Select payment method">
-                </p-dropdown>
-              </div>
-              
-              <!-- Reference Number -->
-              <div class="mb-4">
-                <label for="referenceNumber" class="block text-sm font-medium mb-1">Reference Number*</label>
-                <input pInputText id="referenceNumber" class="w-full" formControlName="referenceNumber" 
-                  placeholder="Enter transaction reference number" />
-              </div>
-              
               <!-- Notes -->
               <div class="mb-4">
                 <label for="notes" class="block text-sm font-medium mb-1">Notes (Optional)</label>
@@ -57,7 +42,7 @@
           
           <!-- Receipt Upload -->
           <div class="w-full md:w-1/2">
-            <h2 class="text-xl font-medium mb-4">Upload Receipt*</h2>
+            <h2 class="text-xl font-medium mb-4">Upload Receipt<span class="text-red-400">*</span></h2>
             
             <!-- File Upload -->
             <div class="mb-4">
@@ -80,7 +65,7 @@
             
             <div class="text-sm text-gray-500 mb-4" *ngIf="!imagePreview">
               <p>Please upload a clear image of your payment receipt.</p>
-              <p>Maximum file size: 5MB. Supported formats: JPG, PNG, GIF.</p>
+              <p>Maximum file size: 5MB. Supported formats: JPG, PNG.</p>
             </div>
           </div>
         </div>

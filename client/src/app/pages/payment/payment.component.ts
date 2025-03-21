@@ -13,7 +13,6 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ImageModule } from 'primeng/image';
 import { ApiService } from '../../core/services/api.service';
 import { TextareaModule } from 'primeng/textarea';
-import { response } from 'express';
 
 @Component({
   selector: 'app-payment',
@@ -44,14 +43,6 @@ export class PaymentComponent implements OnInit {
   receiptImage: any = null;
   imagePreview: string | null = null;
   isSubmitting: boolean = false;
-  
-
-  paymentMethods = [
-    { label: 'Credit Card', value: 'credit_card' },
-    { label: 'Bank Transfer', value: 'bank_transfer' },
-    { label: 'PayPal', value: 'paypal' },
-    { label: 'Cash', value: 'cash' }
-  ];
 
   constructor(
     private route: ActivatedRoute,
@@ -70,9 +61,6 @@ export class PaymentComponent implements OnInit {
 
   initForm(): void {
     this.paymentForm = this.fb.group({
-      paymentMethod: ['bank_transfer', Validators.required],
-      referenceNumber: ['', Validators.required],
-      paymentDate: [new Date(), Validators.required],
       notes: ['']
     });
   }
@@ -141,9 +129,6 @@ export class PaymentComponent implements OnInit {
     // Create FormData for file upload
     const formData = new FormData();
     formData.append('receipt', this.receiptImage);
-    formData.append('payment_method', this.paymentForm.value.paymentMethod);
-    formData.append('reference_number', this.paymentForm.value.referenceNumber);
-    formData.append('payment_date', this.paymentForm.value.paymentDate.toISOString());
     formData.append('notes', this.paymentForm.value.notes || '');
 
     if (this.isBulkPayment) {
@@ -160,7 +145,7 @@ export class PaymentComponent implements OnInit {
         this.messageService.add({
           severity: 'success',
           summary: 'Payment Successful',
-          detail: `Your payment of $${this.amount.toFixed(2)} has been processed successfully`
+          detail: `Your payment of ฿${this.amount.toFixed(2)} has been processed successfully`
         });
         setTimeout(() => this.router.navigate(['/bills']), 2000);
       },

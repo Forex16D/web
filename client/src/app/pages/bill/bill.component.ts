@@ -235,7 +235,7 @@ export class BillComponent implements OnInit {
   makePayment(bill: Bill): void {
     // In a real app, this would open a payment gateway or process payment
     this.confirmationService.confirm({
-      message: `Process payment of $${bill.net_amount} for Bill #${bill.bill_id}?`,
+      message: `Process payment of ฿${bill.net_amount} for Bill #${bill.bill_id}?`,
       header: 'Confirm Payment',
       icon: 'pi pi-credit-card',
       accept: () => {
@@ -256,7 +256,7 @@ export class BillComponent implements OnInit {
     this.messageService.add({
       severity: 'info',
       summary: 'Filter Applied',
-      detail: `Showing ${event.value || 'All'} bills`
+      detail: `Showing ${event.value.value || 'All'} bills`
     });
   }
 
