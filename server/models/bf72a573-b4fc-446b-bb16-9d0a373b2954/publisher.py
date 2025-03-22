@@ -20,7 +20,7 @@ model_path = Path(__file__).parent / "model"
 model = PPO.load(model_path)
 
 def evaluate_with_model(json_str):
-  return '{"action": "close_buy", "symbol": "USDJPY", "price": 1.1}'
+  return '{"action": "BUY", "symbol": "USDJPY", "price": 1.1}'
   # try:
   #   data_list = json.loads(json_str)
   #   df = pd.DataFrame(data_list)

@@ -35,31 +35,30 @@ import { DropdownModule } from 'primeng/dropdown';
     DropdownModule
   ],
   templateUrl: './portfolio-card.component.html',
-  styleUrl: './portfolio-card.component.css',
+  styleUrls: ['./portfolio-card.component.css'],
   providers: [CurrencyPipe]
 })
 export class PortfolioCardComponent {
- @Input() credential: {
+  @Input() portfolioData: {
     portfolio_id: string;
     name: string;
     login: string;
     model_name: string | null;
-    is_expert: boolean | false;
-    connect: boolean | false;
+    is_expert: boolean;
+    connect: boolean;
+    total_profit: number | null;
+    monthly_pnl: number | null;
+    winrate: number | null;
   } = {
     portfolio_id: '0',
     name: 'Portfolio',
     login: 'login',
     model_name: null,
     is_expert: false,
-    connect: false
-  };
-
-  @Input() data = {
-    pnl: '',
-    winrate: '',
-    roi: '',
-    balance: '',
+    connect: false,
+    total_profit: null,
+    monthly_pnl: 0,
+    winrate: 0,
   };
 
   @Output() portfolioDeleted = new EventEmitter<string>();
@@ -67,7 +66,7 @@ export class PortfolioCardComponent {
   pnlFormatted: string = '-';
   winrateFormatted: string = '-';
   roiFormatted: string = '-';
-  balanceFormatted: string = '-';
+  profitFormatted: string = '-'; // Renamed from balanceFormatted
   pnlTextColor: string = 'text-white';
 
   isEditVisible = false;
@@ -103,18 +102,23 @@ export class PortfolioCardComponent {
   }
 
   transformData(): void {
-    const pnlValue = parseFloat(this.data.pnl);
-    const winrateValue = parseFloat(this.data.winrate);
-    const roiValue = parseFloat(this.data.roi);
-    const balanceValue = parseFloat(this.data.balance);
+    const totalProfitValue = this.portfolioData.total_profit !== null ? parseFloat(this.portfolioData.total_profit.toString()) : 0;
+    const monthlyPnlValue = this.portfolioData.monthly_pnl !== null ? parseFloat(this.portfolioData.monthly_pnl.toString()) : 0;
+    const winrateValue = this.portfolioData.winrate !== null ? parseFloat(this.portfolioData.winrate.toString()) : 0;
 
-    this.pnlTextColor = pnlValue > 0 ? 'text-green-400' : pnlValue < 0 ? 'text-red-400' : 'text-white';
-    this.pnlFormatted = isNaN(pnlValue) ? '-' : pnlValue >= 0 ? `+$${pnlValue}` : `-$${Math.abs(pnlValue)}`;
-    this.winrateFormatted = isNaN(winrateValue) ? '-' : `${winrateValue}%`;
-    this.roiFormatted = isNaN(roiValue) ? '-' : `${roiValue}%`;
-    this.balanceFormatted = isNaN(balanceValue)
+    // Formatting total profit
+    this.profitFormatted = isNaN(totalProfitValue)
       ? '-'
-      : this.currency.transform(balanceValue, 'USD', 'symbol', '.2-2') || '-';
+      : this.currency.transform(totalProfitValue, 'USD', 'symbol', '.2-2') || '-';
+
+    // Formatting monthly PnL
+    this.pnlFormatted = isNaN(monthlyPnlValue) ? '-' : monthlyPnlValue >= 0 ? `+$${monthlyPnlValue}` : `-$${Math.abs(monthlyPnlValue)}`;
+
+    // Formatting winrate
+    this.winrateFormatted = isNaN(winrateValue) ? '-' : `${winrateValue}%`;
+
+    // Formatting PnL text color based on monthly PnL
+    this.pnlTextColor = monthlyPnlValue > 0 ? 'text-green-400' : monthlyPnlValue < 0 ? 'text-red-400' : 'text-white';
   }
 
   deleteItem(event: MenuItemCommandEvent): void {
@@ -130,14 +134,14 @@ export class PortfolioCardComponent {
       rejectButtonStyleClass: 'p-button-secondary p-button-text',
       acceptButtonStyleClass: 'p-button-danger',
       accept: () => {
-        this.apiService.delete(`v1/portfolios/${this.credential.portfolio_id}`).subscribe({
+        this.apiService.delete(`v1/portfolios/${this.portfolioData.portfolio_id}`).subscribe({
           next: (response) => {
             this.messageService.add({
               severity: 'success',
               summary: 'Success',
               detail: 'Portfolio Deleted Successfully'
             });
-            this.portfolioDeleted.emit(this.credential.portfolio_id);
+            this.portfolioDeleted.emit(this.portfolioData.portfolio_id);
           },
           error: (error) => {
             this.messageService.add({
@@ -153,16 +157,16 @@ export class PortfolioCardComponent {
 
   showEditDialog(): void {
     this.portfolioEditForm.setValue({
-      name: this.credential.name,
-      login: this.credential.login,
-      is_expert: this.credential.is_expert,
+      name: this.portfolioData.name,
+      login: this.portfolioData.login,
+      is_expert: this.portfolioData.is_expert,
     });
     this.isEditVisible = true;
   }
 
   editItem(): void {
     const data = this.portfolioEditForm.value;
-    this.apiService.put(`v1/portfolios/${this.credential.portfolio_id}`, data).subscribe({
+    this.apiService.put(`v1/portfolios/${this.portfolioData.portfolio_id}`, data).subscribe({
       next: (response) => {
         this.messageService.add({
           severity: 'success',
@@ -178,10 +182,10 @@ export class PortfolioCardComponent {
         })
       }
     })
-    this.isEditVisible = false
+    this.isEditVisible = false;
   }
 
   detailItem(): void {
-    this.router.navigate([`/portfolio/${this.credential.portfolio_id}`])
+    this.router.navigate([`/portfolio/${this.portfolioData.portfolio_id}`]);
   }
 }

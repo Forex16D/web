@@ -1,5 +1,7 @@
 from flask import jsonify # type: ignore
 from psycopg2.extras import RealDictCursor # type: ignore
+from datetime import datetime, timedelta
+import calendar
 import uuid
 import application.services.bot_token_service as bot_token_service
 
@@ -10,14 +12,45 @@ class PortfolioService:
   def get_portfolios_by_user(self, user_id):
     conn = self.db_pool.get_connection()
     try:
+      now = datetime.now()
+      first_day = now.replace(day=1).strftime('%Y-%m-%d')
+      last_day = now.replace(day=calendar.monthrange(now.year, now.month)[1]).strftime('%Y-%m-%d')
+
       cursor = conn.cursor(cursor_factory=RealDictCursor)
       cursor.execute("""
-        SELECT portfolios.*, models.name AS model_name 
-        FROM portfolios 
-        LEFT JOIN models ON portfolios.model_id = models.model_id 
-        WHERE portfolios.user_id = %s 
-        ORDER BY portfolios.created_at ASC
-      """, (user_id,))
+        SELECT 
+            portfolios.*, 
+            models.name AS model_name,
+            -- Calculate the total profit for the entire month
+            COALESCE(SUM(orders.profit), 0) AS total_profit,
+            -- Calculate the monthly PnL for the current month only
+            COALESCE(SUM(
+                CASE 
+                    WHEN orders.created_at BETWEEN %s AND %s 
+                    THEN orders.profit 
+                    ELSE 0 
+                END
+            ), 0) AS monthly_pnl,
+            -- Calculate the winrate (percentage of winning orders in the entire month)
+            CASE 
+                WHEN COUNT(orders.profit) > 0 THEN 
+                    (SUM(CASE WHEN orders.profit >= 0 THEN 1 ELSE 0 END) * 100.0 / COUNT(orders.profit))
+                ELSE 
+                    0
+            END AS winrate
+        FROM 
+            portfolios
+        LEFT JOIN 
+            models ON portfolios.model_id = models.model_id
+        LEFT JOIN 
+            orders ON orders.portfolio_id = portfolios.portfolio_id
+        WHERE 
+            portfolios.user_id = %s
+        GROUP BY 
+            portfolios.portfolio_id, models.name
+        ORDER BY 
+            portfolios.created_at ASC;
+      """, (first_day, last_day, user_id))
 
       portfolios = cursor.fetchall()
 

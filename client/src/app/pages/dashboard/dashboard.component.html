@@ -9,17 +9,11 @@
         <h2 class="text-xl font-medium text-gray-300">Total Portfolio</h2>
         <div class="text-3xl font-bold text-white mt-2">{{ portfolios().length }}</div>
       </div>
-
-      <!-- Middle Section: Investment Overview -->
+      
+      <!-- Right Section: Profit -->
       <div class="flex flex-col items-center justify-center bg-gray-800 rounded-lg p-6 shadow-md w-full">
-        <h2 class="text-xl font-medium text-gray-300">Investment Overview</h2>
-        <p class="text-lg text-gray-400 mt-2">Diversified across <span class="text-white font-bold">5</span> assets</p>
-      </div>
-
-      <!-- Right Section: Current Balance -->
-      <div class="flex flex-col items-center justify-center bg-gray-800 rounded-lg p-6 shadow-md w-full">
-        <h2 class="text-xl font-medium text-gray-300">Current Balance</h2>
-        <div class="text-3xl font-bold text-green-400 mt-2">$120,000.00</div>
+        <h2 class="text-xl font-medium text-gray-300">Accumulative Profit</h2>
+        <div class="text-3xl font-bold text-green-400 mt-2">${{ acc_profit }}</div>
       </div>
     </div>
 
@@ -37,7 +31,7 @@
 
     <div class="w-full mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <ng-container #container />
-      <app-portfolio-card *ngFor="let portfolio of portfolios()" [credential]="portfolio" [data]="defaultData"
+      <app-portfolio-card *ngFor="let portfolio of portfolios()" [portfolioData]="portfolio"
         (portfolioDeleted)="removePortfolio($event)">
       </app-portfolio-card>
     </div>

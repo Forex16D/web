@@ -1,7 +1,7 @@
 <div class="flex flex-col px-6 py-4 rounded-md shadow-xl border border-gray-700 text-white w-full gap-6">
   <!-- Status Section -->
   <div class="flex items-center justify-between w-full border-b border-gray-700 pb-3">
-    <p-tag *ngIf="credential.connect; else inactiveTag" severity="success" [rounded]="true">Active</p-tag>
+    <p-tag *ngIf="portfolioData.connect; else inactiveTag" severity="success" [rounded]="true">Active</p-tag>
     <ng-template #inactiveTag>
       <p-tag severity="danger" [rounded]="true">Inactive</p-tag>
     </ng-template>    
@@ -14,10 +14,10 @@
 
   <!-- User Info & Performance -->
   <div class="flex justify-between w-full gap-6">
-    <!-- Credential Info -->
+    <!-- portfolioData Info -->
     <div class="flex flex-col gap-2">
-      <h1 class="text-xl font-semibold">{{ credential.name }}</h1>
-      <p class="text-sm text-gray-400">{{ credential.login }}</p>
+      <h1 class="text-xl font-semibold">{{ portfolioData.name }}</h1>
+      <p class="text-sm text-gray-400">{{ portfolioData.login }}</p>
     </div>
     <!-- Performance Metrics -->
     <div class="text-right">
@@ -27,16 +27,15 @@
       </p>
       <div class="text-sm text-gray-500 mt-2">
         <p>Win Rate: <span class="text-gray-300">{{ winrateFormatted }}</span></p>
-        <p>ROI: <span class="text-gray-300">{{ roiFormatted }}</span></p>
       </div>
     </div>
   </div>
 
-  <!-- Current Balance -->
+  <!-- Accumulative Profit -->
   <div>
     <span class="text-sm text-gray-400">Last Updated: 11/11/1987</span>
-    <h2 class="text-lg font-semibold text-gray-300">Current Balance</h2>
-    <p class="text-2xl font-bold mt-1">{{ balanceFormatted }}</p>
+    <h2 class="text-lg font-semibold text-gray-300">Accumulative Profit</h2>
+    <p class="text-2xl font-bold mt-1">{{ profitFormatted }}</p>
   </div>
 
   <!-- Button -->
@@ -62,7 +61,7 @@
 
     <div class="flex items-center gap-4 mb-8">
       <label for="bot" class="w-20 text-sm">Current Bot</label>
-      <span> {{credential.model_name}} </span>
+      <span> {{ portfolioData.model_name }} </span>
       <p-button routerLink="/bot" label="Browse" size="small"></p-button>
     </div>
 
@@ -72,7 +71,7 @@
         [options]="expertOptions" 
         optionLabel="label" 
         optionValue="value"
-        placeholder="{{ credential.is_expert ? 'Yes' : 'No' }}"
+        placeholder="{{ portfolioData.is_expert ? 'Yes' : 'No' }}"
         formControlName="is_expert">
       </p-dropdown>
     </div>

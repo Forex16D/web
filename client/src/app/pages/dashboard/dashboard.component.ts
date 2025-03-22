@@ -60,20 +60,7 @@ export class DashboardComponent implements OnInit {
   });
 
   submitted: boolean = false;
-
-  // portfolioDataArray = [
-  //   {
-  //     credential: { id: '0', name: 'Portfolio 1', login: '334067889' },
-  //     data: { pnl: '200', winrate: '85', roi: '10', balance: '1500.25' },
-  //   },
-  // ];
-
-  defaultData = {
-    pnl: '',
-    winrate: '',
-    roi: '',
-    balance: '',
-  };
+  acc_profit = 0;
 
   lineChart: EChartsCoreOption = {
     grid: {
@@ -119,6 +106,7 @@ export class DashboardComponent implements OnInit {
     this.apiService.get<PortfolioResponse[]>('v1/portfolios').subscribe({
       next: (response: PortfolioResponse[]) => {
         this.portfolios.set(response);
+        this.acc_profit = response.reduce((acc, portfolio) => acc + (portfolio.total_profit || 0), 0);
         console.log(response);
       },
       error: (error) => {

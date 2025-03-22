@@ -5,6 +5,7 @@ import subprocess
 import requests
 from application.services.portfolio_service import PortfolioService
 from application.container import container
+from concurrent.futures import ThreadPoolExecutor  # Import the ThreadPoolExecutor
 
 # Cache for predictions
 prediction_cache = {}
@@ -13,7 +14,7 @@ cache_expiry_seconds = 20
 # Connection tracking
 clients = {}  # {identity: last_seen_time}
 identity_to_portfolio = {}  # {identity: portfolio_id}
-HEARTBEAT_TIMEOUT = 5  # Seconds before marking a client as disconnected
+HEARTBEAT_TIMEOUT = 60  # Seconds before marking a client as disconnected
 
 # ZeroMQ context and sockets
 context = zmq.Context()
@@ -26,7 +27,17 @@ socket_publisher.bind("tcp://*:5555")  # Publisher socket
 poller = zmq.Poller()  # Poller for non-blocking mode
 poller.register(socket, zmq.POLLIN)
 
+# Thread pool to handle background prediction
+executor = ThreadPoolExecutor(max_workers=2)  # Max 2 concurrent threads for predictions
+
 print("ZeroMQ server is running...")
+
+def run_prediction_in_background(model_id, response_callback):
+    """ This function will run the prediction in a separate thread """
+    command = ["python", "-m", f"models.{model_id}.publisher", model_id]
+    result = subprocess.run(command, capture_output=True, text=True)
+    response = result.stdout.strip().encode() if result.returncode == 0 else b""
+    response_callback(response)
 
 while True:
   try:
@@ -57,21 +68,32 @@ while True:
           is_expert = bool(data.get("is_expert"))  
           portfolio_id = data.get("portfolio_id")
 
-          identity_to_portfolio[identity] = portfolio_id
+          identity_to_portfolio[identity] = portfolio_id  # Store mapping
 
           current_time = time.time()
 
+          # ✅ **Remove expired cache**
           expired_keys = [key for key, (_, timestamp) in prediction_cache.items() if current_time - timestamp > cache_expiry_seconds]
           for key in expired_keys:
             del prediction_cache[key]
 
+          # ✅ **Use cached response if available**
           if model_id in prediction_cache and current_time - prediction_cache[model_id][1] < cache_expiry_seconds:
             response = prediction_cache[model_id][0]
           else:
-            command = ["python", "-m", f"models.{model_id}.publisher", model_id]
-            result = subprocess.run(command, capture_output=True, text=True)
-            response = result.stdout.strip().encode() if result.returncode == 0 else b""
-            prediction_cache[model_id] = (response, current_time)
+            # Run prediction in a separate thread
+            def handle_prediction_result(response):
+                # When prediction is done, store it in cache and send the response
+                prediction_cache[model_id] = (response, current_time)
+                socket.send_multipart([identity, response])
+                print(f"Sent to {identity.hex()}: {response}")
+                # 🟠 **Publish signals if expert**
+                if is_expert:
+                    socket_publisher.send_multipart([model_id.encode(), response])
+                    print(f"Published: {response}")
+            
+            # Submit to thread pool
+            executor.submit(run_prediction_in_background, model_id, handle_prediction_result)
 
       # 🔵 **Handle Client Initialization**
       elif "init" in message_str:
@@ -106,7 +128,7 @@ while True:
       elif "heartbeat" in message_str:
         print(f"Heartbeat received from {identity.hex()}")
 
-      # ✅ **Send response back to client**
+      # ✅ **Send response back to client** (This is done once prediction is complete)
       if response:
         socket.send_multipart([identity, response])
         print(f"Sent to {identity.hex()}: {response}")

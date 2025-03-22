@@ -10,4 +10,7 @@ export interface PortfolioResponse {
   user_id: string
   is_expert: boolean
   connect: boolean
+  total_profit: number | null
+  monthly_pnl: number | null
+  winrate: number | null
 }
