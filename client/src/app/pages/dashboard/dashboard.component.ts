@@ -61,7 +61,6 @@ export class DashboardComponent implements OnInit {
 
   submitted: boolean = false;
 
-  components = [PortfolioCardComponent, PortfolioCardComponent]
   // portfolioDataArray = [
   //   {
   //     credential: { id: '0', name: 'Portfolio 1', login: '334067889' },

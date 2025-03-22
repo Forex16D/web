@@ -27,3 +27,4 @@ def portfolio_by_id(current_user_id, portfolio_id):
   elif request.method == "DELETE":
     return portfolio_controller.delete_portfolio(portfolio_id, current_user_id)
   return jsonify({"error": "Method not allowed"}), 405
+

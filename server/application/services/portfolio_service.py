@@ -91,6 +91,7 @@ class PortfolioService:
   def update_portfolio(self, data, portfolio_id):
     name = data.get("name")
     login = data.get("login")
+    is_expert = data.get("is_expert")
 
     if not name or not login:
       raise ValueError("Missing required information.")
@@ -101,9 +102,9 @@ class PortfolioService:
       cursor = conn.cursor(cursor_factory=RealDictCursor)
       cursor.execute("""
         UPDATE portfolios 
-        SET name = %s, login = %s
+        SET name = %s, login = %s, is_expert = %s
         WHERE portfolio_id = %s;
-      """, (name, login, str(portfolio_id)))
+      """, (name, login, is_expert, str(portfolio_id)))
       conn.commit()
 
       return {"message": "Portfolio Updated Successfully!"}
@@ -115,3 +116,22 @@ class PortfolioService:
     finally:
       cursor.close()
       self.db_pool.release_connection(conn)
+
+  @staticmethod
+  def update_connection_status(db_pool, portfolio_id, status):
+    conn = db_pool.get_connection()
+
+    try:
+      cursor = conn.cursor(cursor_factory=RealDictCursor)
+      cursor.execute("UPDATE portfolios SET connect = %s WHERE portfolio_id = %s", (status, str(portfolio_id)))
+      conn.commit()
+
+      return {"message": "Connection Status Updated Successfully!"}
+
+    except ValueError as ve:
+      raise ve
+    except Exception as e:
+      raise RuntimeError(str(e)) 
+    finally:
+      cursor.close()
+      db_pool.release_connection(conn)

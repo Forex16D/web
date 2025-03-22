@@ -26,8 +26,6 @@
     <div class="mb-6">
       <p-toolbar>
         <ng-template #start>
-          <p-button icon="pi pi-plus" label="Add New Bill" class="mr-2" text severity="secondary"
-            (click)="showBillDialog()" />
         </ng-template>
         <ng-template #end>
           <div class="flex gap-2">
@@ -51,7 +49,7 @@
           <th pSortableColumn="due_date" style="width: 15%">Due Date <p-sortIcon field="due_date"></p-sortIcon></th>
           <th pSortableColumn="net_amount" style="width: 15%">Amount <p-sortIcon field="net_amount"></p-sortIcon></th>
           <th pSortableColumn="status" style="width: 15%">Status <p-sortIcon field="status"></p-sortIcon></th>
-          <th style="width: 15%">Actions</th>
+          <th style="width: 15%">Payment</th>
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-bill>
@@ -65,16 +63,9 @@
           </td>
           <td>
             <div class="flex gap-2">
-              <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-text p-button-sm"
-                (click)="editBill(bill)" pTooltip="Edit" tooltipPosition="top"></button>
               <button pButton icon="pi pi-credit-card" class="p-button-rounded p-button-text p-button-info p-button-sm"
                 (click)="makePayment(bill)" [disabled]="bill.status.toLowerCase() === 'paid'" 
                 pTooltip="Make Payment" tooltipPosition="top"></button>
-              <button pButton icon="pi pi-check" class="p-button-rounded p-button-text p-button-success p-button-sm"
-                (click)="markAsPaid(bill)" [disabled]="bill.status.toLowerCase() === 'paid'" 
-                pTooltip="Mark as Paid" tooltipPosition="top"></button>
-              <button pButton icon="pi pi-trash" class="p-button-rounded p-button-text p-button-danger p-button-sm"
-                (click)="deleteBill(bill)" pTooltip="Delete" tooltipPosition="top"></button>
             </div>
           </td>
         </tr>
@@ -87,57 +78,3 @@
     </p-table>
   </div>
 </div>
-
-<!-- Add/Edit Bill Dialog -->
-<p-dialog [modal]="true" [(visible)]="isBillDialogVisible" [style]="{ width: '30rem' }" (onHide)="resetBillForm()">
-  <ng-template pTemplate="header">
-    <h1 class="text-2xl font-medium">{{ editMode ? 'Edit Bill' : 'Add New Bill' }}</h1>
-  </ng-template>
-  <form pFocusTrap [formGroup]="billForm" (ngSubmit)="saveBill()">
-    <!-- Description -->
-    <div class="flex flex-col gap-2 mb-4">
-      <label for="description" class="text-sm">Description</label>
-      <input pInputText id="description" class="flex-auto" autocomplete="off" placeholder="Bill description"
-        formControlName="description" />
-      <p-message *ngIf="submitted && billForm.get('description')?.invalid" severity="error"
-        text="Please enter a description"></p-message>
-    </div>
-
-    <!-- Amount -->
-    <div class="flex flex-col gap-2 mb-4">
-      <label for="amount" class="text-sm">Amount</label>
-      <p-inputNumber id="amount" mode="currency" currency="USD" placeholder="0.00" formControlName="net_amount" />
-      <p-message *ngIf="submitted && billForm.get('net_amount')?.invalid" severity="error"
-        text="Please enter a valid amount"></p-message>
-    </div>
-
-    <!-- Due Date -->
-    <div class="flex flex-col gap-2 mb-4">
-      <label for="due_date" class="text-sm">Due Date</label>
-      <p-datepicker id="due_date" formControlName="due_date" [showIcon]="true" placeholder="Select date"></p-datepicker>
-      <p-message *ngIf="submitted && billForm.get('due_date')?.invalid" severity="error"
-        text="Please select a due date"></p-message>
-    </div>
-
-    <!-- Status -->
-    <div class="flex flex-col gap-2 mb-4">
-      <label for="status" class="text-sm">Status</label>
-      <p-dropdown id="status" [options]="statusOptions" optionLabel="label" optionValue="value"
-        placeholder="Select status" formControlName="status" [style]="{'width': '100%'}"></p-dropdown>
-      <p-message *ngIf="submitted && billForm.get('status')?.invalid" severity="error"
-        text="Please select a status"></p-message>
-    </div>
-
-    <!-- Notes (Optional) -->
-    <div class="flex flex-col gap-2 mb-4">
-      <label for="notes" class="text-sm">Notes (Optional)</label>
-      <textarea pTextarea id="notes" rows="3" formControlName="notes" placeholder="Additional information"></textarea>
-    </div>
-
-    <!-- Form Actions -->
-    <div class="flex justify-end gap-2">
-      <p-button label="Cancel" severity="secondary" text="true" (click)="isBillDialogVisible = false" />
-      <p-button label="Save" type="submit" />
-    </div>
-  </form>
-</p-dialog>

@@ -1,7 +1,10 @@
 <div class="flex flex-col px-6 py-4 rounded-md shadow-xl border border-gray-700 text-white w-full gap-6">
   <!-- Status Section -->
   <div class="flex items-center justify-between w-full border-b border-gray-700 pb-3">
-    <p-tag severity="danger" [rounded]="true">Inactive</p-tag>
+    <p-tag *ngIf="credential.connect; else inactiveTag" severity="success" [rounded]="true">Active</p-tag>
+    <ng-template #inactiveTag>
+      <p-tag severity="danger" [rounded]="true">Inactive</p-tag>
+    </ng-template>    
     <div>
       <p-menu #menu [model]="menuItems" [popup]="true" />
       <p-button pRipple (click)="menu.toggle($event)" [text]="true" [rounded]="true" [plain]="true"
@@ -61,6 +64,17 @@
       <label for="bot" class="w-20 text-sm">Current Bot</label>
       <span> {{credential.model_name}} </span>
       <p-button routerLink="/bot" label="Browse" size="small"></p-button>
+    </div>
+
+    <div class="flex items-center gap-4 mb-8">
+      <label for="bot" class="w-20 text-sm">Expert</label>
+      <p-dropdown 
+        [options]="expertOptions" 
+        optionLabel="label" 
+        optionValue="value"
+        placeholder="{{ credential.is_expert ? 'Yes' : 'No' }}"
+        formControlName="is_expert">
+      </p-dropdown>
     </div>
 
     <div class="flex justify-end gap-2">

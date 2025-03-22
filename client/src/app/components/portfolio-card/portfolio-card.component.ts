@@ -15,6 +15,7 @@ import { MessageModule } from 'primeng/message';
 import { MessageService } from 'primeng/api';
 import { ConfirmationService } from 'primeng/api';
 import { MenuItem, MenuItemCommandEvent } from 'primeng/api';
+import { DropdownModule } from 'primeng/dropdown';
 
 @Component({
   selector: 'app-portfolio-card',
@@ -31,6 +32,7 @@ import { MenuItem, MenuItemCommandEvent } from 'primeng/api';
     MessageModule,
     NgIf,
     FormsModule,
+    DropdownModule
   ],
   templateUrl: './portfolio-card.component.html',
   styleUrl: './portfolio-card.component.css',
@@ -42,11 +44,15 @@ export class PortfolioCardComponent {
     name: string;
     login: string;
     model_name: string | null;
+    is_expert: boolean | false;
+    connect: boolean | false;
   } = {
     portfolio_id: '0',
     name: 'Portfolio',
     login: 'login',
     model_name: null,
+    is_expert: false,
+    connect: false
   };
 
   @Input() data = {
@@ -66,9 +72,15 @@ export class PortfolioCardComponent {
 
   isEditVisible = false;
 
+  expertOptions = [
+    { label: 'Yes', value: true },
+    { label: 'No', value: false },
+  ];
+
   portfolioEditForm = new FormGroup({
     name: new FormControl('', [Validators.required, Validators.minLength(1), Validators.maxLength(20)]),
     login: new FormControl('', [Validators.required, Validators.pattern('[0-9]*')]),
+    is_expert: new FormControl(false, [Validators.required]),
   });
 
   menuItems: MenuItem[] = [
@@ -143,6 +155,7 @@ export class PortfolioCardComponent {
     this.portfolioEditForm.setValue({
       name: this.credential.name,
       login: this.credential.login,
+      is_expert: this.credential.is_expert,
     });
     this.isEditVisible = true;
   }
@@ -165,6 +178,7 @@ export class PortfolioCardComponent {
         })
       }
     })
+    this.isEditVisible = false
   }
 
   detailItem(): void {

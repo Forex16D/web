@@ -121,48 +121,6 @@ export class BillComponent implements OnInit {
     this.isBillDialogVisible = true;
   }
 
-
-  saveBill(): void {
-    this.submitted = true;
-
-    if (this.billForm.invalid) {
-      return;
-    }
-
-    const billData = this.billForm.value;
-
-    if (this.editMode) {
-      // Update existing bill
-      const index = this.bills.findIndex(b => b.bill_id === this.currentBillId);
-      if (index !== -1) {
-        this.bills[index] = {
-          ...this.bills[index],
-          net_amount: billData.net_amount,
-          due_date: billData.due_date,
-          status: billData.status,
-          notes: billData.notes
-        };
-        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Bill updated successfully' });
-      }
-    } else {
-      // Add new bill
-      const newId = this.bills.length > 0 ? Math.max(...this.bills.map(b => b.bill_id)) + 1 : 1;
-      this.bills.push({
-        bill_id: newId,
-        created_at: '',
-        net_amount: billData.net_amount,
-        due_date: billData.due_date,
-        status: billData.status,
-        notes: billData.notes
-      });
-      this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Bill added successfully' });
-    }
-
-    this.calculateTotals();
-    this.isBillDialogVisible = false;
-    this.resetBillForm();
-  }
-
   getStatusSeverity(status: string): "success" | "info" | "warn" | "danger" | "secondary" | "contrast" | undefined {
     switch (status.toLowerCase()) {  // Convert to lowercase for comparison
       case 'paid':
@@ -174,43 +132,6 @@ export class BillComponent implements OnInit {
       default:
         return 'info';
     }
-  }
-
-  // Update the mark as paid function
-  markAsPaid(bill: Bill): void {
-    const index = this.bills.findIndex(b => b.bill_id === bill.bill_id);
-    if (index !== -1) {
-      this.bills[index].status = 'paid';  // Using lowercase to match API
-      this.calculateTotals();
-      this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Bill marked as paid' });
-    }
-  }
-
-  // Update the editBill function
-  editBill(bill: Bill): void {
-    this.editMode = true;
-    this.currentBillId = bill.bill_id;
-    this.billForm.setValue({
-      net_amount: bill.net_amount,
-      due_date: bill.due_date ? new Date(bill.due_date) : null,
-      status: bill.status.charAt(0).toUpperCase() + bill.status.slice(1), // Convert first char to uppercase for form
-      notes: bill.notes || ''
-    });
-    this.isBillDialogVisible = true;
-  }
-
-  // Update the deleteBill function
-  deleteBill(bill: Bill): void {
-    this.confirmationService.confirm({
-      message: `Are you sure you want to delete the bill "${bill.bill_id}"?`,
-      header: 'Confirm Delete',
-      icon: 'pi pi-exclamation-triangle',
-      accept: () => {
-        this.bills = this.bills.filter(b => b.bill_id !== bill.bill_id);
-        this.calculateTotals();
-        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Bill deleted successfully' });
-      }
-    });
   }
 
   // Update the calculateTotals method

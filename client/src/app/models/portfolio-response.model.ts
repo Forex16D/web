@@ -8,4 +8,6 @@ export interface PortfolioResponse {
   portfolio_id: string
   token_id: string | null
   user_id: string
+  is_expert: boolean
+  connect: boolean
 }
