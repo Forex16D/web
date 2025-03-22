@@ -114,7 +114,7 @@ class AuthService:
       if not user:
         raise ValueError("User not found")
       
-      return {"authentication": True}
+      return {"authentication": True, "is_admin": data["role"] == "admin"}
     
     except jwt.ExpiredSignatureError as e:
       raise e

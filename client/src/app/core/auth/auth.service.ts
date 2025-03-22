@@ -10,6 +10,7 @@ interface LoginResponse {
 
 interface AuthResponse {
   authentication: boolean;
+  is_admin: boolean;
 }
 
 @Injectable({
@@ -17,9 +18,14 @@ interface AuthResponse {
 })
 export class AuthService {
   private authStateSignal = signal(false);
+  private isAdminSignal = signal(false);
 
   get authState() {
     return this.authStateSignal();
+  }
+
+  get isAdmin() {
+    return this.isAdminSignal();
   }
 
   constructor(@Inject(PLATFORM_ID) private platformId: object, private apiService: ApiService) {
@@ -77,8 +83,12 @@ export class AuthService {
         tap((response: AuthResponse) => {
           if (response.authentication) {
             this.authStateSignal.set(true);
+            if (response.is_admin) {
+              this.isAdminSignal.set(true);
+            }
           } else {
             this.authStateSignal.set(false);
+            this.isAdminSignal.set(false);
           }
         }),
         map((response: AuthResponse) => response.authentication),

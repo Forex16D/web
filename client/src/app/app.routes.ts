@@ -57,6 +57,7 @@ export const routes: Routes = [
   {
     path: 'bills',
     component: BillComponent,
+    canActivate: [authGuard]
   },
   {
     path: 'payment',
