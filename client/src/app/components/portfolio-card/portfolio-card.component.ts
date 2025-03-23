@@ -16,6 +16,7 @@ import { MessageService } from 'primeng/api';
 import { ConfirmationService } from 'primeng/api';
 import { MenuItem, MenuItemCommandEvent } from 'primeng/api';
 import { DropdownModule } from 'primeng/dropdown';
+import { SliderModule } from 'primeng/slider';
 
 @Component({
   selector: 'app-portfolio-card',
@@ -32,7 +33,8 @@ import { DropdownModule } from 'primeng/dropdown';
     MessageModule,
     NgIf,
     FormsModule,
-    DropdownModule
+    DropdownModule,
+    SliderModule,
   ],
   templateUrl: './portfolio-card.component.html',
   styleUrls: ['./portfolio-card.component.css'],
@@ -45,21 +47,23 @@ export class PortfolioCardComponent {
     login: string;
     model_name: string | null;
     is_expert: boolean;
-    connect: boolean;
+    connected: boolean;
     total_profit: number | null;
     monthly_pnl: number | null;
     winrate: number | null;
+    commission: number;
   } = {
-    portfolio_id: '0',
-    name: 'Portfolio',
-    login: 'login',
-    model_name: null,
-    is_expert: false,
-    connect: false,
-    total_profit: null,
-    monthly_pnl: 0,
-    winrate: 0,
-  };
+      portfolio_id: '0',
+      name: 'Portfolio',
+      login: 'login',
+      model_name: null,
+      is_expert: false,
+      connected: false,
+      total_profit: null,
+      monthly_pnl: 0,
+      winrate: 0,
+      commission: 0,
+    };
 
   @Output() portfolioDeleted = new EventEmitter<string>();
 
@@ -80,6 +84,7 @@ export class PortfolioCardComponent {
     name: new FormControl('', [Validators.required, Validators.minLength(1), Validators.maxLength(20)]),
     login: new FormControl('', [Validators.required, Validators.pattern('[0-9]*')]),
     is_expert: new FormControl(false, [Validators.required]),
+    commission: new FormControl(0.0, [Validators.required, Validators.min(0.0), Validators.max(100.0)]),
   });
 
   menuItems: MenuItem[] = [
@@ -160,12 +165,14 @@ export class PortfolioCardComponent {
       name: this.portfolioData.name,
       login: this.portfolioData.login,
       is_expert: this.portfolioData.is_expert,
+      commission: this.portfolioData.commission,
     });
     this.isEditVisible = true;
   }
 
   editItem(): void {
     const data = this.portfolioEditForm.value;
+    if (this.portfolioEditForm.invalid) return;
     this.apiService.put(`v1/portfolios/${this.portfolioData.portfolio_id}`, data).subscribe({
       next: (response) => {
         this.messageService.add({
@@ -188,4 +195,5 @@ export class PortfolioCardComponent {
   detailItem(): void {
     this.router.navigate([`/portfolio/${this.portfolioData.portfolio_id}`]);
   }
+  
 }

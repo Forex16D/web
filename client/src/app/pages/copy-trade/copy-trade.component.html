@@ -1,122 +1,61 @@
-<div class="flex flex-1 flex-col w-full max-w-7xl mx-auto px-4">
-  <!-- Header with enhanced styling -->
-  <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
-    <div class="flex items-center gap-3">
-      <i class="pi pi-copy text-green-400" style="font-size: 32px"></i>
-      <h1 class="text-2xl md:text-3xl font-medium">Copy Trade</h1>
+<div class="flex flex-col h-full">
+  <!-- Stats Header -->
+  <div class="grid grid-cols-4 gap-4 mb-6">
+    <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
+      <h3 class="text-gray-400 text-sm mb-2">Active Experts</h3>
+      <p class="text-2xl font-medium">{{stats.activeExperts}}</p>
     </div>
-    
-    <!-- Search and filter options -->
-    <div class="flex flex-col sm:flex-row gap-2">
-      <span class="p-input-icon-left space-x-2">
-        <i class="pi pi-search"></i>
-        <input type="text" pInputText placeholder="Search bots" class="p-inputtext-sm" 
-               [(ngModel)]="searchQuery" (keyup.enter)="onSearch()">
-      </span>
-      
+    <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
+      <h3 class="text-gray-400 text-sm mb-2">Overall Performance</h3>
+      <p class="text-2xl font-medium text-green-400">{{stats.performance}}</p>
+    </div>
+    <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
+      <h3 class="text-gray-400 text-sm mb-2">Active Traders</h3>
+      <p class="text-2xl font-medium">{{stats.activeTraders}}</p>
+    </div>
+    <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
+      <h3 class="text-gray-400 text-sm mb-2">Trading Volume</h3>
+      <p class="text-2xl font-medium">{{stats.volume}}</p>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="flex justify-between items-center mb-6">
+    <div class="flex items-center gap-4">
+      <p-selectButton [options]="[
+        {label: 'All', value: 'all'},
+        {label: 'Top 10', value: 'top'},
+        {label: 'New', value: 'new'}
+      ]" [(ngModel)]="selectedView" (onChange)="onViewTypeChange($event)"></p-selectButton>
+    </div>
+
+    <div class="flex items-center gap-4">
       <p-dropdown [options]="[
         {label: 'All Symbols', value: 'all'},
         {label: 'Forex', value: 'forex'},
         {label: 'Crypto', value: 'crypto'},
         {label: 'Commodities', value: 'commodities'}
-      ]" placeholder="Filter by" styleClass="p-dropdown-sm" 
-      [(ngModel)]="symbolFilter" (onChange)="onSymbolFilterChange($event)"></p-dropdown>
+      ]" [(ngModel)]="symbolFilter" placeholder="Filter by Symbol"
+        (onChange)="onSymbolFilterChange($event)"></p-dropdown>
+
+      <span class="p-input-icon-left">
+        <i class="pi pi-search"></i>
+        <input type="text" pInputText [(ngModel)]="searchQuery" placeholder="Search experts" (keyup.enter)="onSearch()">
+      </span>
     </div>
   </div>
-  
-  <!-- Stats summary cards -->
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-    <div class="bg-gray-800 rounded-lg p-4 flex items-center">
-      <div class="flex flex-col mr-4">
-        <span class="text-gray-400 text-sm">Total Active Bots</span>
-        <span class="text-2xl font-medium">{{stats.activeBots}}</span>
-      </div>
-      <div class="ml-auto bg-blue-500/20 p-2 rounded-full">
-        <i class="fas fa-solid fa-robot text-blue-400"></i>
-      </div>
+
+  <!-- Expert Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+      <app-expert-card
+        *ngFor="let expert of filteredExperts | slice:first:(first+rows)"
+        [portfolio]="expert">
+      </app-expert-card>
     </div>
-    
-    <div class="bg-gray-800 rounded-lg p-4 flex items-center">
-      <div class="flex flex-col mr-4">
-        <span class="text-gray-400 text-sm">Performance Today</span>
-        <span class="text-2xl font-medium text-green-400">{{stats.performance}}</span>
-      </div>
-      <div class="ml-auto bg-green-500/20 p-2 rounded-full">
-        <i class="pi pi-chart-line text-green-400"></i>
-      </div>
-    </div>
-    
-    <div class="bg-gray-800 rounded-lg p-4 flex items-center">
-      <div class="flex flex-col mr-4">
-        <span class="text-gray-400 text-sm">Active Traders</span>
-        <span class="text-2xl font-medium">{{stats.activeTraders}}</span>
-      </div>
-      <div class="ml-auto bg-purple-500/20 p-2 rounded-full">
-        <i class="pi pi-users text-purple-400"></i>
-      </div>
-    </div>
-    
-    <div class="bg-gray-800 rounded-lg p-4 flex items-center">
-      <div class="flex flex-col mr-4">
-        <span class="text-gray-400 text-sm">Volume (24h)</span>
-        <span class="text-2xl font-medium">{{stats.volume}}</span>
-      </div>
-      <div class="ml-auto bg-amber-500/20 p-2 rounded-full">
-        <i class="pi pi-dollar text-amber-400"></i>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Bot cards with improved layout -->
-  <div>
-    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-4">
-      <h2 class="text-xl font-medium">Available Experts</h2>
-      <p-selectButton [options]="[
-        {label: 'All', value: 'all'},
-        {label: 'Top Performers', value: 'top'},
-        {label: 'New', value: 'new'}
-      ]" [(ngModel)]="selectedView" (onChange)="onViewTypeChange($event)" optionLabel="label"></p-selectButton>
-    </div>
-    
-    <!-- Loading state -->
-    <div *ngIf="filteredModels.length === 0 && models.length === 0" class="text-center py-12">
-      <i class="pi pi-spin pi-spinner text-4xl text-gray-400 mb-4"></i>
-      <p class="text-gray-400">Loading experts...</p>
-    </div>
-    
-    <!-- No results state -->
-    <div *ngIf="filteredModels.length === 0 && models.length > 0" class="text-center py-12">
-      <i class="pi pi-search text-4xl text-gray-400 mb-4"></i>
-      <p class="text-gray-400">No trading bots match your search criteria</p>
-      <button pButton label="Clear Filters" class="p-button-outlined mt-4" (click)="searchQuery = ''; symbolFilter = 'all'; selectedView = {label: 'All', value: 'all'}; applyFilters()"></button>
-    </div>
-    
-    <!-- Actual grid with bot cards -->
-    <div *ngIf="filteredModels.length > 0" class="w-full mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <app-bot-card 
-        *ngFor="let model of filteredModels.slice(first, first + rows)" 
-        [data]="{
-          pnl: '200',
-          winrate: '1',
-          roi: '1',
-          balance: '100',
-          commission: model.commission,
-          symbol: model.symbol,
-          model_id: model.model_id,
-        }" 
-        [name]="model.name"
-        class="transform transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
-      >
-      </app-bot-card>
-    </div>
-  </div>
-  
+
   <!-- Pagination -->
-  <div *ngIf="filteredModels.length > rows" class="flex justify-center mt-8">
-    <p-paginator 
-      [rows]="rows" 
-      [totalRecords]="totalRecords" 
-      [first]="first"
+  <div class="mt-auto pt-4">
+    <p-paginator [first]="first" [rows]="rows" [totalRecords]="totalRecords" [rowsPerPageOptions]="[9, 18, 27]"
       (onPageChange)="onPageChange($event)">
     </p-paginator>
   </div>

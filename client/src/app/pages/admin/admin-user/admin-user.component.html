@@ -13,22 +13,12 @@
   </p-toolbar>
 
   <!-- Table section -->
-  <p-table 
-    [value]="users()" 
-    [selection]="selectedUsers()" 
-    (selectionChange)="selectedUsers.set($event)"
+  <p-table [value]="users()" [selection]="selectedUsers()" (selectionChange)="selectedUsers.set($event)"
     styleClass="p-datatable-gridlines p-datatable-striped bg-gray-800 border-gray-700"
-    [tableStyle]="{ 'min-width': '50rem' }" 
-    [rowsPerPageOptions]="[10, 25, 50]" 
-    [paginator]="true" 
-    [rows]="limit()"
-    [totalRecords]="totalRecords()" 
-    [loading]="loading()" 
-    [showCurrentPageReport]="true"
-    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} users" 
-    [first]="(page() - 1) * limit()"
-    (onPage)="onPageChange($event)"
-    paginatorDropdownAppendTo="body">
+    [tableStyle]="{ 'min-width': '50rem' }" [rowsPerPageOptions]="[10, 25, 50]" [paginator]="true" [rows]="limit()"
+    [totalRecords]="totalRecords()" [loading]="loading()" [showCurrentPageReport]="true"
+    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} users" [first]="(page() - 1) * limit()"
+    (onPage)="onPageChange($event)" paginatorDropdownAppendTo="body">
 
     <ng-template #header>
       <tr>
@@ -56,11 +46,8 @@
         </td>
         <td>
           <div class="flex justify-start gap-2">
-            <p-button icon="pi pi-pencil" class="p-button-rounded p-button-outlined" (click)="editUser(user.user_id)">
-            </p-button>
-            <p-button icon="pi pi-trash" severity="danger" class="p-button-rounded p-button-outlined"
-              (click)="deleteUser(user.user_id)">
-            </p-button>
+            <p-button icon="pi pi-pencil" (click)="editUser(user.user_id)" />
+            <p-button icon="pi pi-trash" severity="danger" (click)="deleteUser(user.user_id)" />
           </div>
         </td>
       </tr>

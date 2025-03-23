@@ -22,6 +22,14 @@ class PortfolioController:
     except Exception:
       return jsonify({"status": 500, "message": "Internal server error"}), 500
 
+  def get_expert_portfolios(self):
+    try:
+      portfolios = self.portfolio_service.get_expert_portfolios()
+      return portfolios
+    except Exception as e:
+      self.server_log_service.error(f"Internal server error during expert portfolio retrieval: {str(e)}")
+      return jsonify({"status": 500, "message": "Internal server error"}), 500
+
   def create_portfolio(self, request, user_id):
     try:
       data = request.get_json()

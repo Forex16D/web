@@ -28,3 +28,6 @@ def portfolio_by_id(current_user_id, portfolio_id):
     return portfolio_controller.delete_portfolio(portfolio_id, current_user_id)
   return jsonify({"error": "Method not allowed"}), 405
 
+@portfolio_routes.route("/v1/expert-portfolios", methods=["GET"])
+def get_expert_portfolios():
+  return portfolio_controller.get_expert_portfolios()

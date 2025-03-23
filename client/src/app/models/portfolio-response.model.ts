@@ -1,6 +1,6 @@
 export interface PortfolioResponse {
   connected: boolean
-  create_at: string
+  created_at: string
   login: string
   model_id: string | null
   model_name: string | null
@@ -9,8 +9,8 @@ export interface PortfolioResponse {
   token_id: string | null
   user_id: string
   is_expert: boolean
-  connect: boolean
   total_profit: number | null
   monthly_pnl: number | null
   winrate: number | null
+  commission: number
 }

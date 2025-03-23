@@ -66,6 +66,42 @@ class PortfolioService:
       cursor.close()
       self.db_pool.release_connection(conn)
 
+  def get_expert_portfolios(self):
+    conn = self.db_pool.get_connection()
+    try:
+      cursor = conn.cursor(cursor_factory=RealDictCursor)
+      cursor.execute("""
+      SELECT 
+        portfolios.*, 
+        COALESCE(SUM(orders.profit), 0) AS total_profit,
+        CASE 
+          WHEN COUNT(orders.profit) > 0 THEN 
+            (SUM(CASE WHEN orders.profit >= 0 THEN 1 ELSE 0 END) * 100.0 / COUNT(orders.profit))
+          ELSE 
+            0
+        END AS winrate
+      FROM portfolios
+      LEFT JOIN models ON portfolios.model_id = models.model_id
+      LEFT JOIN orders ON orders.portfolio_id = portfolios.portfolio_id
+      WHERE portfolios.is_expert = true
+      GROUP BY portfolios.portfolio_id
+      ORDER BY portfolios.created_at DESC;
+      """)
+
+      portfolios = cursor.fetchall()
+
+      if not portfolios:
+        raise ValueError("Not found")
+
+      return {"portfolios": portfolios}
+    except ValueError as ve:
+        raise ve
+    except Exception as e:
+        raise RuntimeError(e)
+    finally:
+      cursor.close()
+      self.db_pool.release_connection(conn)
+    
   def create_portfolio(self, data, user_id):
     name = data.get("name")
     login = data.get("login")
@@ -125,6 +161,7 @@ class PortfolioService:
     name = data.get("name")
     login = data.get("login")
     is_expert = data.get("is_expert")
+    commission = data.get("commission")
 
     if not name or not login:
       raise ValueError("Missing required information.")
@@ -135,9 +172,9 @@ class PortfolioService:
       cursor = conn.cursor(cursor_factory=RealDictCursor)
       cursor.execute("""
         UPDATE portfolios 
-        SET name = %s, login = %s, is_expert = %s
+        SET name = %s, login = %s, is_expert = %s, commission = %s
         WHERE portfolio_id = %s;
-      """, (name, login, is_expert, str(portfolio_id)))
+      """, (name, login, is_expert, commission, str(portfolio_id)))
       conn.commit()
 
       return {"message": "Portfolio Updated Successfully!"}
@@ -156,7 +193,7 @@ class PortfolioService:
 
     try:
       cursor = conn.cursor(cursor_factory=RealDictCursor)
-      cursor.execute("UPDATE portfolios SET connect = %s WHERE portfolio_id = %s", (status, str(portfolio_id)))
+      cursor.execute("UPDATE portfolios SET connected = %s WHERE portfolio_id = %s", (status, str(portfolio_id)))
       conn.commit()
 
       return {"message": "Connection Status Updated Successfully!"}

@@ -8,7 +8,7 @@ model_routes = Blueprint("model_routes", __name__)
 model_controller = ModelController(container.model_service)
 
 # Public Endpoints
-@model_routes.route("/v1/models/user", methods=["GET"])
+@model_routes.route("/v1/models/public", methods=["GET"])
 def get_user_models():
   return model_controller.get_active_models()
 

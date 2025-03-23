@@ -59,7 +59,7 @@ export class BotComponent implements OnInit {
   }
 
   getModels(): void {
-    this.apiService.get('v1/models/user').subscribe({
+    this.apiService.get('v1/models/public').subscribe({
       next: (response: any) => {
         this.models = response.models;
         this.filteredModels = [...this.models]; // Initialize filtered list
