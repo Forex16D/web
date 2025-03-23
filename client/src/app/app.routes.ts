@@ -13,6 +13,7 @@ import { PriceChartComponent } from './pages/price-chart/price-chart.component';
 import { PortfolioDetailComponent } from './pages/portfolio-detail/portfolio-detail.component';
 import { BillComponent } from './pages/bill/bill.component';
 import { PaymentComponent } from './pages/payment/payment.component';
+import { CopyTradeComponent } from './pages/copy-trade/copy-trade.component';
 
 export const routes: Routes = [
   {
@@ -41,6 +42,10 @@ export const routes: Routes = [
   {
     path: 'bot',
     component: BotComponent,
+  },
+  {
+    path: 'copy-trade',
+    component: CopyTradeComponent,
   },
   {
     path: 'bot/detail/:model_id',

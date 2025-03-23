@@ -10,7 +10,7 @@ class BillingController:
       response = self.billing_service.get_bills(user_id)
       return jsonify(response), 200
     except Exception as e:
-      ServerLogHelper().error(str(e))
+      ServerLogHelper.error(str(e))
       return {"status": 500, "message": "Internal server error"}, 500
     
   def get_bill(self, user_id, bill_id):
@@ -18,7 +18,7 @@ class BillingController:
       response = self.billing_service.get_bill(user_id, bill_id)
       return jsonify(response), 200
     except Exception as e:
-      ServerLogHelper().error(str(e))
+      ServerLogHelper.error(str(e))
       return {"status": 500, "message": "Internal server error"}, 500
     
 

@@ -1,7 +1,7 @@
 import threading
-
-from flask import Flask, jsonify  # type: ignore
+from flask import Flask  # type: ignore
 from flask_cors import CORS  # type: ignore
+from application.services.task_scheduler import run_scheduler
 
 from application.routes.auth_route import auth_routes
 from application.routes.user_route import user_routes
@@ -37,6 +37,9 @@ def create_app():
   return app
 
 app = create_app()
+
+scheduler_thread = threading.Thread(target=run_scheduler, daemon=True)
+scheduler_thread.start()
 
 if __name__ == "__main__":
   app.run(debug=True)

@@ -41,9 +41,14 @@ int tick_count = 0;
 int OnInit()
 {
   WebResponse response = webRequest("GET", SERVER_URL + "/v1/mt/auth");
-  
+ 
+  if (response.code == 401) {
+    Print("Invalid Token!");
+    return INIT_FAILED;
+  }
+
   if (response.code == 403) {
-    Print("Pay! you prick!");
+    Print("Access denied!");
     return INIT_FAILED;
   }
   
@@ -66,10 +71,11 @@ int OnInit()
   }
  
   Print("Connected to ZeroMQ server at ", zmq_address);
-  ZmqMsg request_msg("init");
+  
+  ZmqMsg request_msg("init " + portfolio_id);
 
   if (req_socket.send(request_msg, ZMQ_DONTWAIT)) {
-    Print("Data sent: ", "init");
+    Print("Data sent: ", "init " + portfolio_id);
   } else {
     Print("Failed to send message or operation was non-blocking.");
   }
@@ -87,7 +93,14 @@ int OnInit()
 }
 
 void OnTimer(void)
-{
+{ 
+  ZmqMsg request_msg("heartbeat " + portfolio_id);
+
+  if (req_socket.send(request_msg, ZMQ_DONTWAIT)) {
+    Print("Data sent: ", "heartbeat " + portfolio_id);
+  } else {
+    Print("Failed to send message or operation was non-blocking.");
+  }
   sendData();
 }
 
@@ -133,6 +146,11 @@ void sendData()
   reply_msg.getData(replyMessage);
   string response = CharArrayToString(replyMessage);
   Print(response);
+  
+  if (response == "User is banned!") {
+    Print("User is banned, stopping EA!");
+    ExpertRemove();
+  }
   // Set up trade request
  
   // Handle trade execution
@@ -155,7 +173,7 @@ void sendData()
 
 void OnDeinit(const int reason)
 {
-  ZmqMsg request_msg("end");
+  ZmqMsg request_msg("end "  + portfolio_id);
 
   if (req_socket.send(request_msg))
   {
@@ -299,7 +317,7 @@ void ExecuteCloseOrder(ENUM_POSITION_TYPE closeType, string symbol)
               exit_price = HistoryDealGetDouble(dealTicket, DEAL_PRICE);
               profit = HistoryDealGetDouble(dealTicket, DEAL_PROFIT);
               datetime close_time = (datetime)HistoryDealGetInteger(dealTicket, DEAL_TIME);
-              
+
               Print(profit);
               sendOrder(oldestTicket, closeType == POSITION_TYPE_BUY ? "BUY" : "SELL", symbol, profit, volume, entry_price, exit_price, close_time);
               Print("✅ Closed order sent to database: ", oldestTicket);
@@ -330,5 +348,3 @@ void sendOrder(ulong order_id, string order_type, string symbol,
     Print("Failed to send order data.");
   }
 }
-
-

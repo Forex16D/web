@@ -36,8 +36,9 @@ class MtService:
         conn = self.db_pool.get_connection()
         cursor = conn.cursor(cursor_factory=RealDictCursor)
         cursor.execute("""
-          SELECT portfolio_id, model_id, expert_id, is_expert
+          SELECT portfolio_id, model_id, expert_id, is_expert, is_banned
           FROM portfolios 
+          LEFT JOIN users ON portfolios.user_id = users.user_id
           WHERE portfolio_id = (
             SELECT portfolio_id 
             FROM tokens 
@@ -47,7 +48,12 @@ class MtService:
         """, (token,))
         credential = cursor.fetchone()
 
+        if credential["is_banned"]:
+          raise ValueError("User has unpaid bills")
+
         return credential
+      except ValueError as e:
+        raise e
       except Exception as e:
         raise Exception("Token verification failed:", e)
       finally:

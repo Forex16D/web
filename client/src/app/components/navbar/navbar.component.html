@@ -9,7 +9,9 @@
         style="font-size: 1.25rem" (click)="isVisible = !isVisible" [attr.aria-expanded]="isVisible">
       </i>
       <div class="transition-opacity duration-300 overflow-hidden flex-shrink-0" [ngClass]="{'opacity-100':isVisible, 'opacity-0':!isVisible}">
-        <app-logo size="28px" class="cursor-pointer" routerLink="/"></app-logo>
+        <a routerLink="/">
+          <app-logo size="28px" class="cursor-pointer"></app-logo>
+        </a>
       </div>
     </header>
 
@@ -30,7 +32,7 @@
         </a>
       </li>
 
-      <!-- Menu Item: Copy Trade -->
+      <!-- Menu Item: AI Experts -->
       <li class="relative group">
         <a class="flex items-center space-x-3 py-2 text-base text-white hover:text-green-400 cursor-pointer"
           routerLink="/bot" routerLinkActive="text-green-400">
@@ -40,6 +42,21 @@
               [ngClass]="{'h-full':router.url === '/bot'}">
             </div>
             <i class="pi pi-microchip-ai" style="font-size: 1.25rem"></i>
+          </div>
+          <span class="flex-grow pl-2 whitespace-nowrap" [ngClass]="{'opacity-100':isVisible, 'opacity-0':!isVisible}">AI Experts</span>
+        </a>
+      </li>
+
+      <!-- Menu Item: Copy Trade -->
+      <li class="relative group">
+        <a class="flex items-center space-x-3 py-2 text-base text-white hover:text-green-400 cursor-pointer"
+          routerLink="/copy-trade" routerLinkActive="text-green-400">
+          <div class="flex flex-shrink-0 w-14 items-center justify-center">
+            <div
+              class="absolute left-0 bottom-0 w-1 h-0 bg-green-400 transition-all duration-300 group-hover:h-full group-hover:bottom-0"
+              [ngClass]="{'h-full':router.url === '/copy-trade'}">
+            </div>
+            <i class="pi pi-copy" style="font-size: 1.25rem"></i>
           </div>
           <span class="flex-grow pl-2 whitespace-nowrap" [ngClass]="{'opacity-100':isVisible, 'opacity-0':!isVisible}">Copy Trade</span>
         </a>

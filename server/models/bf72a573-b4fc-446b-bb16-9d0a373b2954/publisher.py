@@ -32,7 +32,7 @@ def evaluate_with_model(json_str):
   #   df[numeric_cols] = df[numeric_cols].astype(float)
 
   #   if len(df) < 109:
-  #     ServerLogHelper().log(f"Not enough data. Received only {len(df)} rows.")
+  #     ServerLogHelper.log(f"Not enough data. Received only {len(df)} rows.")
   #     return "ERROR"
 
   #   df['EMA_12'] = EMAIndicator(df['close'], window=12).ema_indicator()
@@ -46,20 +46,20 @@ def evaluate_with_model(json_str):
   #   df = df.dropna()
 
   #   if len(df) < 60:
-  #     ServerLogHelper().log(f"Invalid data shape after indicators: {df.shape}. Expected (60, 11).")
+  #     ServerLogHelper.log(f"Invalid data shape after indicators: {df.shape}. Expected (60, 11).")
   #     return "ERROR"
 
   #   df = df.tail(60)
 
   #   action_signal, _ = model.predict(df.values, deterministic=True)
-  #   ServerLogHelper().log(f"Predicted action signal: {action_signal}")
+  #   ServerLogHelper.log(f"Predicted action signal: {action_signal}")
 
   #   action_signal = int(action_signal)
   #   action_map = {0: "hold", 1: "buy", 2: "sell", 3: "close_buy", 4: "close_sell"}
   #   return action_map.get(action_signal, "ERROR")
 
   # except Exception as e:
-  #   ServerLogHelper().log(f"Error in evaluate_with_model: {e}")
+  #   ServerLogHelper.log(f"Error in evaluate_with_model: {e}")
   #   return "ERROR"
 
 result = evaluate_with_model(ohlc_json)

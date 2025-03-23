@@ -16,11 +16,11 @@ class AuthController:
         return jsonify({"status": 401, "message": "Unauthorized"}), 401
       
     except RuntimeError as e:
-      ServerLogHelper().error(e)
+      ServerLogHelper.error(e)
       return jsonify({"status": 500, "message": "Internal server error"}), 500
     
     except Exception as e:
-      ServerLogHelper().error(e)
+      ServerLogHelper.error(e)
       return jsonify({"status": 500, "message": "Internal server error"}), 500
 
   def register(self, request): 
@@ -48,13 +48,13 @@ class AuthController:
       response = self.auth_service.verify_user(request)
       return jsonify(response), 200
     except ValueError as e:
-      ServerLogHelper().error(e)
+      ServerLogHelper.error(e)
       return jsonify({"status": 401, "message": "Unauthorized"}), 401
 
     except RuntimeError as e:
-      ServerLogHelper().error(e)
+      ServerLogHelper.error(e)
       return jsonify({"status": 500, "message": "Internal server error"}), 500
 
     except Exception as e:
-      ServerLogHelper().error(e)
+      ServerLogHelper.error(e)
       return jsonify({"status": 500, "message": "Internal server error"}), 500

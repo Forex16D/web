@@ -86,11 +86,11 @@ class ModelService:
         file_ext = Path(filename).suffix.lower()
         save_path = models_dir / f"{model_id}_temp"  # Path to save uploaded file
 
-        ServerLogHelper().log(f"Received file: {filename}")
+        ServerLogHelper.log(f"Received file: {filename}")
 
         file.save(save_path)  # Save the uploaded file
         saved_files.append(save_path)  # Track saved file
-        ServerLogHelper().log(f"File saved to: {save_path}")
+        ServerLogHelper.log(f"File saved to: {save_path}")
 
         if file_ext == ".zip":
           extract_dir = models_dir / model_id   # Folder name
@@ -105,7 +105,7 @@ class ModelService:
                   target.write(source.read())
 
 
-          ServerLogHelper().log(f"Extracted {filename} to {extract_dir}")
+          ServerLogHelper.log(f"Extracted {filename} to {extract_dir}")
 
           # Ensure extracted folder contains at least one .py file
           py_files = list(extract_dir.rglob("*.py"))
@@ -114,7 +114,7 @@ class ModelService:
 
           save_path.unlink()  # Delete the zip file after successful extraction
           saved_files.remove(save_path)  # Remove from rollback list
-          ServerLogHelper().log(f"Deleted compressed file: {save_path}")
+          ServerLogHelper.log(f"Deleted compressed file: {save_path}")
 
           cursor.execute("""
                          INSERT INTO models (model_id, name, file_path) 
@@ -126,18 +126,18 @@ class ModelService:
       return {"message": "Model(s) created successfully!"}
 
     except Exception as e:
-      ServerLogHelper().error(f"Error processing files: {str(e)}")
+      ServerLogHelper.error(f"Error processing files: {str(e)}")
 
       # Rollback changes
       for file in saved_files:
         if file.exists():
           file.unlink()
-          ServerLogHelper().log(f"Rolled back: Deleted file {file}")
+          ServerLogHelper.log(f"Rolled back: Deleted file {file}")
 
       for directory in extracted_dirs:
         if directory.exists():
           shutil.rmtree(directory)  # Delete entire extracted directory
-          ServerLogHelper().log(f"Rolled back: Deleted extracted directory {directory}")
+          ServerLogHelper.log(f"Rolled back: Deleted extracted directory {directory}")
 
       raise Exception("Internal server error while processing files. Rollback completed.")
     
@@ -153,13 +153,13 @@ class ModelService:
       path = Path(f"./models/{model_id}")
       if path.exists():
         shutil.rmtree(path)
-        ServerLogHelper().log(f"Deleted model directory: {path}")
+        ServerLogHelper.log(f"Deleted model directory: {path}")
 
       cursor.execute("DELETE FROM models WHERE model_id = %s", (model_id,))
       conn.commit()
       return {"message": "Model deleted successfully!"}
     except Exception as e:
-      ServerLogHelper().error(f"Error deleting model: {str(e)}")
+      ServerLogHelper.error(f"Error deleting model: {str(e)}")
       conn.rollback()
       raise RuntimeError(f"Something went wrong: {str(e)}")
     finally:
@@ -186,7 +186,7 @@ class ModelService:
       conn.commit()
       return {"message": "Model updated successfully!"}
     except Exception as e:
-      ServerLogHelper().error(f"Error updating model: {str(e)}")
+      ServerLogHelper.error(f"Error updating model: {str(e)}")
       conn.rollback()
       raise RuntimeError(f"Something went wrong: {str(e)}")
     finally:
@@ -223,7 +223,7 @@ class ModelService:
       if self.evaluation_process is not None and self.evaluation_process.poll() is None:
         raise ValueError(f"A training is already running for model {self.current_evaluation_model}. Please stop it before starting a new one.")
 
-      ServerLogHelper().log(f"Start training for model {model_id}")
+      ServerLogHelper.log(f"Start training for model {model_id}")
 
 
       # Fetch data from DB
@@ -262,7 +262,7 @@ class ModelService:
       if self.evaluation_process is not None and self.evaluation_process.poll() is None:
         raise ValueError(f"A backtest is already running for model {self.current_evaluation_model}. Please stop it before starting a new one.")
 
-      ServerLogHelper().log(f"Starting backtest for model {model_id}")
+      ServerLogHelper.log(f"Starting backtest for model {model_id}")
 
       self.evaluation_process = subprocess.Popen(["python3", "-m", module_path])
       self.current_evaluation_model = model_id  # Track the running model
@@ -278,7 +278,7 @@ class ModelService:
       if self.evaluation_process.poll() is None:  # Check if running
         self.evaluation_process.terminate()  # Gracefully terminate
         self.evaluation_process.wait()  # Ensure it stops
-        ServerLogHelper().log(f"Backtest for model {self.current_evaluation_model} stopped.")
+        ServerLogHelper.log(f"Backtest for model {self.current_evaluation_model} stopped.")
 
       self.evaluation_process = None  # Reset tracking variable
       self.current_evaluation_model = None  # Reset the tracking model
@@ -328,7 +328,7 @@ class ModelService:
       
       return {"message": "Copy trade successfully!"}
     except Exception as e:
-      ServerLogHelper().error(f"Error updating model: {str(e)}")
+      ServerLogHelper.error(f"Error updating model: {str(e)}")
       conn.rollback()
       raise RuntimeError(f"Something went wrong: {str(e)}")
     finally:

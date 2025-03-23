@@ -76,8 +76,9 @@ class AdminService:
         SELECT models.name, COUNT(*) AS value
         FROM portfolios
         LEFT JOIN models ON portfolios.model_id = models.model_id
+        WHERE portfolios.model_id IS NOT NULL
         GROUP BY models.name
-        ORDER BY value DESC
+        ORDER BY value DESC;
       """)
 
       model_usage = cursor.fetchall()

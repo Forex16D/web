@@ -132,80 +132,140 @@ class BillingService:
       cursor.close()
       self.db_pool.release_connection(conn)
 
-  def pay_bill(self, user_id, bill_id, image_file, notes):
-    conn = None
-    try:
-      conn = self.db_pool.get_connection()
-      with conn.cursor() as cursor:
-        
-        # Fetch bill details
-        cursor.execute("SELECT net_amount FROM bills WHERE bill_id = %s", (bill_id,))
-        bill = cursor.fetchone()
-        if not bill:
-          raise ValueError("Bill not found!")
+def pay_bill(self, user_id, bill_id, image_file, notes):
+  conn = None
+  try:
+    conn = self.db_pool.get_connection()
+    with conn.cursor() as cursor:
+      
+      # Fetch bill details
+      cursor.execute("SELECT net_amount FROM bills WHERE bill_id = %s", (bill_id,))
+      bill = cursor.fetchone()
+      if not bill:
+        raise ValueError("Bill not found!")
 
-        amount_bill = bill[0]
+      amount_bill = bill[0]
 
-        response = requests.post(
-          "https://api.slipok.com/api/line/apikey/41247",
-          files={"files": image_file}, 
-          headers={"x-authorization": self.api_key}
-        )
+      response = requests.post(
+        "https://api.slipok.com/api/line/apikey/41247",
+        files={"files": image_file}, 
+        headers={"x-authorization": self.api_key}
+      )
 
-        try:
-          response_json = response.json()
-        except Exception:
-          raise ValueError("Invalid API response format (not JSON)")
+      try:
+        response_json = response.json()
+      except Exception:
+        raise ValueError("Invalid API response format (not JSON)")
 
-        ServerLogHelper().log(response_json)
+      ServerLogHelper.log(response_json)
 
-        if response.status_code != 200 or not response_json.get("success", False):
-          raise Exception("Error uploading receipt image")
+      if response.status_code != 200 or not response_json.get("success", False):
+        raise Exception("Error uploading receipt image")
 
-        # Extract payment data
-        data = response_json.get("data", {})
-        if not data:
-          raise ValueError("Missing payment data in response")
+      # Extract payment data
+      data = response_json.get("data", {})
+      if not data:
+        raise ValueError("Missing payment data in response")
 
-        reference_number = data.get("transRef")
-        payment_date = data.get("transTimestamp")
-        amount_paid = data.get("amount")
-        receiver_name = data.get("receiver", {}).get("name")
+      reference_number = data.get("transRef")
+      payment_date = data.get("transTimestamp")
+      amount_paid = data.get("amount")
+      receiver_name = data.get("receiver", {}).get("name")
 
-        if not all([reference_number, payment_date, amount_paid, receiver_name]):
-          raise ValueError("Incomplete payment data received")
+      if not all([reference_number, payment_date, amount_paid, receiver_name]):
+        raise ValueError("Incomplete payment data received")
 
-        ServerLogHelper().log(f"Receiver Name: {receiver_name}")
+      ServerLogHelper.log(f"Receiver Name: {receiver_name}")
 
-        if receiver_name != "Mr. Nathanon S":
-          raise ValueError("Invalid receiver")
+      if receiver_name != "Mr. Nathanon S":
+        raise ValueError("Invalid receiver")
 
-        if amount_paid < amount_bill:
-          raise ValueError("Amount paid does not match the bill amount")
+      if amount_paid < amount_bill:
+        raise ValueError("Amount paid does not match the bill amount")
 
-        os.makedirs("uploads", exist_ok=True)
+      os.makedirs("uploads", exist_ok=True)
 
-        image_path = os.path.join("uploads", image_file.filename)
-        image_file.seek(0)  # Reset pointer before saving
-        with open(image_path, "wb") as f:
-          f.write(image_file.read())
+      image_path = os.path.join("uploads", image_file.filename)
+      image_file.seek(0)  # Reset pointer before saving
+      with open(image_path, "wb") as f:
+        f.write(image_file.read())
 
-        # Update bill status and insert receipt record
-        cursor.execute("UPDATE bills SET status = 'paid' WHERE bill_id = %s", (bill_id,))
-        cursor.execute("""
-          INSERT INTO receipts (bill_id, user_id, amount_paid, receipt_image, reference_number, payment_date, notes)
-          VALUES (%s, %s, %s, %s, %s, %s, %s)
-        """, (bill_id, user_id, amount_paid, image_path, reference_number, payment_date, notes))
+      # Update bill status and insert receipt record
+      cursor.execute("UPDATE bills SET status = 'paid' WHERE bill_id = %s", (bill_id,))
+      cursor.execute("""
+        INSERT INTO receipts (bill_id, user_id, amount_paid, receipt_image, reference_number, payment_date, notes)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
+      """, (bill_id, user_id, amount_paid, image_path, reference_number, payment_date, notes))
 
-        conn.commit()
-        return {"message": "Payment Successful!"}
+      # Check if user still has overdue bills
+      cursor.execute("""
+        SELECT COUNT(*) FROM bills 
+        WHERE portfolio_id IN (SELECT portfolio_id FROM portfolios WHERE user_id = %s) 
+        AND status IN ('pending', 'overdue')
+      """, (user_id,))
+      unpaid_bills_count = cursor.fetchone()[0]
 
-    except Exception as e:
-      if conn:
-        conn.rollback()
-      ServerLogHelper().log(f"Payment error: {str(e)}")
-      raise Exception(f"Error processing payment: {str(e)}")
+      if unpaid_bills_count == 0:
+        # Unban user if they have no unpaid bills
+        cursor.execute("UPDATE users SET is_banned = FALSE WHERE user_id = %s", (user_id,))
 
-    finally:
-      if conn:
-        self.db_pool.release_connection(conn)
+      conn.commit()
+      return {"message": "Payment Successful!"}
+
+  except Exception as e:
+    if conn:
+      conn.rollback()
+    ServerLogHelper.log(f"Payment error: {str(e)}")
+    raise Exception(f"Error processing payment: {str(e)}")
+
+  finally:
+    if conn:
+      self.db_pool.release_connection(conn)
+
+def mark_overdue_bills(self, cursor):
+  """
+  Updates all pending bills to 'overdue' if their due date has passed.
+  """
+  cursor.execute("""
+    UPDATE bills 
+    SET status = 'overdue' 
+    WHERE due_date < NOW() AND status = 'pending'
+  """)
+
+def ban_users_with_overdue_bills(self, cursor):
+  """
+  Bans users who have portfolios associated with overdue bills.
+  """
+  cursor.execute("""
+    UPDATE users 
+    SET is_banned = TRUE 
+    WHERE user_id IN (
+      SELECT DISTINCT portfolios.user_id 
+      FROM bills 
+      JOIN portfolios ON bills.portfolio_id = portfolios.portfolio_id
+      WHERE bills.status = 'overdue'
+    )
+  """)
+
+def check_unpaid_bills(self):
+  """
+  Main function that marks overdue bills and bans users accordingly.
+  """
+  conn = self.db_pool.get_connection()
+
+  try:
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    cursor.execute("BEGIN;")  # Start transaction
+
+    self.mark_overdue_bills(cursor)  # Mark overdue bills
+    self.ban_users_with_overdue_bills(cursor)  # Ban users
+
+    conn.commit()  # Commit transaction if successful
+
+  except Exception as e:
+    conn.rollback()  # Rollback on error
+    raise RuntimeError(f"Something went wrong: {str(e)}")
+
+  finally:
+    cursor.close()
+    self.db_pool.release_connection(conn)

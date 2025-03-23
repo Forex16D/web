@@ -41,7 +41,7 @@ class ModelController:
     except ValueError as e:
       return {"status": 400, "message": "Bad Request"}, 400
     except Exception as e:
-      ServerLogHelper().error(str(e))
+      ServerLogHelper.error(str(e))
       return {"status": 500, "message": "Internal server error"}, 500
 
   def delete_model(self, model_id, current_user_id): 
@@ -54,7 +54,7 @@ class ModelController:
     except ValueError as e:
       return {"status": 400, "message": "Bad Request"}, 400
     except Exception as e:
-      ServerLogHelper().error(str(e))
+      ServerLogHelper.error(str(e))
       return {"status": 500, "message": "Internal server error"}, 500
   
   def update_model(self, request, model_id):
@@ -62,10 +62,10 @@ class ModelController:
       response = self.model_service.update_model(request, model_id)
       return jsonify(response), 200
     except ValueError as e:
-      ServerLogHelper().error(str(e))
+      ServerLogHelper.error(str(e))
       return {"status": 400, "message": "Bad Request"}, 400
     except Exception as e:
-      ServerLogHelper().error(str(e))
+      ServerLogHelper.error(str(e))
       return {"status": 500, "message": "Internal server error"}, 500
 
   def train_model(self, model_id, request): 
@@ -76,7 +76,7 @@ class ModelController:
       response = self.model_service.train_model(model_id, start_date, bars)
       return jsonify(response), 200
     except Exception as e:
-      ServerLogHelper().error(str(e))
+      ServerLogHelper.error(str(e))
       return {"status": 500, "message": "Internal server error"}, 500
     
   def backtest_model(self, model_id): 
@@ -86,7 +86,7 @@ class ModelController:
     except ValueError as e:
       return {"status": 400, "message": "Bad Request"}, 400
     except Exception as e:
-      ServerLogHelper().error(e)
+      ServerLogHelper.error(e)
       return {"status": 500, "message": "Internal server error"}, 500
     
   def stop_evaluate(self, model_id): 
@@ -96,7 +96,7 @@ class ModelController:
     except ValueError as e:
       return {"status": 400, "message": "Bad Request"}, 400
     except Exception as e:
-      ServerLogHelper().error(str(e))
+      ServerLogHelper.error(str(e))
       return {"status": 500, "message": "Internal server error"}, 500
 
   def get_process_status(self, model_id): 
@@ -104,7 +104,7 @@ class ModelController:
       response = self.model_service.get_process_status()
       return jsonify(response), 200
     except Exception as e:
-      ServerLogHelper().error(str(e))
+      ServerLogHelper.error(str(e))
       return {"status": 500, "message": "Internal server error"}, 500
 
   def get_processes_status(self): 
@@ -112,7 +112,7 @@ class ModelController:
       response = self.model_service.get_processes_status()
       return jsonify(response), 200
     except Exception as e:
-      ServerLogHelper().error(str(e))
+      ServerLogHelper.error(str(e))
       return {"status": 500, "message": "Internal server error"}, 500
 
   def stream_backtest_status(self): 
@@ -120,7 +120,7 @@ class ModelController:
       response = self.model_service.stream_backtest_status()
       return response, 200
     except Exception as e:
-      ServerLogHelper().error(str(e))
+      ServerLogHelper.error(str(e))
       return {"status": 500, "message": "Internal server error"}, 500
     
   def copy_trade(self, request, model_id, user_id):
@@ -131,8 +131,8 @@ class ModelController:
       response = self.model_service.copy_trade(portfolio_id, model_id, user_id)
       return jsonify(response), 200
     except ValueError as e:
-      ServerLogHelper().error(str(e))
+      ServerLogHelper.error(str(e))
       return {"status": 400, "message": "Bad Request"}, 400
     except Exception as e:
-      ServerLogHelper().error(str(e))
+      ServerLogHelper.error(str(e))
       return {"status": 500, "message": "Internal server error"}, 500      

@@ -6,6 +6,7 @@ import requests
 from application.services.portfolio_service import PortfolioService
 from application.container import container
 from concurrent.futures import ThreadPoolExecutor  # Import the ThreadPoolExecutor
+from application.container import container
 
 # Cache for predictions
 prediction_cache = {}
@@ -63,7 +64,12 @@ while True:
           print(f"JSON Decode Error: {e} | Raw: {message_str}")
           data = None
 
-        if data:
+        is_expert = False
+        is_banned = container.user_service.check_ban_status_from_portfolio(data.get("portfolio_id"))
+        if is_banned:
+          response = b"User is banned!"
+
+        elif data:
           model_id = data.get("model_id")
           is_expert = bool(data.get("is_expert"))  
           portfolio_id = data.get("portfolio_id")

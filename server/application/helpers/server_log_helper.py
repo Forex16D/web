@@ -1,12 +1,12 @@
 import logging
 
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
+
 class ServerLogHelper:
-  def __init__(self):
-    if not logging.getLogger().hasHandlers():
-      logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+    @staticmethod
+    def log(message):
+        logging.info(message)
 
-  def log(self, message):
-    logging.info(message)
-
-  def error(self, message):
-    logging.error(message)
+    @staticmethod
+    def error(message):
+        logging.error(message)

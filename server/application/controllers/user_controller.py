@@ -11,10 +11,10 @@ class UserController:
       return jsonify(users), 200
 
     except RuntimeError as e:
-      ServerLogHelper().error(e)
+      ServerLogHelper.error(e)
       return jsonify({"status": 500, "message": "Internal server error"}), 500
     except Exception as e:
-      ServerLogHelper().error(e)
+      ServerLogHelper.error(e)
       return jsonify({"status": 500, "message": "Internal server error"}), 500
 
   def delete_user(self, current_user_id, user_id):
@@ -23,14 +23,14 @@ class UserController:
         users = self.user_service.delete_user(current_user_id, user_id)
         return jsonify(users), 200
       else:
-        ServerLogHelper().error(f"{user_id} {current_user_id}")
+        ServerLogHelper.error(f"{user_id} {current_user_id}")
         return jsonify({"status": 418, "message": "I'm a teapot"}), 418
       
     except RuntimeError as e:
-      ServerLogHelper().error(e)
+      ServerLogHelper.error(e)
       return jsonify({"status": 500, "message": "Internal server error"}), 500
     except Exception:
-      ServerLogHelper().error(e)
+      ServerLogHelper.error(e)
       return jsonify({"status": 500, "message": "Internal server error"}), 500
     
   def get_user_profile(self, current_user_id):
@@ -39,8 +39,8 @@ class UserController:
       return jsonify(profile), 200
 
     except RuntimeError as e:
-      ServerLogHelper().error(e)
+      ServerLogHelper.error(e)
       return jsonify({"status": 500, "message": "Internal server error"}), 500
     except Exception:
-      ServerLogHelper().error(e)
+      ServerLogHelper.error(e)
       return jsonify({"status": 500, "message": "Internal server error"}), 500

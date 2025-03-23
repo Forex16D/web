@@ -4,7 +4,7 @@ from application.helpers.server_log_helper import ServerLogHelper
 class MtController:
   def __init__(self, mt_service):
     self.mt_service = mt_service
-    self.server_log_service = ServerLogHelper()
+    self.server_log_service = ServerLogHelper
 
   def verify_token(self, request):
     try:
@@ -12,6 +12,10 @@ class MtController:
       return jsonify(response), 200
 
     except ValueError as e:
+      if str(e) == "User has unpaid bills":
+        self.server_log_service.error(f"Unpaid bill error: {e}")
+        return jsonify({"status": 403, "message": "Forbidden"}), 403
+      
       self.server_log_service.error(e)
       return jsonify({"status": 401, "message": "Unauthorized"}), 401
 
@@ -21,6 +25,7 @@ class MtController:
     except Exception as e:
       self.server_log_service.error(e)
       return jsonify({"status": 500, "message": "Internal server error"}), 500
+
 
   def create_order(self, request):
     try:
