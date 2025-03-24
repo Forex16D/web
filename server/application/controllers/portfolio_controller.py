@@ -30,6 +30,22 @@ class PortfolioController:
       self.server_log_service.error(f"Internal server error during expert portfolio retrieval: {str(e)}")
       return jsonify({"status": 500, "message": "Internal server error"}), 500
 
+  def get_portfolio_commission(self, portfolio_id):
+    try:
+      commissions = self.portfolio_service.get_portfolio_commission(portfolio_id)
+      return commissions
+    except Exception as e:
+      self.server_log_service.error(f"Internal server error during portfolio commission retrieval: {str(e)}")
+      return jsonify({"status": 500, "message": "Internal server error"}), 500
+  
+  def get_total_commission(self, user_id):
+    try:
+      commissions = self.portfolio_service.get_total_commission(user_id)
+      return commissions
+    except Exception as e:
+      self.server_log_service.error(f"Internal server error during portfolio commission retrieval: {str(e)}")
+      return jsonify({"status": 500, "message": "Internal server error"}), 500
+    
   def create_portfolio(self, request, user_id):
     try:
       data = request.get_json()

@@ -53,6 +53,8 @@ export class DashboardComponent implements OnInit {
   isBalanceVisible = false;
   isDialogVisible = false;
   portfolios = signal<PortfolioResponse[]>([]);
+  showCommission = false;
+  commissionIncome = 0;
 
   portfolioForm = new FormGroup({
     name: new FormControl('', [Validators.required, Validators.minLength(1), Validators.maxLength(20)]),
@@ -107,11 +109,29 @@ export class DashboardComponent implements OnInit {
       next: (response: PortfolioResponse[]) => {
         this.portfolios.set(response);
         this.acc_profit = response.reduce((acc, portfolio) => acc + (portfolio.total_profit || 0), 0);
-        console.log(response);
+        for (let portfolio of this.portfolios()) {
+          if (portfolio.is_expert) {
+            this.showCommission = true;
+            this.getCommission();
+            break;
+          }
+        }
       },
       error: (error) => {
         console.error('Fetch failed:', error);
       },
+    });
+  }
+
+  getCommission(): void {
+    this.apiService.get<any[]>('v1/portfolios/commission').subscribe({
+      next: (response: any[]) => {
+        this.commissionIncome = response.reduce((acc, item) => acc + item.total_profit, 0);
+        console.log(response);
+      },
+      error: (error) => {
+        console.error('Fetch failed:', error);
+      }
     });
   }
 
@@ -122,7 +142,7 @@ export class DashboardComponent implements OnInit {
   createPortfolio(): void {
     this.submitted = true;
     if (this.portfolioForm.invalid)
-      return 
+      return
 
     const data = this.portfolioForm.value
     this.apiService.post('v1/portfolios', data).subscribe({

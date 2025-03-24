@@ -3,12 +3,10 @@
   <p-confirmDialog [style]="{width: '30rem'}" [baseZIndex]="10000" rejectButtonStyleClass="p-button-text">
   </p-confirmDialog>
   <app-navbar *ngIf="showNavbar"></app-navbar>
-  <div [ngClass]="{ 'pl-14 mt-12': router.url !== '/' }" class="w-full">
+  <div class="w-full pl-14 mt-12">
     <router-outlet></router-outlet>
-    <!-- <div *ngIf="authService.authState" class="flex justify-center">
-      <button (click)="logout()">Logout</button>
-    </div> -->
   </div>
+  <app-footer></app-footer>
 </ng-container>
 
 <ng-template #ssrPlaceholder>

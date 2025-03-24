@@ -4,7 +4,7 @@ import { TagModule } from 'primeng/tag';
 import { ChartModule } from 'primeng/chart';
 import { CurrencyPipe, NgClass, NgIf } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { PortfolioResponse } from '../../models/portfolio-response.model';
+import { Expert } from '../../models/expert.model';
 
 @Component({
   selector: 'app-expert-card',
@@ -15,7 +15,7 @@ import { PortfolioResponse } from '../../models/portfolio-response.model';
   providers: [CurrencyPipe],
 })
 export class ExpertCardComponent {
-  @Input() portfolio?: PortfolioResponse;
+  @Input() portfolio?: Expert;
 
   pnlFormatted: string = '-';
   winrateFormatted: string = '-';
@@ -26,13 +26,37 @@ export class ExpertCardComponent {
 
   ngOnChanges(): void {
     this.transformData();
+    
+    if (this.portfolio && this.portfolio.weekly_profits && this.portfolio.weekly_profits.length > 0) {
+      console.log(this.portfolio.weekly_profits);
+      this.updateGraphData();
+    }
   }
+  
+
+  updateGraphData(): void {
+    if (!this.portfolio) return;
+    this.graphData = {
+      labels: this.portfolio.weekly_profits.map(profit => profit.week_start),
+      datasets: [
+        {
+          data: this.portfolio.weekly_profits.map(profit => profit.weekly_profit),
+          borderColor: '#05df72',
+          backgroundColor: '#172425',
+          tension: 0.4,
+          fill: true,
+          borderWidth: 2,
+        }
+      ]
+    };
+  }
+  
 
   graphData = {
-    labels: ['January', 'February', 'March', 'April'],
+    labels: ['A'],
     datasets: [
       {
-        data: [-1, 65, 59, 1],
+        data: [0],
         borderColor: '#05df72',
         backgroundColor: '#172425',
         tension: 0.4,
@@ -40,7 +64,7 @@ export class ExpertCardComponent {
         borderWidth: 2,
       }
     ]
-  };
+  };  
 
   options = {
     responsive: true,

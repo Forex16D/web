@@ -14,6 +14,7 @@ import { PortfolioDetailComponent } from './pages/portfolio-detail/portfolio-det
 import { BillComponent } from './pages/bill/bill.component';
 import { PaymentComponent } from './pages/payment/payment.component';
 import { CopyTradeComponent } from './pages/copy-trade/copy-trade.component';
+import { TermsAndConditionsComponent } from './pages/terms-and-conditions/terms-and-conditions.component';
 
 export const routes: Routes = [
   {
@@ -67,5 +68,9 @@ export const routes: Routes = [
   {
     path: 'payment',
     component: PaymentComponent,
+  },
+  {
+    path: 'terms-and-conditions',
+    component: TermsAndConditionsComponent,
   }
 ];

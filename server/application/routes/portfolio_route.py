@@ -31,3 +31,12 @@ def portfolio_by_id(current_user_id, portfolio_id):
 @portfolio_routes.route("/v1/expert-portfolios", methods=["GET"])
 def get_expert_portfolios():
   return portfolio_controller.get_expert_portfolios()
+
+@portfolio_routes.route("/v1/portfolios/<portfolio_id>/commission", methods=["GET"])
+def get_portfolio_commission(portfolio_id):
+  return portfolio_controller.get_portfolio_commission(portfolio_id)
+
+@portfolio_routes.route("/v1/portfolios/commission", methods=["GET"])
+@token_required
+def get_total_commission(current_user_id):
+  return portfolio_controller.get_total_commission(current_user_id)

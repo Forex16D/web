@@ -35,19 +35,11 @@
   <div class="flex justify-between w-full mt-4">
     <div class="text-sm">
       <div class="text-gray-400">
-        Login
-      </div>
-      <div>
-        {{ portfolio?.login || '-' }}
-      </div>
-    </div>
-    <div class="text-sm">
-      <div class="text-gray-400">
         Connection
       </div>
       <div>
-        <p-tag [severity]="portfolio?.connected ? 'success' : 'danger'" 
-               [value]="portfolio?.connected ? 'Connected' : 'Disconnected'"></p-tag>
+        <p-tag [severity]="portfolio?.connected ? 'success' : 'danger'"
+          [value]="portfolio?.connected ? 'Connected' : 'Disconnected'"></p-tag>
       </div>
     </div>
     <div class="text-sm">
@@ -55,14 +47,13 @@
         Commission
       </div>
       <div>
-        {{ portfolio?.commission }}%
+        {{ (portfolio?.commission ?? 0) * 100 || '0' }}%
       </div>
     </div>
   </div>
 
   <!-- View details button -->
-  <button pButton [routerLink]="['/expert/detail', portfolio?.portfolio_id]" 
-          label="View Expert" 
-          class="mt-4 w-full text-sm px-4 py-2 rounded shadow-sm">
+  <button pButton [routerLink]="['/expert/detail', portfolio?.portfolio_id]" label="View Expert"
+    class="mt-4 w-full text-sm px-4 py-2 rounded shadow-sm">
   </button>
 </div>

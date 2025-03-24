@@ -1,20 +1,79 @@
-/* login component */
-:host {
+host {
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
-  height: calc(100vh - 30px); /* Adjust for bottom padding */
-  width: 100%; /* Adjust for horizontal padding */
-  box-sizing: border-box;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+  padding: 2rem 1rem;
 }
 
-.form-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  width: 450px;
-  height: 650px;
-  margin: 60px auto 10px auto;
-  border-radius: 25px;
+/* Style the password component to match dark theme */
+.p-password input {
+  background-color: #374151;
+  border-color: #4b5563;
+  color: white;
+}
+
+/* Style the dialog to match the dark theme */
+.terms-dialog .p-dialog-header {
+  background-color: #1f2937;
+  color: white;
+  border-bottom: 1px solid #374151;
+}
+
+.terms-dialog .p-dialog-content {
+  background-color: #1f2937;
+  color: #d1d5db;
+}
+
+.terms-dialog .p-dialog-footer {
+  background-color: #1f2937;
+  border-top: 1px solid #374151;
+  padding: 1rem;
+}
+
+/* Style the checkbox */
+.p-checkbox .p-checkbox-box {
+  background-color: #374151;
+  border-color: #4b5563;
+}
+
+.p-checkbox .p-checkbox-box.p-highlight {
+  background-color: #10b981;
+  border-color: #10b981;
+}
+
+/* Style all inputs */
+.p-inputtext {
+  background-color: #374151;
+  border-color: #4b5563;
+  color: white;
+}
+
+/* Add a subtle glow to inputs on focus */
+.p-inputtext:focus {
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+  border-color: #10b981;
+}
+
+/* Style the error messages */
+.p-message {
+  margin-top: 0.25rem;
+}
+
+/* Add a subtle pulse animation to the Create Account button */
+@keyframes subtle-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+button[type="submit"] {
+  animation: subtle-pulse 2s infinite;
 }

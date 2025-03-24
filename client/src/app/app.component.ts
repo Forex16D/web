@@ -10,7 +10,7 @@ import { MessageService } from 'primeng/api';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { ConfirmationService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-
+import { FooterComponent } from './components/footer/footer.component';
 @Component({
   selector: 'app-root',
   imports: [
@@ -21,7 +21,8 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
     ToastModule, 
     NavbarComponent, 
     NgClass, 
-    ConfirmDialogModule
+    ConfirmDialogModule,
+    FooterComponent
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],

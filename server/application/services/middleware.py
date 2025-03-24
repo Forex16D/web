@@ -14,8 +14,8 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 SECRET_KEY_BOT_TOKEN = os.getenv("SECRET_KEY_BOT_TOKEN")
 
 def sign_token(user_id, role, remember=False):
-  # if remember expire in 7 days
-  time_offset = 168 if remember else 1
+  # if remember expire in 30 days (720 hours)
+  time_offset = 720 if remember else 24
   token = jwt.encode(
     {
       "user": user_id,

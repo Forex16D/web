@@ -70,10 +70,27 @@ class PortfolioService:
     conn = self.db_pool.get_connection()
     try:
       cursor = conn.cursor(cursor_factory=RealDictCursor)
+      now = datetime.now()
+      first_day = now.replace(day=1).strftime('%Y-%m-%d')
+      last_day = now.replace(day=calendar.monthrange(now.year, now.month)[1]).strftime('%Y-%m-%d')
+      
+      # Fetch portfolios with total profit and monthly pnl
       cursor.execute("""
       SELECT 
-        portfolios.*, 
+        portfolios.connected, 
+        portfolios.created_at, 
+        portfolios.is_expert, 
+        portfolios.name, 
+        portfolios.portfolio_id,
+        portfolios.user_id,
         COALESCE(SUM(orders.profit), 0) AS total_profit,
+        COALESCE(SUM(
+          CASE 
+            WHEN orders.created_at BETWEEN %s AND %s 
+            THEN orders.profit 
+            ELSE 0 
+          END
+        ), 0) AS monthly_pnl,
         CASE 
           WHEN COUNT(orders.profit) > 0 THEN 
             (SUM(CASE WHEN orders.profit >= 0 THEN 1 ELSE 0 END) * 100.0 / COUNT(orders.profit))
@@ -86,22 +103,102 @@ class PortfolioService:
       WHERE portfolios.is_expert = true
       GROUP BY portfolios.portfolio_id
       ORDER BY portfolios.created_at DESC;
-      """)
-
+      """, (first_day, last_day))
       portfolios = cursor.fetchall()
 
       if not portfolios:
-        raise ValueError("Not found")
+        raise ValueError("No expert portfolios found")
+      
+      # Fetch the last 8 weeks of weekly profit for each portfolio
+      cursor.execute("""
+      SELECT 
+        portfolios.portfolio_id,
+        weeks.week_start,
+        COALESCE(SUM(orders.profit), 0) AS weekly_profit
+      FROM (
+        -- Generate the last 8 weeks
+        SELECT generate_series(
+          DATE_TRUNC('week', NOW()) - INTERVAL '7 weeks', 
+          DATE_TRUNC('week', NOW()), 
+          INTERVAL '1 week'
+        ) AS week_start
+      ) weeks
+      LEFT JOIN portfolios ON true  -- Join each week to portfolios
+      LEFT JOIN orders 
+        ON orders.portfolio_id = portfolios.portfolio_id
+        AND orders.created_at >= weeks.week_start 
+        AND orders.created_at < weeks.week_start + INTERVAL '1 week'
+      WHERE portfolios.is_expert = true
+      GROUP BY portfolios.portfolio_id, weeks.week_start
+      ORDER BY portfolios.portfolio_id, weeks.week_start DESC;
+      """)
+      weekly_profits = cursor.fetchall()
+
+      # Associate weekly profits with their respective portfolios
+      for portfolio in portfolios:
+        portfolio['weekly_profits'] = [
+          weekly_profit for weekly_profit in weekly_profits
+          if weekly_profit['portfolio_id'] == portfolio['portfolio_id']
+        ]
 
       return {"portfolios": portfolios}
+    
     except ValueError as ve:
-        raise ve
+      raise ve
     except Exception as e:
-        raise RuntimeError(e)
+      raise RuntimeError(e)
     finally:
       cursor.close()
       self.db_pool.release_connection(conn)
-    
+
+  def get_total_commission(self, user_id):
+    conn = self.db_pool.get_connection()
+    try:
+      cursor = conn.cursor(cursor_factory=RealDictCursor)
+      cursor.execute("""
+        SELECT
+          (COALESCE(SUM(orders.profit), 0) * portfolios.commission) AS total_profit, portfolios.name
+        FROM orders
+        JOIN portfolios ON orders.model_id = portfolios.portfolio_id
+        WHERE portfolios.user_id = %s
+        GROUP BY portfolios.portfolio_id
+      """, (user_id,))
+      result = cursor.fetchall()
+
+      return result
+
+    except ValueError as ve:
+      raise ve
+    except Exception as e:
+      raise RuntimeError(e)
+    finally:
+      cursor.close()
+      self.db_pool.release_connection(conn)
+
+  def get_portfolio_commission(self, portfolio_id):
+    conn = self.db_pool.get_connection()
+    try:
+      cursor = conn.cursor(cursor_factory=RealDictCursor)
+      cursor.execute("""
+        SELECT
+          (COALESCE(SUM(profit), 0) * portfolios.commission) AS total_profit
+        FROM orders
+        JOIN portfolios ON orders.model_id = portfolios.portfolio_id
+        WHERE portfolios.portfolio_id = %s
+        GROUP BY portfolios.portfolio_id
+      """, (portfolio_id,))
+      result = cursor.fetchone()
+
+      return result
+
+    except ValueError as ve:
+      raise ve
+    except Exception as e:
+      raise RuntimeError(e)
+    finally:
+      cursor.close()
+      self.db_pool.release_connection(conn)
+
   def create_portfolio(self, data, user_id):
     name = data.get("name")
     login = data.get("login")
