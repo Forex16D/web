@@ -1,7 +1,7 @@
 import { Component, OnInit, signal, viewChild, ViewContainerRef } from '@angular/core';
 import { ThemeService } from '../../core/services/theme.service';
 import { PortfolioCardComponent } from '../../components/portfolio-card/portfolio-card.component';
-import { NgFor, NgIf } from '@angular/common';
+import { DecimalPipe, NgFor, NgIf } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { BotCardComponent } from '../../components/bot-card/bot-card.component';
 import { NgClass } from '@angular/common';
@@ -22,6 +22,9 @@ import { PortfolioResponse } from '../../models/portfolio-response.model';
 
 import * as echarts from 'echarts/core';
 import { InputNumberModule } from 'primeng/inputnumber';
+import { DropdownModule } from 'primeng/dropdown';
+import { CheckboxModule } from 'primeng/checkbox';
+import { TextareaModule } from 'primeng/textarea';
 echarts.use([BarChart, GridComponent, CanvasRenderer]);
 
 @Component({
@@ -42,7 +45,11 @@ echarts.use([BarChart, GridComponent, CanvasRenderer]);
     ReactiveFormsModule,
     MessageModule,
     NgIf,
-    InputNumberModule
+    InputNumberModule,
+    DropdownModule,
+    CheckboxModule,
+    DecimalPipe,
+    TextareaModule
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
@@ -50,20 +57,44 @@ echarts.use([BarChart, GridComponent, CanvasRenderer]);
 })
 export class DashboardComponent implements OnInit {
   vcr = viewChild('container', { read: ViewContainerRef });
+  
+  // UI state variables
   isBalanceVisible = false;
   isDialogVisible = false;
-  portfolios = signal<PortfolioResponse[]>([]);
+  isWithdrawDialogVisible = false;
   showCommission = false;
-  commissionIncome = 0;
+  processing = false;
+  submitted = false;
+  withdrawSubmitted = false;
 
+  // Data variables
+  portfolios = signal<PortfolioResponse[]>([]);
+  withdrawalMethods = [
+    { name: 'Bank Transfer', code: 'bank' },
+    { name: 'Credit/Debit Card', code: 'card' },
+    { name: 'Cryptocurrency', code: 'crypto' },
+    { name: 'PayPal', code: 'paypal' }
+  ];
+  walletBalance = 0;
+  commissionIncome = 0;
+  acc_profit = 0;
+  withdrawalFee = 1.5;
+
+  // Forms
   portfolioForm = new FormGroup({
     name: new FormControl('', [Validators.required, Validators.minLength(1), Validators.maxLength(20)]),
     login: new FormControl(null, [Validators.required, Validators.pattern('[0-9]*')]),
   });
 
-  submitted: boolean = false;
-  acc_profit = 0;
-
+  withdrawForm = new FormGroup({
+    amount: new FormControl(null, [Validators.required, Validators.min(10), Validators.max(this.walletBalance)]),
+    method: new FormControl('', Validators.required),
+    bankAccount: new FormControl(''),
+    walletAddress: new FormControl(''),
+    notes: new FormControl(''),
+    confirmation: new FormControl(false, Validators.requiredTrue),
+  });
+  
   lineChart: EChartsCoreOption = {
     grid: {
       left: '5%',
@@ -93,7 +124,7 @@ export class DashboardComponent implements OnInit {
     ],
     responsive: true, // Ensures it adapts to container changes
   };
-
+  
   constructor(
     private themeService: ThemeService,
     private apiService: ApiService,
@@ -102,8 +133,24 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.getPortfolios()
+    this.getBalance()
+    this.withdrawForm.get('method')?.valueChanges.subscribe(method => {
+      if (method === 'bank') {
+        this.withdrawForm.get('bankAccount')?.setValidators([Validators.required, Validators.minLength(8)]);
+        this.withdrawForm.get('walletAddress')?.clearValidators();
+      } else if (method === 'crypto') {
+        this.withdrawForm.get('walletAddress')?.setValidators([Validators.required, Validators.minLength(25)]);
+        this.withdrawForm.get('bankAccount')?.clearValidators();
+      } else {
+        this.withdrawForm.get('bankAccount')?.clearValidators();
+        this.withdrawForm.get('walletAddress')?.clearValidators();
+      }
+      
+      this.withdrawForm.get('bankAccount')?.updateValueAndValidity();
+      this.withdrawForm.get('walletAddress')?.updateValueAndValidity();
+    });
   }
-
+  
   getPortfolios(): void {
     this.apiService.get<PortfolioResponse[]>('v1/portfolios').subscribe({
       next: (response: PortfolioResponse[]) => {
@@ -127,6 +174,17 @@ export class DashboardComponent implements OnInit {
     this.apiService.get<any[]>('v1/portfolios/commission').subscribe({
       next: (response: any[]) => {
         this.commissionIncome = response.reduce((acc, item) => acc + item.total_profit, 0);
+      },
+      error: (error) => {
+        console.error('Fetch failed:', error);
+      }
+    });
+  }
+  
+  getBalance(): void {
+    this.apiService.get('v1/balance').subscribe({
+      next: (response: any) => {
+        this.walletBalance = response.balance
         console.log(response);
       },
       error: (error) => {
@@ -184,5 +242,65 @@ export class DashboardComponent implements OnInit {
   resetForm(): void {
     this.submitted = false;
     this.portfolioForm.reset();
+  }
+
+  showWithdrawDialog(): void {
+    this.isWithdrawDialogVisible = true;
+  }
+
+  resetWithdrawForm(): void {
+    this.withdrawForm.reset();
+    this.withdrawSubmitted = false;
+    this.processing = false;
+  }
+
+  shouldShowBankAccount(): boolean {
+    return this.withdrawForm.get('method')?.value === 'bank';
+  }
+
+  shouldShowWalletAddress(): boolean {
+    return this.withdrawForm.get('method')?.value === 'crypto';
+  }
+
+  calculateFee(): number {
+    const amount = this.withdrawForm.get('amount')?.value || 0;
+    return (amount * this.withdrawalFee) / 100;
+  }
+
+  calculateNetAmount(): number {
+    const amount = this.withdrawForm.get('amount')?.value || 0;
+    return amount - this.calculateFee();
+  }
+
+  processWithdrawal(): void {
+    this.withdrawSubmitted = true;
+    
+    if (this.withdrawForm.invalid) {
+      return;
+    }
+    
+    this.processing = true;
+    
+    // Implement your withdrawal processing logic here
+    // For example:
+    // this.walletService.processWithdrawal(this.withdrawForm.value).subscribe(
+    //   response => {
+    //     this.messageService.add({severity: 'success', summary: 'Success', detail: 'Withdrawal processed successfully'});
+    //     this.walletBalance -= this.withdrawForm.get('amount')?.value;
+    //     this.isWithdrawDialogVisible = false;
+    //     this.processing = false;
+    //   },
+    //   error => {
+    //     this.messageService.add({severity: 'error', summary: 'Error', detail: error.message});
+    //     this.processing = false;
+    //   }
+    // );
+    
+    // For demo purposes, simulate API call
+    setTimeout(() => {
+      console.log('Withdrawal processed:', this.withdrawForm.value);
+      this.isWithdrawDialogVisible = false;
+      this.processing = false;
+    }, 1500);
   }
 }

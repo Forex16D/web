@@ -199,6 +199,25 @@ class PortfolioService:
       cursor.close()
       self.db_pool.release_connection(conn)
 
+  def get_user_balance(self, user_id):
+    conn = self.db_pool.get_connection()
+    try:
+      cursor = conn.cursor(cursor_factory=RealDictCursor)
+      cursor.execute("""
+        SELECT balance from users WHERE user_id = %s
+      """, (user_id,))
+      balance = cursor.fetchone()
+
+      return balance
+
+    except ValueError as ve:
+      raise ve
+    except Exception as e:
+      raise RuntimeError(e)
+    finally:
+      cursor.close()
+      self.db_pool.release_connection(conn)
+
   def create_portfolio(self, data, user_id):
     name = data.get("name")
     login = data.get("login")

@@ -45,7 +45,15 @@ class PortfolioController:
     except Exception as e:
       self.server_log_service.error(f"Internal server error during portfolio commission retrieval: {str(e)}")
       return jsonify({"status": 500, "message": "Internal server error"}), 500
-    
+
+  def get_user_balance(self, user_id):
+    try:
+      commissions = self.portfolio_service.get_user_balance(user_id)
+      return commissions
+    except Exception as e:
+      self.server_log_service.error(f"Internal server error during user balance retrieval: {str(e)}")
+      return jsonify({"status": 500, "message": "Internal server error"}), 500
+
   def create_portfolio(self, request, user_id):
     try:
       data = request.get_json()

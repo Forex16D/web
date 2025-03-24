@@ -1,6 +1,7 @@
 <div class="flex flex-1 flex-col items-center w-full max-w-7xl mx-auto px-4">
   <div class="w-full mb-2">
-    <h1 class="text-headline4 font-medium"><i class="pi pi-gauge text-green-400" style="font-size: 32px"></i> Dashboard</h1>
+    <h1 class="text-headline4 font-medium"><i class="pi pi-gauge text-green-400" style="font-size: 32px"></i> Dashboard
+    </h1>
     <div
       class="flex flex-col md:flex-row justify-between rounded-xl shadow-xl border border-gray-700 p-6 w-full min-h-80 gap-6 mx-auto my-5 bg-gray-900">
 
@@ -9,7 +10,7 @@
         <h2 class="text-xl font-medium text-gray-300">Total Portfolio</h2>
         <div class="text-3xl font-bold text-white mt-2">{{ portfolios().length }}</div>
       </div>
-      
+
       <!-- Profit -->
       <div class="flex flex-col items-center justify-center bg-gray-800 rounded-lg p-6 shadow-md w-full">
         <h2 class="text-xl font-medium text-gray-300">Accumulative Profit</h2>
@@ -17,9 +18,22 @@
       </div>
 
       <!-- Commission Income -->
-      <div *ngIf="showCommission" class="flex flex-col items-center justify-center bg-gray-800 rounded-lg p-6 shadow-md w-full">
+      <div *ngIf="showCommission"
+        class="flex flex-col items-center justify-center bg-gray-800 rounded-lg p-6 shadow-md w-full">
         <h2 class="text-xl font-medium text-gray-300">Commission Income</h2>
         <div class="text-3xl font-bold text-green-400 mt-2">${{ commissionIncome }}</div>
+      </div>
+
+      <!--* Wallet Balance *-->
+      <div class="flex flex-col items-center justify-center bg-gray-800 rounded-lg p-6 shadow-md w-full">
+        <h2 class="text-xl font-medium text-gray-300">Wallet Balance</h2>
+        <div class="text-3xl font-bold text-blue-400 mt-2">${{ walletBalance }}</div>
+        <div class="flex gap-2 mt-4">
+          <!-- <p-button icon="pi pi-plus-circle" label="Deposit" severity="success"
+            ></p-button> -->
+          <p-button icon="pi pi-minus-circle" label="Withdraw" severity="danger"
+            (click)="showWithdrawDialog()"></p-button>
+        </div>
       </div>
     </div>
 
@@ -70,6 +84,90 @@
     <div class="flex justify-end gap-2">
       <p-button label="Cancel" severity="secondary" text="true" (click)="isDialogVisible = false" />
       <p-button label="Save" type="submit" />
+    </div>
+  </form>
+</p-dialog>
+
+<p-dialog [modal]="true" [(visible)]="isWithdrawDialogVisible" [style]="{ width: '30rem' }" (onHide)="resetWithdrawForm()">
+  <ng-template pTemplate="header">
+    <h1 class="text-2xl font-medium">Withdraw Funds</h1>
+  </ng-template>
+  <form pFocusTrap [formGroup]="withdrawForm" (ngSubmit)="processWithdrawal()">
+    <!-- Amount -->
+    <div class="flex flex-col gap-4 mb-4">
+      <label for="amount" class="text-sm">Withdrawal Amount</label>
+      <p-inputnumber id="amount" mode="currency" currency="USD" locale="en-US" 
+        [minFractionDigits]="2" [maxFractionDigits]="2" placeholder="0.00"
+        formControlName="amount" [max]="walletBalance" />
+      <p-message *ngIf="withdrawSubmitted && withdrawForm.get('amount')?.invalid" severity="error"
+        text="Please enter a valid amount (not exceeding your balance)"></p-message>
+    </div>
+    
+    <!-- Withdrawal Method -->
+    <div class="flex flex-col gap-4 mb-4">
+      <label for="method" class="text-sm">Withdrawal Method</label>
+      <p-dropdown id="method" [options]="withdrawalMethods" formControlName="method" 
+        placeholder="Select a method" [showClear]="true" optionLabel="name" optionValue="code">
+      </p-dropdown>
+      <p-message *ngIf="withdrawSubmitted && withdrawForm.get('method')?.invalid" severity="error"
+        text="Please select a withdrawal method"></p-message>
+    </div>
+    
+    <!-- Bank Account (conditional) -->
+    <div *ngIf="withdrawForm.get('method')?.value === 'bank'" class="flex flex-col gap-4 mb-4">
+      <label for="bankAccount" class="text-sm">Bank Account Number</label>
+      <input pInputText id="bankAccount" placeholder="Enter your bank account number" 
+        formControlName="bankAccount" />
+      <p-message *ngIf="withdrawSubmitted && shouldShowBankAccount() && withdrawForm.get('bankAccount')?.invalid" 
+        severity="error" text="Please enter a valid bank account number"></p-message>
+    </div>
+    
+    <!-- Crypto Wallet (conditional) -->
+    <div *ngIf="withdrawForm.get('method')?.value === 'crypto'" class="flex flex-col gap-4 mb-4">
+      <label for="walletAddress" class="text-sm">Crypto Wallet Address</label>
+      <input pInputText id="walletAddress" placeholder="Enter your wallet address" 
+        formControlName="walletAddress" />
+      <p-message *ngIf="withdrawSubmitted && shouldShowWalletAddress() && withdrawForm.get('walletAddress')?.invalid" 
+        severity="error" text="Please enter a valid wallet address"></p-message>
+    </div>
+    
+    <!-- Notes -->
+    <div class="flex flex-col gap-4 mb-4">
+      <label for="notes" class="text-sm">Notes (Optional)</label>
+      <textarea pTextarea id="notes" rows="3" placeholder="Add any additional information" 
+        formControlName="notes"></textarea>
+    </div>
+    
+    <!-- Confirmation Checkbox -->
+    <div class="flex items-center gap-2 mb-4">
+      <p-checkbox formControlName="confirmation" [binary]="true" inputId="confirmation"></p-checkbox>
+      <label for="confirmation" class="text-sm">I confirm this withdrawal request</label>
+      <p-message *ngIf="withdrawSubmitted && withdrawForm.get('confirmation')?.invalid" severity="error"
+        text="Please confirm your withdrawal request"></p-message>
+    </div>
+    
+    <!-- Fee Information -->
+    <div *ngIf="withdrawForm.get('amount')?.valid && (withdrawForm.get('amount')?.value ?? 0) > 0"
+      class="p-3 bg-gray-800 rounded mb-4">
+      <div class="flex justify-between mb-1">
+        <span class="text-sm text-gray-300">Withdrawal Amount:</span>
+        <span class="text-sm">${{ withdrawForm.get('amount')?.value | number:'1.2-2' }}</span>
+      </div>
+      <div class="flex justify-between mb-1">
+        <span class="text-sm text-gray-300">Fee ({{ withdrawalFee }}%):</span>
+        <span class="text-sm">${{ calculateFee() | number:'1.2-2' }}</span>
+      </div>
+      <div class="border-t border-gray-700 my-2"></div>
+      <div class="flex justify-between font-medium">
+        <span class="text-gray-300">You will receive:</span>
+        <span>${{ calculateNetAmount() | number:'1.2-2' }}</span>
+      </div>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div class="flex justify-end gap-2">
+      <p-button label="Cancel" severity="secondary" text="true" (click)="isWithdrawDialogVisible = false" />
+      <p-button label="Withdraw" type="submit" severity="danger" [disabled]="processing" />
     </div>
   </form>
 </p-dialog>
