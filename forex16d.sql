@@ -1,4 +1,3 @@
-failed to get console mode for stdout: The handle is invalid.
 --
 -- PostgreSQL database dump
 --
@@ -86,7 +85,9 @@ CREATE TABLE public.bills (
     net_amount double precision NOT NULL,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     due_date timestamp with time zone,
-    status public.bill_status
+    status public.bill_status,
+    net_amount_usd double precision,
+    exchange_rate double precision
 );
 
 
@@ -153,7 +154,7 @@ ALTER TABLE public.models OWNER TO admin;
 --
 
 CREATE TABLE public.orders (
-    order_id character varying(255) NOT NULL,
+    order_id bigint NOT NULL,
     portfolio_id character varying(255) NOT NULL,
     model_id character varying(255) NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
@@ -181,7 +182,11 @@ CREATE TABLE public.portfolios (
     name character varying(20) NOT NULL,
     connected boolean DEFAULT false NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    lot_size numeric(2,0)
+    lot_size numeric(2,0),
+    expert_id character varying(255),
+    is_expert boolean DEFAULT false NOT NULL,
+    commission numeric(3,2) DEFAULT 0.00 NOT NULL,
+    CONSTRAINT commission_check CHECK (((commission >= (0)::numeric) AND (commission <= (1)::numeric)))
 );
 
 
@@ -197,7 +202,6 @@ CREATE TABLE public.receipts (
     user_id character varying NOT NULL,
     amount_paid double precision NOT NULL,
     payment_date timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    payment_method character varying(50) NOT NULL,
     reference_number character varying(100) NOT NULL,
     receipt_image character varying(255),
     notes text,
@@ -255,7 +259,8 @@ CREATE TABLE public.users (
     password character varying(255) NOT NULL,
     role public.roles DEFAULT 'user'::public.roles NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    banned boolean DEFAULT false NOT NULL
+    is_banned boolean DEFAULT false NOT NULL,
+    balance double precision DEFAULT 0
 );
 
 
@@ -384,7 +389,15 @@ ALTER TABLE ONLY public.portfolios
 --
 
 ALTER TABLE ONLY public.portfolios
-    ADD CONSTRAINT portfolios_bot_id_fkey FOREIGN KEY (model_id) REFERENCES public.models(model_id);
+    ADD CONSTRAINT portfolios_bot_id_fkey FOREIGN KEY (model_id) REFERENCES public.models(model_id) ON DELETE SET NULL;
+
+
+--
+-- Name: portfolios portfolios_expert_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: admin
+--
+
+ALTER TABLE ONLY public.portfolios
+    ADD CONSTRAINT portfolios_expert_id_fkey FOREIGN KEY (expert_id) REFERENCES public.portfolios(portfolio_id) ON DELETE SET NULL;
 
 
 --
