@@ -214,40 +214,56 @@ class BillingService:
     try:
       conn = self.db_pool.get_connection()
       cursor = conn.cursor(cursor_factory=RealDictCursor)
-      
+
       now = datetime.now()
       first_day = now.replace(day=1).strftime('%Y-%m-%d')
       last_day = now.replace(day=calendar.monthrange(now.year, now.month)[1]).strftime('%Y-%m-%d')
 
+      # First, fetch the total profit
       cursor.execute("""
-        UPDATE users SET balance = balance +
-        (
-          SELECT COALESCE(SUM(orders.profit * portfolios.commission), 0) AS total_profit
-          FROM orders
-          JOIN portfolios ON orders.model_id = portfolios.portfolio_id
-          WHERE portfolios.user_id = %s
-          AND orders.created_at BETWEEN %s AND %s;
-        )
+        SELECT COALESCE(SUM(orders.profit * portfolios.commission), 0) AS total_profit
+        FROM orders
+        JOIN portfolios ON orders.model_id = portfolios.portfolio_id
+        WHERE portfolios.user_id = %s
+        AND orders.created_at BETWEEN %s AND %s
+      """, (user_id, first_day, last_day))
+      
+      total_profit_result = cursor.fetchone()
+      total_profit = total_profit_result['total_profit'] if total_profit_result else 0
+
+      # Now, update the user's balance
+      cursor.execute("""
+        UPDATE users 
+        SET balance = balance + %s
         WHERE user_id = %s
-      """, (user_id, first_day, last_day, user_id))
-      total_profit = cursor.fetchone()
+      """, (total_profit, user_id))
+
+      conn.commit()  # Don't forget to commit the transaction!
+
+      return {"total_profit": total_profit}  # Return the calculated profit
+
+    except Exception as e:
+      # Handle any potential errors
+      conn.rollback()  # Rollback in case of error
+      return {"error": str(e)}
 
     finally:
       cursor.close()
       self.db_pool.release_connection(conn)
+
 
   def pay_all_expert(self):
     try:
       conn = self.db_pool.get_connection()
       cursor = conn.cursor(cursor_factory=RealDictCursor)
       
-      cursor.execute("SELECT user_id FROM portfolios")
-      portfolios = cursor.fetchall()
+      cursor.execute("SELECT user_id FROM users")
+      users = cursor.fetchall()
 
-      for portfolio in portfolios:
-        bill_id = self.calculate_bill(portfolio["portfolio_id"], portfolio["model_id"])
-        if bill_id:
-          print(f"Created Bill ID: {bill_id} for Portfolio {portfolio['portfolio_id']}")
+      for user in users:
+        amount = self.pay_expert_commission(user["user_id"])
+        if amount:
+          print(f"Pay User {user['user_id']} Amount {amount}")
     finally:
       cursor.close()
       self.db_pool.release_connection(conn)
