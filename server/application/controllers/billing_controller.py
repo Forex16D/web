@@ -26,15 +26,31 @@ class BillingController:
     try:
       bill_id = request.form.get("bill_id")
       notes = request.form.get("notes")
-
-      receipt_image = request.files.get("receipt")
-
-      if not bill_id or not receipt_image:
-        return jsonify({"status": 100, "message": "Missing required fields"}), 400
+      method = request.form.get("method")
       
-      response = self.billing_service.pay_bill(user_id, bill_id, receipt_image, notes)
+      receipt_image = None
+      
+      # Log the incoming request for debugging
+      ServerLogHelper.log(f"Request Method: {method} for bill_id: {bill_id}")
+
+      if method == 'receipt':
+        receipt_image = request.files.get("receipt")
+        if not receipt_image:
+          ServerLogHelper.log("No receipt image found, returning 400")
+          return jsonify({"status": 400, "message": "Bad Request"}), 400
+        response = self.billing_service.pay_bill(user_id, bill_id, receipt_image, notes)
+      elif method == 'wallet':
+        response = self.billing_service.pay_bill_wallet(user_id, bill_id, notes)
+        ServerLogHelper.log(f"{response}")
+
+      else:
+        return jsonify({"status": 400, "message": "Bad Request"}), 400
       
       return jsonify(response), 200
 
+    except ValueError as e:
+      return jsonify({"status": 400, "message": "Bad Request", "error": str(e)}), 400
     except Exception as e:
+      ServerLogHelper.log(f"General Exception Triggered: {str(e)}")  # Debug log for general exceptions
       return jsonify({"status": 500, "message": f"Internal server error: {str(e)}"}), 500
+

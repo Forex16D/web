@@ -63,7 +63,7 @@ class UserService:
 
     try:
       cursor = conn.cursor(cursor_factory=RealDictCursor)
-      cursor.execute("UPDATE users SET is_banned = TRUE, is_expert = FALSE WHERE user_id = %s", (user_id,))
+      cursor.execute("UPDATE users SET is_banned = TRUE WHERE user_id = %s", (user_id,))
       conn.commit()
 
       return {"message": "User Banned Successfully!"}

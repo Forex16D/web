@@ -83,6 +83,7 @@ class PortfolioService:
         portfolios.name, 
         portfolios.portfolio_id,
         portfolios.user_id,
+        portfolios.commission,
         COALESCE(SUM(orders.profit), 0) AS total_profit,
         COALESCE(SUM(
           CASE 

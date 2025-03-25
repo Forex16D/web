@@ -30,7 +30,7 @@ import { TextareaModule } from 'primeng/textarea';
     ReactiveFormsModule,
     ImageModule,
     TextareaModule
-   ],
+  ],
   templateUrl: './payment.component.html',
   styleUrls: ['./payment.component.css']
 })
@@ -38,11 +38,16 @@ export class PaymentComponent implements OnInit {
   billId: number | null = null;
   billIds: number[] = [];
   amount: number = 0;
+  amount_usd: number = 0;
+  created_at: Date = new Date;
   isBulkPayment: boolean = false;
   paymentForm!: FormGroup;
   receiptImage: any = null;
   imagePreview: string | null = null;
   isSubmitting: boolean = false;
+
+  paymentMethod: 'wallet' | 'receipt' | null = null;
+  walletBalance: number = 0;
 
   constructor(
     private route: ActivatedRoute,
@@ -57,12 +62,17 @@ export class PaymentComponent implements OnInit {
     this.initForm();
     this.parseQueryParams();
     this.getBill();
+    this.getBalance();
   }
 
   initForm(): void {
     this.paymentForm = this.fb.group({
       notes: ['']
     });
+  }
+
+  selectPaymentMethod(method: 'wallet' | 'receipt') {
+    this.paymentMethod = method;
   }
 
   getBill(): void {
@@ -73,9 +83,23 @@ export class PaymentComponent implements OnInit {
     this.apiService.get(`v1/bills/${queryparam}`).subscribe({
       next: (response: any) => {
         this.amount = response.bill.net_amount;
+        this.amount_usd = response.bill.net_amount_usd;
+        this.created_at = response.bill.created_at;
       },
       error: (error) => console.log(error),
     })
+  }
+
+  getBalance(): void {
+    this.apiService.get('v1/balance').subscribe({
+      next: (response: any) => {
+        this.walletBalance = response.balance
+        console.log(response);
+      },
+      error: (error) => {
+        console.error('Fetch failed:', error);
+      }
+    });
   }
 
   parseQueryParams(): void {
@@ -99,7 +123,7 @@ export class PaymentComponent implements OnInit {
     if (event.files && event.files.length) {
       const file = event.files[0];
       this.receiptImage = file;
-      
+
       // Create preview
       const reader = new FileReader();
       reader.onload = () => {
@@ -115,21 +139,39 @@ export class PaymentComponent implements OnInit {
   }
 
   submitPayment(): void {
-    if (this.paymentForm.invalid || !this.receiptImage) {
+    if (this.paymentForm.invalid) {
       this.messageService.add({
         severity: 'error',
         summary: 'Missing Information',
-        detail: 'Please fill all required fields and upload a receipt image'
+        detail: 'Please fill in all required fields.'
       });
       return;
     }
+    
+    if (this.walletBalance < this.amount_usd) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Insufficient Funds',
+        detail: `Your balance ($${this.walletBalance.toFixed(2)}) is lower than the required amount ($${this.amount_usd.toFixed(2)}).`
+      });
+      return;
+    }
+    
+    if (this.paymentMethod === 'receipt' && !this.receiptImage) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Receipt Required',
+        detail: 'Please upload a receipt to proceed with the payment.'
+      });
+      return;
+    }    
 
     this.isSubmitting = true;
-    
     // Create FormData for file upload
     const formData = new FormData();
     formData.append('receipt', this.receiptImage);
     formData.append('notes', this.paymentForm.value.notes || '');
+    formData.append('method', this.paymentMethod || '');
 
     if (this.isBulkPayment) {
       formData.append('bill_ids', JSON.stringify(this.billIds));
@@ -147,14 +189,14 @@ export class PaymentComponent implements OnInit {
           summary: 'Payment Successful',
           detail: `Your payment of ฿${this.amount.toFixed(2)} has been processed successfully`
         });
-        setTimeout(() => this.router.navigate(['/bills']), 2000);
+        this.router.navigate(['/bills']);
       },
       error: (error) => {
         this.isSubmitting = false;
         this.messageService.add({
           severity: 'error',
           summary: 'Payment Failed',
-          detail: error.message || 'An error occurred while processing your payment'
+          detail: 'An error occurred while processing your payment'
         });
       }
     });

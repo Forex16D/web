@@ -19,6 +19,7 @@ interface Bill {
   bill_id: number;
   created_at: string;
   net_amount: number;
+  net_amount_usd: number;
   due_date: Date | null;
   status: string;
   notes?: string;
@@ -51,7 +52,6 @@ interface Bill {
 export class BillComponent implements OnInit {
   bills: Bill[] = [];
   isBillDialogVisible: boolean = false;
-  billForm!: FormGroup;
   submitted: boolean = false;
   editMode: boolean = false;
   currentBillId: number = 0;
@@ -72,14 +72,12 @@ export class BillComponent implements OnInit {
   ];
 
   constructor(
-    private fb: FormBuilder,
     private confirmationService: ConfirmationService,
     private messageService: MessageService,
     private apiService: ApiService,
   ) { }
 
   ngOnInit(): void {
-    this.initForm();
     this.loadBills().then(() => {
       this.calculateTotals();
     }).catch(error => {
@@ -87,14 +85,6 @@ export class BillComponent implements OnInit {
     });
   }
 
-  initForm(): void {
-    this.billForm = this.fb.group({
-      net_amount: [null, [Validators.required, Validators.min(0.01)]],
-      due_date: [null, [Validators.required]],
-      status: ['Pending', [Validators.required]],
-      notes: ['']
-    });
-  }
 
   loadBills(): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -109,15 +99,6 @@ export class BillComponent implements OnInit {
         }
       });
     });
-  }
-  
-
-  showBillDialog(): void {
-    this.editMode = false;
-    this.submitted = false;
-    this.billForm.reset();
-    this.billForm.patchValue({ status: 'Pending' });
-    this.isBillDialogVisible = true;
   }
 
   getStatusSeverity(status: string): "success" | "info" | "warn" | "danger" | "secondary" | "contrast" | undefined {
@@ -144,30 +125,29 @@ export class BillComponent implements OnInit {
         const billDate = new Date(bill.due_date);
         return billDate.getMonth() === currentMonth && billDate.getFullYear() === currentYear;
       })
-      .reduce((sum, bill) => sum + bill.net_amount, 0);
+      .reduce((sum, bill) => sum + bill.net_amount_usd, 0);
     
     console.log(this.currentMonthTotal);
     this.pendingPayments = this.bills
       .filter(bill => bill.status.toLowerCase() === 'pending' || bill.status.toLowerCase() === 'overdue')
-      .reduce((sum, bill) => sum + bill.net_amount, 0);
+      .reduce((sum, bill) => sum + bill.net_amount_usd, 0);
   }
 
   makePayment(bill: Bill): void {
     // In a real app, this would open a payment gateway or process payment
     this.confirmationService.confirm({
-      message: `Process payment of ฿${bill.net_amount} for Bill #${bill.bill_id}?`,
+      message: `Process payment of $${bill.net_amount_usd} for Bill #${bill.bill_id}?`,
       header: 'Confirm Payment',
       icon: 'pi pi-credit-card',
+      acceptLabel: 'Proceed',
+      rejectLabel: 'Cancel',
+      rejectButtonStyleClass: 'p-button-secondary p-button-text',
+      acceptButtonStyleClass: 'p-button-success',
       accept: () => {
         // Navigate to payment page with bill_id as query parameter
         window.location.href = `/payment?bill_id=${bill.bill_id}`;
       }
     });
-  }
-
-  resetBillForm(): void {
-    this.submitted = false;
-    this.billForm.reset();
   }
 
   filterBills(event: any): void {
