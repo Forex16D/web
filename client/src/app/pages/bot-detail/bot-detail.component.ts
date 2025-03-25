@@ -1,6 +1,4 @@
 import { Component, OnInit, signal } from '@angular/core';
-import { PriceChartComponent } from '../price-chart/price-chart.component';
-import { NgClass, NgFor } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
@@ -14,7 +12,7 @@ import { LineChart } from 'echarts/charts';
 import { EChartsCoreOption } from 'echarts/core';
 import { GridComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
-import { NgxEchartsModule, provideEchartsCore, NgxEchartsDirective } from 'ngx-echarts';
+import { NgxEchartsModule, NgxEchartsDirective } from 'ngx-echarts';
 import { ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
 
@@ -27,8 +25,6 @@ echarts.use([BarChart, LineChart, GridComponent, CanvasRenderer]);
   imports: [
     NgxEchartsDirective,
     NgxEchartsModule,
-    PriceChartComponent,
-    NgClass,
     ButtonModule,
     DialogModule,
     InputTextModule,
@@ -36,13 +32,9 @@ echarts.use([BarChart, LineChart, GridComponent, CanvasRenderer]);
     FormsModule,
     ReactiveFormsModule,
     DatePipe,
-    NgFor,
   ],
   templateUrl: './bot-detail.component.html',
   styleUrl: './bot-detail.component.css',
-  providers: [
-    provideEchartsCore({ echarts }),
-  ],
 })
 
 export class BotDetailComponent implements OnInit {

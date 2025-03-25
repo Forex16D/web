@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule, NgFor, NgIf } from '@angular/common';
+import { CommonModule, NgFor} from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ExpertCardComponent } from '../../components/expert-card/expert-card.component';
 import { ApiService } from '../../core/services/api.service';
-import { PortfolioResponse } from '../../models/portfolio-response.model';
+import { Expert } from '../../models/expert.model';
 
 // PrimeNG Imports
 import { DropdownModule } from 'primeng/dropdown';
@@ -23,14 +23,13 @@ import { PaginatorModule } from 'primeng/paginator';
     InputTextModule,
     PaginatorModule,
     ExpertCardComponent,
-    NgIf,
   ],
   templateUrl: './copy-trade.component.html',
   styleUrl: './copy-trade.component.css'
 })
 export class CopyTradeComponent implements OnInit {
-  experts: PortfolioResponse[] = [];
-  filteredExperts: PortfolioResponse[] = [];
+  experts: Expert[] = [];
+  filteredExperts: Expert[] = [];
   
   // UI state
   selectedView: any = { label: 'All', value: 'all' };

@@ -19,7 +19,6 @@ import { Observable, Subject } from 'rxjs';
 import { DialogModule } from 'primeng/dialog';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-admin-model',
@@ -39,7 +38,6 @@ import { NgIf } from '@angular/common';
     ReactiveFormsModule,
     FormsModule,
     ConfirmDialogModule,
-    NgIf
   ],
   templateUrl: './admin-model.component.html',
   styleUrl: './admin-model.component.css'

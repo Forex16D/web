@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { NgIf } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AdminSidebarComponent } from '../../components/admin-sidebar/admin-sidebar.component';
 import { AdminUserComponent } from './admin-user/admin-user.component';
 import { AdminModelComponent } from './admin-model/admin-model.component';
 import { AdminNavbarComponent } from '../../components/admin-navbar/admin-navbar.component';
@@ -10,7 +9,6 @@ import { AdminHomeComponent } from './admin-home/admin-home.component';
 @Component({
   selector: 'app-admin',
   imports: [
-    AdminSidebarComponent, 
     AdminUserComponent, 
     AdminModelComponent, 
     AdminNavbarComponent,

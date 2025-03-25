@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { RouterLink } from '@angular/router';
-import { PriceChartComponent } from '../price-chart/price-chart.component';
 import { MiniPriceChartComponent } from '../../components/mini-price-chart/mini-price-chart.component';
 import { TagModule } from 'primeng/tag';
 
@@ -9,8 +8,7 @@ import { TagModule } from 'primeng/tag';
   selector: 'app-home',
   imports: [
     ButtonModule, 
-    RouterLink, 
-    PriceChartComponent, 
+    RouterLink,
     MiniPriceChartComponent,
     TagModule,
   ],

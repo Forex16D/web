@@ -1,4 +1,4 @@
-import { DatePipe, NgIf } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ConfirmationService, MessageService } from 'primeng/api';
@@ -46,7 +46,6 @@ interface Bill {
     ReactiveFormsModule,
     DatePickerModule,
     TextareaModule,
-    NgIf
   ]
 })
 export class BillComponent implements OnInit {

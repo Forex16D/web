@@ -3,8 +3,6 @@ import { ThemeService } from '../../core/services/theme.service';
 import { PortfolioCardComponent } from '../../components/portfolio-card/portfolio-card.component';
 import { DecimalPipe, NgFor, NgIf } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
-import { BotCardComponent } from '../../components/bot-card/bot-card.component';
-import { NgClass } from '@angular/common';
 import { ToolbarModule } from 'primeng/toolbar';
 import { BarChart } from 'echarts/charts';
 import { EChartsCoreOption } from 'echarts/core';
@@ -15,16 +13,16 @@ import { InputTextModule } from 'primeng/inputtext';
 import { ApiService } from '../../core/services/api.service';
 import { MessageService } from 'primeng/api';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { NgxEchartsModule, provideEchartsCore, NgxEchartsDirective } from 'ngx-echarts';
 import { MessageModule } from 'primeng/message';
 import { FocusTrapModule } from 'primeng/focustrap';
 import { PortfolioResponse } from '../../models/portfolio-response.model';
 
-import * as echarts from 'echarts/core';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { DropdownModule } from 'primeng/dropdown';
 import { CheckboxModule } from 'primeng/checkbox';
 import { TextareaModule } from 'primeng/textarea';
+
+import * as echarts from 'echarts/core';
 echarts.use([BarChart, GridComponent, CanvasRenderer]);
 
 @Component({
@@ -33,10 +31,6 @@ echarts.use([BarChart, GridComponent, CanvasRenderer]);
     ButtonModule,
     PortfolioCardComponent,
     NgFor,
-    BotCardComponent,
-    NgClass,
-    NgxEchartsDirective,
-    NgxEchartsModule,
     ToolbarModule,
     DialogModule,
     InputTextModule,
@@ -53,7 +47,6 @@ echarts.use([BarChart, GridComponent, CanvasRenderer]);
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
-  providers: [provideEchartsCore({ echarts }),],
 })
 export class DashboardComponent implements OnInit {
   vcr = viewChild('container', { read: ViewContainerRef });

@@ -8,7 +8,7 @@ import { SplitButtonModule } from 'primeng/splitbutton';
 import { InputTextModule } from 'primeng/inputtext';
 import { CheckboxModule } from 'primeng/checkbox';
 import { FormsModule } from '@angular/forms';
-import { JsonPipe, NgIf } from '@angular/common';
+import { NgIf } from '@angular/common';
 import { FileUploadModule } from 'primeng/fileupload';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ConfirmationService, MessageService } from 'primeng/api';
@@ -40,7 +40,6 @@ interface UserResponse {
     InputTextModule,
     CheckboxModule,
     FormsModule,
-    JsonPipe,
     FileUploadModule,
     NgIf,
     ConfirmDialogModule
