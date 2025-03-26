@@ -8,7 +8,6 @@ import pandas as pd
 import sys
 from pathlib import Path
 
-# Ensure correct command-line arguments
 if len(sys.argv) < 2:
   print("Usage: python -m models.<model_id>.publisher '<ohlc_json>'")
   sys.exit(1)
@@ -35,7 +34,6 @@ def evaluate_with_model(json_str):
       return "Error: DataFrame is empty"
 
     df.drop(columns=['time'], errors='ignore', inplace=True)
-    df.rename(columns={"volumn": "tick_volume"}, inplace=True)
 
     numeric_cols = ['open', 'high', 'low', 'close']
     df[numeric_cols] = df[numeric_cols].apply(pd.to_numeric, errors='coerce')
@@ -63,7 +61,7 @@ def evaluate_with_model(json_str):
 
     action_signal, _ = model.predict(df.values, deterministic=True)
     
-    action_map = {0: "hold", 1: "buy", 2: "sell", 3: "close_buy", 4: "close_sell"}
+    action_map = {0: "hold", 1: "open_long", 2: "open_short"}
     return action_map.get(int(action_signal), "ERROR")
 
   except Exception as e:
