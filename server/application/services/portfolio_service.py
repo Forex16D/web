@@ -131,7 +131,7 @@ class PortfolioService:
         AND orders.created_at < weeks.week_start + INTERVAL '1 week'
       WHERE portfolios.is_expert = true
       GROUP BY portfolios.portfolio_id, weeks.week_start
-      ORDER BY portfolios.portfolio_id, weeks.week_start DESC;
+      ORDER BY portfolios.portfolio_id, weeks.week_start ASC;
       """)
       weekly_profits = cursor.fetchall()
 

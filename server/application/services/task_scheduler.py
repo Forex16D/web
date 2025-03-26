@@ -16,8 +16,12 @@ def check_unpaid_bills():
   ServerLogHelper.log("Checking unpaid bills...")
   container.billing_service.check_unpaid_bills()
   ServerLogHelper.log("Unpaid bills checked.")
-  
+
+def pay_expert():
+  container.bill_service.pay_all_expert()
+
 def run_scheduler():
+  schedule.every().day.at("00:00").do(pay_expert)
   schedule.every().day.at("00:00").do(monthly_billing_task)
   schedule.every().day.at("00:00").do(check_unpaid_bills)
 

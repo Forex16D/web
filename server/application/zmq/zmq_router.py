@@ -10,7 +10,7 @@ from application.container import container
 
 # Cache for predictions
 prediction_cache = {}
-cache_expiry_seconds = 20
+cache_expiry_seconds = 5
 
 # Connection tracking
 clients = {}  # {identity: last_seen_time}
@@ -29,13 +29,13 @@ poller = zmq.Poller()  # Poller for non-blocking mode
 poller.register(socket, zmq.POLLIN)
 
 # Thread pool to handle background prediction
-executor = ThreadPoolExecutor(max_workers=2)  # Max 2 concurrent threads for predictions
+executor = ThreadPoolExecutor(max_workers=3)  # Max 3 concurrent threads for predictions
 
 print("ZeroMQ server is running...")
 
-def run_prediction_in_background(model_id, response_callback):
-    """ This function will run the prediction in a separate thread """
-    command = ["python", "-m", f"models.{model_id}.publisher", model_id]
+def run_prediction_in_background(model_id, data, response_callback):
+    data_str = json.dumps(data)
+    command = ["python", "-m", f"models.{model_id}.publisher", data_str]
     result = subprocess.run(command, capture_output=True, text=True)
     response = result.stdout.strip().encode() if result.returncode == 0 else b""
     response_callback(response)
@@ -48,9 +48,11 @@ while True:
     if socket in events:
       identity, message = socket.recv_multipart()
       message_str = message.decode("utf-8", "ignore")
+      
+      if not message_str.strip():
+        continue
 
-      print(f"Received from {identity.hex()}: {message_str}")
-
+      print(f"Received from {identity.hex()}")
       response = None
       clients[identity] = time.time()  # Update last seen time
 
@@ -73,7 +75,7 @@ while True:
           model_id = data.get("model_id")
           is_expert = bool(data.get("is_expert"))  
           portfolio_id = data.get("portfolio_id")
-
+          market_data = data.get("market_data")
           identity_to_portfolio[identity] = portfolio_id  # Store mapping
 
           current_time = time.time()
@@ -99,7 +101,7 @@ while True:
                     print(f"Published: {response}")
             
             # Submit to thread pool
-            executor.submit(run_prediction_in_background, model_id, handle_prediction_result)
+            future = executor.submit(run_prediction_in_background, model_id, market_data, handle_prediction_result)
 
       # 🔵 **Handle Client Initialization**
       elif "init" in message_str:

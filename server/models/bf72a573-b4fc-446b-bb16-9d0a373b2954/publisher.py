@@ -20,47 +20,54 @@ model_path = Path(__file__).parent / "model"
 model = PPO.load(model_path)
 
 def evaluate_with_model(json_str):
-  return '{"action": "BUY", "symbol": "USDJPY", "price": 1.1}'
-  # try:
-  #   data_list = json.loads(json_str)
-  #   df = pd.DataFrame(data_list)
+  try:
+    data_list = json.loads(json_str)
+    data_list = json.loads(data_list)
 
-  #   df.drop(columns=['time'], errors='ignore', inplace=True)
-  #   df.rename(columns={"volumn": "tick_volume"}, inplace=True)
+    if not isinstance(data_list, list):
+      raise ValueError("Parsed data is not a list")
+    if not all(isinstance(row, dict) for row in data_list):
+      raise ValueError("Elements in data_list are not dictionaries")
 
-  #   numeric_cols = ['open', 'high', 'low', 'close']
-  #   df[numeric_cols] = df[numeric_cols].astype(float)
+    df = pd.DataFrame(data_list)
 
-  #   if len(df) < 109:
-  #     ServerLogHelper.log(f"Not enough data. Received only {len(df)} rows.")
-  #     return "ERROR"
+    if df.empty:
+      return "Error: DataFrame is empty"
 
-  #   df['EMA_12'] = EMAIndicator(df['close'], window=12).ema_indicator()
-  #   df['EMA_50'] = EMAIndicator(df['close'], window=50).ema_indicator()
-  #   df['MACD'] = MACD(df['close']).macd()
-  #   df['RSI'] = RSIIndicator(df['close']).rsi()
-  #   bb = BollingerBands(df['close'], window=20)
-  #   df['BB_Upper'] = bb.bollinger_hband()
-  #   df['BB_Lower'] = bb.bollinger_lband()
+    df.drop(columns=['time'], errors='ignore', inplace=True)
+    df.rename(columns={"volumn": "tick_volume"}, inplace=True)
 
-  #   df = df.dropna()
+    numeric_cols = ['open', 'high', 'low', 'close']
+    df[numeric_cols] = df[numeric_cols].apply(pd.to_numeric, errors='coerce')
 
-  #   if len(df) < 60:
-  #     ServerLogHelper.log(f"Invalid data shape after indicators: {df.shape}. Expected (60, 11).")
-  #     return "ERROR"
+    if df[numeric_cols].isnull().any().any():
+      return "Error: Non-numeric values found in OHLC data"
 
-  #   df = df.tail(60)
+    if len(df) < 109:
+      return f"Error: Not enough data (only {len(df)} rows)"
 
-  #   action_signal, _ = model.predict(df.values, deterministic=True)
-  #   ServerLogHelper.log(f"Predicted action signal: {action_signal}")
+    df['EMA_12'] = EMAIndicator(df['close'], window=12).ema_indicator()
+    df['EMA_50'] = EMAIndicator(df['close'], window=50).ema_indicator()
+    df['MACD'] = MACD(df['close']).macd()
+    df['RSI'] = RSIIndicator(df['close']).rsi()
+    bb = BollingerBands(df['close'], window=20)
+    df['BB_Upper'] = bb.bollinger_hband()
+    df['BB_Lower'] = bb.bollinger_lband()
 
-  #   action_signal = int(action_signal)
-  #   action_map = {0: "hold", 1: "buy", 2: "sell", 3: "close_buy", 4: "close_sell"}
-  #   return action_map.get(action_signal, "ERROR")
+    df.dropna(inplace=True)
 
-  # except Exception as e:
-  #   ServerLogHelper.log(f"Error in evaluate_with_model: {e}")
-  #   return "ERROR"
+    if len(df) < 60:
+      return f"Error: Invalid data shape after indicators {df.shape}"
+
+    df = df.tail(60)
+
+    action_signal, _ = model.predict(df.values, deterministic=True)
+    
+    action_map = {0: "hold", 1: "buy", 2: "sell", 3: "close_buy", 4: "close_sell"}
+    return action_map.get(int(action_signal), "ERROR")
+
+  except Exception as e:
+    return f"ERROR: {e}"
 
 result = evaluate_with_model(ohlc_json)
 print(result, flush=True)

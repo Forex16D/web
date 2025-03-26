@@ -4,13 +4,12 @@ import gymnasium as gym
 import numpy as np
 import pandas as pd
 from stable_baselines3 import PPO
-from stable_baselines3.common.vec_env import DummyVecEnv
+from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
 from gymnasium.spaces import Discrete, Box
 from ta.trend import EMAIndicator, MACD
 from ta.momentum import RSIIndicator
 from ta.volatility import BollingerBands
 from pathlib import Path
-import time
 
 class StockTradingEnv(gym.Env):
   def __init__(self, data, window_size=60, initial_balance=10000, volume=100):
@@ -98,10 +97,20 @@ class StockTradingEnv(gym.Env):
 def load_data_from_temp_file(temp_path):
   with open(temp_path, "r", encoding="utf-8") as f:
     data = json.load(f)
+  return pd.DataFrame(data)
 
-  df = pd.DataFrame(data)
-  if 'timestamp' in df.columns:
-    df = df.drop(columns=['timestamp'])
+def load_data_from_csv(csv_path):
+  df = pd.read_csv(csv_path, header=None)
+  column_names = ["date", "time", "open", "high", "low", "close", "tickvol", "volume", "spread"]
+  df.columns = column_names[:df.shape[1]]
+  return df
+
+def create_indicator(df): 
+  if 'date' in df.columns:
+    df = df.drop(columns=['date'])
+
+  if "time" in df.columns:
+    df = df.drop(columns=['time'])
 
   df = df.apply(pd.to_numeric, errors='coerce')
   df['EMA_12'] = EMAIndicator(df['close'], window=12).ema_indicator()
@@ -112,21 +121,28 @@ def load_data_from_temp_file(temp_path):
   df['BB_Upper'] = bb.bollinger_hband()
   df['BB_Lower'] = bb.bollinger_lband()
   df.dropna(inplace=True)
-  return df[['EMA_12', 'EMA_50', 'MACD', 'RSI', 'BB_Upper', 'BB_Lower', 'open', 'high', 'low', 'close', 'volume']]
+  return df[['EMA_12', 'EMA_50', 'MACD', 'RSI', 'BB_Upper', 'BB_Lower', 'open', 'high', 'low', 'close', 'tickvol']]
 
+def make_env():
+  return StockTradingEnv(df[:149002])
+  
 if __name__ == '__main__':
 
-  if len(sys.argv) != 2:
-    print("Usage: python3 train_model.py <temp_file_path>")
-    sys.exit(1)
+  # if len(sys.argv) != 2:
+  #   print("Usage: python3 train_model.py <temp_file_path>")
+  #   sys.exit(1)
 
-  temp_file_path = sys.argv[1]
+  # temp_file_path = sys.argv[1]
 
-  data = load_data_from_temp_file(temp_file_path)
-  env = DummyVecEnv([lambda: StockTradingEnv(data)])
+  # data = load_data_from_temp_file(temp_file_path)
+
+  data = load_data_from_csv("eurusd.csv")
+  df = create_indicator(data)
+  # env = DummyVecEnv([lambda: StockTradingEnv(df[:149002])])
+  env = SubprocVecEnv([make_env for _ in range(5)])
 
   model = PPO("MlpPolicy", env, learning_rate=5e-5, batch_size=256, n_steps=4096, gamma=0.995, verbose=1)
-  model.learn(total_timesteps=100000)
+  model.learn(total_timesteps=450000)
 
   script_dir = Path(__file__).parent
   file_path = script_dir / "model"

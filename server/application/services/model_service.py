@@ -192,7 +192,7 @@ class ModelService:
     finally:
       cursor.close()
       self.db_pool.release_connection(conn)
-      
+
   def train_model(self, model_id):
     try:
       path = Path(f"./models/{model_id}")
@@ -224,7 +224,6 @@ class ModelService:
         raise ValueError(f"A training is already running for model {self.current_evaluation_model}. Please stop it before starting a new one.")
 
       ServerLogHelper.log(f"Start training for model {model_id}")
-
 
       # Fetch data from DB
       cursor.execute("SELECT * FROM market_data WHERE timestamp < %s LIMIT %s", (start_date, bars))

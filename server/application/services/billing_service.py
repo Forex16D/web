@@ -132,8 +132,8 @@ class BillingService:
           AND bill_id IS NULL
         ) AS subquery;
       """, (user_id, first_day, last_day))
-      net_amount_usd = cursor.fetchone()["sum"]
-
+      net_amount_usd = cursor.fetchone()["sum"] or 0
+      
       if net_amount_usd <= 0:
         return None
 
