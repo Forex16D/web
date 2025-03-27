@@ -1,12 +1,11 @@
 from flask import json # type: ignore
-import sys
 import gymnasium as gym
 import numpy as np
 import pandas as pd
 from stable_baselines3 import PPO
-from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
+from stable_baselines3.common.vec_env import SubprocVecEnv
 from gymnasium.spaces import Discrete, Box
-from ta.trend import EMAIndicator, MACD
+from ta.trend import EMAIndicator, MACD, ADXIndicator
 from ta.momentum import RSIIndicator
 from ta.volatility import BollingerBands
 from pathlib import Path
@@ -22,7 +21,7 @@ class StockTradingEnv(gym.Env):
     self.volume = volume
     self.min_hold_time = 10
     self.action_space = Discrete(3)  # 0: Hold, 1: Open Long Close Short, 2: Open short Close long 
-    self.observation_space = Box(low=-np.inf, high=np.inf, shape=(self.window_size, 11), dtype=np.float32)
+    self.observation_space = Box(low=-np.inf, high=np.inf, shape=(self.window_size, 14), dtype=np.float32)
 
   def step(self, action):
     current_price = self.data['close'].iloc[self.current_step]
@@ -43,7 +42,6 @@ class StockTradingEnv(gym.Env):
       # Open a long position
       self.positions.append(["buy", current_price, self.current_step])
       self.balance -= current_price * self.volume
-      reward += 0.02 
 
     # Close existing long positions & open short
     elif action == 2 and self.balance >= current_price * self.volume:  
@@ -60,7 +58,6 @@ class StockTradingEnv(gym.Env):
       # Open a short position
       self.positions.append(["sell", current_price, self.current_step])
       self.balance -= current_price * self.volume
-      reward += 0.02
 
     # Hold & Calculate Unrealized Profit
     else:
@@ -97,27 +94,35 @@ def load_data_from_temp_file(temp_path):
 
 def load_data_from_csv(csv_path):
   df = pd.read_csv(csv_path, header=None)
-  column_names = ["date", "time", "open", "high", "low", "close", "tickvol", "volume", "spread"]
+  column_names = ["date", "time", "open", "high", "low", "close", "tick_volume", "volume", "spread"]
   df.columns = column_names[:df.shape[1]]
   return df
 
 def create_indicator(df): 
-  if 'date' in df.columns:
-    df = df.drop(columns=['date'])
+    if 'date' in df.columns:
+        df = df.drop(columns=['date'])
+    if 'time' in df.columns:
+        df = df.drop(columns=['time'])
 
-  if "time" in df.columns:
-    df = df.drop(columns=['time'])
+    df = df.apply(pd.to_numeric, errors='coerce')
 
-  df = df.apply(pd.to_numeric, errors='coerce')
-  df['EMA_12'] = EMAIndicator(df['close'], window=12).ema_indicator()
-  df['EMA_50'] = EMAIndicator(df['close'], window=50).ema_indicator()
-  df['MACD'] = MACD(df['close']).macd()
-  df['RSI'] = RSIIndicator(df['close']).rsi()
-  bb = BollingerBands(df['close'], window=20)
-  df['BB_Upper'] = bb.bollinger_hband()
-  df['BB_Lower'] = bb.bollinger_lband()
-  df.dropna(inplace=True)
-  return df[['EMA_12', 'EMA_50', 'MACD', 'RSI', 'BB_Upper', 'BB_Lower', 'open', 'high', 'low', 'close', 'tickvol']]
+    df['EMA_12'] = EMAIndicator(df['close'], window=12).ema_indicator()
+    df['EMA_50'] = EMAIndicator(df['close'], window=50).ema_indicator()
+    df['MACD'] = MACD(df['close']).macd()
+    df['RSI'] = RSIIndicator(df['close']).rsi()
+    
+    bb = BollingerBands(df['close'], window=20)
+    df['BB_Upper'] = bb.bollinger_hband()
+    df['BB_Lower'] = bb.bollinger_lband()
+
+    adx_indicator = ADXIndicator(high=df['high'], low=df['low'], close=df['close'], window=14)
+    df['ADX'] = adx_indicator.adx()
+    df['ADX_Positive'] = adx_indicator.adx_pos()
+    df['ADX_Negative'] = adx_indicator.adx_neg()
+
+    df.dropna(inplace=True)
+
+    return df[['EMA_12', 'EMA_50', 'MACD', 'RSI', 'BB_Upper', 'BB_Lower', 'ADX', 'ADX_Positive', 'ADX_Negative',  'open', 'high', 'low', 'close', 'tick_volume']]
 
 def make_env():
   return StockTradingEnv(df[:149002])
@@ -132,14 +137,35 @@ if __name__ == '__main__':
 
   # data = load_data_from_temp_file(temp_file_path)
 
-  data = load_data_from_csv("eurusd.csv")
+  parent_dir = Path(__file__).parent
+
+  csv_path = parent_dir / "eurusd.csv"
+
+  data = load_data_from_csv(csv_path)
   df = create_indicator(data)
   # env = DummyVecEnv([lambda: StockTradingEnv(df[:149002])])
   env = SubprocVecEnv([make_env for _ in range(5)])
 
-  model = PPO("MlpPolicy", env, learning_rate=5e-5, batch_size=256, n_steps=4096, gamma=0.995, verbose=1)
-  model.learn(total_timesteps=320000)
+  policy_kwargs = dict(net_arch=[128, 64, 32, 32])
+  model = PPO('MlpPolicy',
+                env, 
+                verbose=1,
+                learning_rate=5e-5,  
+                gamma=0.975, 
+                gae_lambda=0.935,
+                ent_coef=0.03,
+                n_epochs=5,
+                # target_kl=0.01,
+                # clip_range_vf=0.4,
+                vf_coef=0.325,
+                clip_range=0.35,  
+                batch_size=256,        
+                n_steps=4096,    
+                policy_kwargs=policy_kwargs
+               )
 
+  model.learn(total_timesteps=320000)
+  print("finished training")
   script_dir = Path(__file__).parent
   file_path = script_dir / "model"
   model.save(str(file_path))

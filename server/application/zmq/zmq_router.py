@@ -3,16 +3,14 @@ import zmq
 import json
 import time
 import requests
-import subprocess
 import numpy as np
 import pandas as pd
-from pathlib import Path
 from stable_baselines3 import PPO
 from application.services.portfolio_service import PortfolioService
 from application.container import container
 from concurrent.futures import ThreadPoolExecutor  # Import the ThreadPoolExecutor
 from application.container import container
-from ta.trend import EMAIndicator, MACD
+from ta.trend import EMAIndicator, MACD, ADXIndicator
 from ta.momentum import RSIIndicator
 from ta.volatility import BollingerBands
 
@@ -53,7 +51,7 @@ def load_model(model_path):
     except Exception as e:
       print(f"Error loading model from {model_path}: {e}")
       raise
-    
+
   return MODEL_CACHE[model_path_str]
 
 def evaluate_with_model(ohlc_json, model):
@@ -63,7 +61,7 @@ def evaluate_with_model(ohlc_json, model):
     df = pd.DataFrame(data_list)
     df.drop(columns=['time'], errors='ignore', inplace=True)
 
-    numeric_cols = ['open', 'high', 'low', 'close']
+    numeric_cols = ['open', 'high', 'low', 'close', 'tick_volume']
     df[numeric_cols] = df[numeric_cols].apply(pd.to_numeric, errors='coerce')
 
     if len(df) < 109:
@@ -73,18 +71,23 @@ def evaluate_with_model(ohlc_json, model):
     df['EMA_12'] = EMAIndicator(df['close'], window=12).ema_indicator()
     df['EMA_50'] = EMAIndicator(df['close'], window=50).ema_indicator()
     df['MACD'] = MACD(df['close']).macd()
+    
     df['RSI'] = RSIIndicator(df['close']).rsi()
     bb = BollingerBands(df['close'], window=20)
+    
     df['BB_Upper'] = bb.bollinger_hband()
     df['BB_Lower'] = bb.bollinger_lband()
 
+    adx_indicator = ADXIndicator(high=df['high'], low=df['low'], close=df['close'], window=14)
+    df['ADX'] = adx_indicator.adx()
+    df['ADX_Positive'] = adx_indicator.adx_pos()
+    df['ADX_Negative'] = adx_indicator.adx_neg()
+    
     df.dropna(inplace=True)
 
     if len(df) < 60:
       print(f"Error: Invalid data shape after indicators {df.shape}")
       sys.exit(1)
-
-    df = df.tail(60)
 
     action_signal, _ = model.predict(df.values.astype(np.float32), deterministic=True)
     
@@ -97,7 +100,8 @@ def evaluate_with_model(ohlc_json, model):
 def run_prediction(model_id, data):
   model_path = f"/app/models/{model_id}/model"
   model = load_model(model_path)
-  prediction = evaluate_with_model(data, model)
+  action = evaluate_with_model(data, model)
+  prediction = json.dumps({"action": action})
   return bytes(prediction, "utf-8")
 
 while True:

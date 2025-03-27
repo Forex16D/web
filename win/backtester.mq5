@@ -1,11 +1,12 @@
 #include <Zmq/Zmq.mqh>
 #include <Trade\Trade.mqh>
-
+#include <Arrays\ArrayObj.mqh>
 
 input string zmq_address = "tcp://127.0.0.1:5557";
 input double lot_size = 0.01;
 input int magic_number = 1987;
 input string model_id = "";
+
 ENUM_TIMEFRAMES timeframe = PERIOD_H1;
 
 Context context("OHCLSender");
@@ -22,6 +23,17 @@ struct TickData
   double low;
   double close;
   long volume;
+};
+
+struct ClosedPosition {
+  ulong order_id;
+  string order_type;
+  string symbol;
+  double volume;
+  double entry_price;
+  double exit_price;
+  double profit;
+  datetime created_at;
 };
 
 TickData tick_buffer[1];
@@ -66,7 +78,7 @@ void OnTick()
   }
 }
 
-string getLastNBarOHLC(int N)
+string getLastNBarOHLC(int N, string symbol)
 {
   if (N <= 0)
     return "\"[]\""; // Return an escaped empty array
@@ -75,15 +87,15 @@ string getLastNBarOHLC(int N)
   
   for (int i = 0; i < N; i++)
   {
-    datetime time = iTime(Symbol(), timeframe, i);
-    double open = iOpen(Symbol(), timeframe, i);
-    double high = iHigh(Symbol(), timeframe, i);
-    double low = iLow(Symbol(), timeframe, i);
-    double close = iClose(Symbol(), timeframe, i);
-    long volume = iVolume(Symbol(), timeframe, i);
+    datetime time = iTime(symbol, timeframe, i);
+    double open = iOpen(symbol, timeframe, i);
+    double high = iHigh(symbol, timeframe, i);
+    double low = iLow(symbol, timeframe, i);
+    double close = iClose(symbol, timeframe, i);
+    long volume = iVolume(symbol, timeframe, i);
 
     // Manually escape double quotes by wrapping with backslashes
-    json_data += StringFormat("{\\\"time\\\":\\\"%s\\\", \\\"open\\\":%.5f, \\\"high\\\":%.5f, \\\"low\\\":%.5f, \\\"close\\\":%.5f, \\\"volume\\\":%d}",
+    json_data += StringFormat("{\\\"time\\\":\\\"%s\\\", \\\"open\\\":%.5f, \\\"high\\\":%.5f, \\\"low\\\":%.5f, \\\"close\\\":%.5f, \\\"tick_volume\\\":%d}",
                               TimeToString(time, TIME_DATE | TIME_MINUTES),
                               open, high, low, close, volume);
 
@@ -99,9 +111,8 @@ string getLastNBarOHLC(int N)
 
 void sendData()
 {
-  string ohlc_data = getLastNBarOHLC(1);
-  string json_data = StringFormat("{\"type\":\"signal_request\", \"model_id\": \"%s\", \"data\": \"%s\"}", model_id, ohlc_data);
-  
+  string ohlc_data = getLastNBarOHLC(109, Symbol());
+  string json_data = StringFormat("{\"type\":\"backtest\", \"portfolio_id\":\"%s\", \"model_id\":\"%s\", \"is_expert\":\"%s\", \"market_data\":\"%s\"}", "b58da0de-08f8-47bc-89df-1d98958cffed", model_id, "false", ohlc_data);
 
   // Send the data via ZeroMQ
   ZmqMsg request_msg(json_data);
@@ -118,7 +129,7 @@ void sendData()
 
   ZmqMsg reply_msg;
 
-  if (!req_socket.recv(reply_msg, ZMQ_DONTWAIT))
+  if (!req_socket.recv(reply_msg))
   {
     Print("No reply received.");
     return;
@@ -127,50 +138,15 @@ void sendData()
   string response = reply_msg.getData();
   Print("Received reply: ", response);
  
-  // Execute trade based on received signal
-  if (response == "buy")
-  {
-    ExecuteTrade("BUY", "EURUSD", 0);
-  }
-  else if (response == "sell")
-  {
-    ExecuteTrade("SELL", "EURUSD", 0);
-  }
-  else if (response == "close_buy" || response == "close_sell")
-  {
-    ENUM_POSITION_TYPE closeType = (response == "close_buy") ? POSITION_TYPE_BUY : POSITION_TYPE_SELL;
-    ulong oldestTicket = 0;
-    datetime oldestTime = INT_MAX;
+  string action = ExtractJsonValue(response, "action");
+  //  string symbol = ExtractJsonValue(response, "symbol");
 
-    // Loop through positions to find the oldest buy/sell position
-    for(int i = 0; i < PositionsTotal(); i++)
-    {
-      ulong ticket = PositionGetTicket(i);
-      if(PositionSelectByTicket(ticket))
-      {
-        if (PositionGetInteger(POSITION_TYPE) == closeType)
-        {
-          datetime openTime = PositionGetInteger(POSITION_TIME);
-          if (openTime < oldestTime)
-          { // Find the oldest trade
-            oldestTime = openTime;
-            oldestTicket = PositionGetInteger(POSITION_TICKET);
-          }
-        }
-      }
-    }
-    // If an old position was found, close it
-    if (oldestTicket > 0)
-    {
-      CTrade trade;
-      trade.PositionClose(oldestTicket);
-    }
+  if (action == "open_long" || action == "open_short") {
+    ExecuteCloseOrder(action, Symbol());
+    ExecuteTrade(action, Symbol());
   }
   else
-  {
     return;
-  }
-
 }
 
 void OnDeinit(const int reason)
@@ -192,7 +168,7 @@ void OnDeinit(const int reason)
 }
 
 
-void ExecuteTrade(string action, string symbol, double price)
+void ExecuteTrade(string action, string symbol)
 {
   MqlTradeRequest request;
   MqlTradeResult result;
@@ -203,7 +179,7 @@ void ExecuteTrade(string action, string symbol, double price)
   double ask_price = SymbolInfoDouble(symbol, SYMBOL_ASK);
 
   // Determine the correct price
-  double order_price = (action == "BUY") ? ask_price : bid_price;
+  double order_price = (action == "open_long") ? ask_price : bid_price;
   order_price = NormalizeDouble(order_price, _Digits);
 
   // Validate the price
@@ -216,7 +192,7 @@ void ExecuteTrade(string action, string symbol, double price)
   request.symbol = symbol;
   request.magic = magic_number;
   request.volume = lot_size;
-  request.type = (action == "BUY") ? ORDER_TYPE_BUY : ORDER_TYPE_SELL;
+  request.type = (action == "open_long") ? ORDER_TYPE_BUY : ORDER_TYPE_SELL;
   request.price = order_price;
   request.deviation = 30; // Increased slippage
   request.type_filling = SymbolInfoInteger(symbol, SYMBOL_FILLING_MODE); // Use broker-supported filling mode
@@ -228,7 +204,81 @@ void ExecuteTrade(string action, string symbol, double price)
   } else {
     Print("Trade executed: ", action, " ", symbol, " @ ", order_price);
   }
+}
 
-  Print("Trade Result: retcode = ", result.retcode);
-  Print("Trade Details: bid = ", result.bid, " ask = ", result.ask, " price = ", result.price);
+void ExecuteCloseOrder(string action, string symbol)
+{
+    // Validate input
+    if (symbol == "") {
+        Print("❌ Invalid input parameters for closing order");
+        return;
+    }
+
+    // Determine position type to close based on action
+    ENUM_POSITION_TYPE positionTypeToClose = (action == "open_long") ? POSITION_TYPE_SELL : POSITION_TYPE_BUY;
+    
+    CTrade trade;
+    trade.SetDeviationInPoints(10);  // Set acceptable price deviation
+
+    int closedPositionsCount = 0;
+
+    // Iterate through all positions
+    for (int i = 0; i < PositionsTotal(); i++) {
+        // Select position by index
+        ulong ticket = PositionGetTicket(i);
+        
+        if (ticket == 0) {
+            Print("⚠️ Failed to get position ticket at index ", i);
+            continue;
+        }
+
+        // Check if position matches the specified symbol and type to close
+        if (PositionSelectByTicket(ticket) && 
+            PositionGetString(POSITION_SYMBOL) == symbol && 
+            PositionGetInteger(POSITION_TYPE) == positionTypeToClose) {
+            
+            // Attempt to close position
+            if (trade.PositionClose(ticket)) {
+                Print("Closed position: Ticket ", ticket, 
+                      " Type: ", EnumToString(positionTypeToClose));
+                closedPositionsCount++;
+            } else {
+                Print("❌ Failed to close position: ", ticket, 
+                      " Error: ", trade.ResultRetcode(), " ", trade.ResultRetcodeDescription());
+            }
+        }
+    }
+
+    Print("Total positions closed: ", closedPositionsCount);
+}
+
+string ExtractJsonValue(string json, string key)
+{
+  string value = "";
+  string keyPattern = "\"" + key + "\"";
+
+  int start_pos = StringFind(json, keyPattern);
+  if (start_pos == -1) return "";
+
+  start_pos = StringFind(json, ":", start_pos);
+  if (start_pos == -1) return "";
+
+  start_pos++; // Move past ':'
+  while (StringGetCharacter(json, start_pos) == ' ') start_pos++; // Skip spaces
+
+  char firstChar = StringGetCharacter(json, start_pos);
+  int end_pos;
+
+  if (firstChar == '\"') { // String value
+    start_pos++; // Move past opening quote
+    end_pos = StringFind(json, "\"", start_pos);
+  } else { // Non-string value (number, boolean, etc.)
+    end_pos = StringFind(json, ",", start_pos);
+    if (end_pos == -1) end_pos = StringFind(json, "}", start_pos);
+  }
+
+  if (end_pos == -1) return "";
+
+  value = StringSubstr(json, start_pos, end_pos - start_pos);
+  return value;
 }
