@@ -1,48 +1,39 @@
-from application.helpers.server_log_helper import ServerLogHelper
-from ta.volatility import BollingerBands
-from ta.trend import EMAIndicator, MACD
-from ta.momentum import RSIIndicator
-from stable_baselines3 import PPO
+import sys
 import json
 import pandas as pd
-import sys
+from stable_baselines3 import PPO
 from pathlib import Path
+from ta.trend import EMAIndicator, MACD
+from ta.momentum import RSIIndicator
+from ta.volatility import BollingerBands
 
-if len(sys.argv) < 2:
-  print("Usage: python -m models.<model_id>.publisher '<ohlc_json>'")
-  sys.exit(1)
+def main():
+  if len(sys.argv) < 2:
+    print("Usage: python -m models.<model_id>.publisher '<ohlc_json>'")
+    sys.exit(1)
 
-ohlc_json = sys.argv[1]
+  ohlc_json = sys.argv[2]
 
-# Load model
-model_path = Path(__file__).parent / "model"
-model = PPO.load(model_path)
-
-def evaluate_with_model(json_str):
+  # Load model path dynamically
+  model_path = Path(__file__).parent / "model"
+  
   try:
-    data_list = json.loads(json_str)
+    # Load and predict
+    model = PPO.load(model_path)
+    
+    # Rest of your existing evaluation logic
+    data_list = json.loads(ohlc_json)
     data_list = json.loads(data_list)
 
-    if not isinstance(data_list, list):
-      raise ValueError("Parsed data is not a list")
-    if not all(isinstance(row, dict) for row in data_list):
-      raise ValueError("Elements in data_list are not dictionaries")
-
     df = pd.DataFrame(data_list)
-
-    if df.empty:
-      return "Error: DataFrame is empty"
-
     df.drop(columns=['time'], errors='ignore', inplace=True)
 
     numeric_cols = ['open', 'high', 'low', 'close']
     df[numeric_cols] = df[numeric_cols].apply(pd.to_numeric, errors='coerce')
 
-    if df[numeric_cols].isnull().any().any():
-      return "Error: Non-numeric values found in OHLC data"
-
     if len(df) < 109:
-      return f"Error: Not enough data (only {len(df)} rows)"
+      print(f"Error: Not enough data (only {len(df)} rows)")
+      sys.exit(1)
 
     df['EMA_12'] = EMAIndicator(df['close'], window=12).ema_indicator()
     df['EMA_50'] = EMAIndicator(df['close'], window=50).ema_indicator()
@@ -55,18 +46,18 @@ def evaluate_with_model(json_str):
     df.dropna(inplace=True)
 
     if len(df) < 60:
-      return f"Error: Invalid data shape after indicators {df.shape}"
+      print(f"Error: Invalid data shape after indicators {df.shape}")
+      sys.exit(1)
 
     df = df.tail(60)
 
     action_signal, _ = model.predict(df.values, deterministic=True)
     
     action_map = {0: "hold", 1: "open_long", 2: "open_short"}
-    return action_map.get(int(action_signal), "ERROR")
+    print(action_map.get(int(action_signal), "ERROR"), flush=True)
 
   except Exception as e:
-    return f"ERROR: {e}"
+    print(f"ERROR: {e}", flush=True)
 
-result = evaluate_with_model(ohlc_json)
-print(result, flush=True)
-
+if __name__ == "__main__":
+  main()

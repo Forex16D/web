@@ -1,12 +1,20 @@
+import sys
 import zmq
 import json
 import time
-import subprocess
 import requests
+import subprocess
+import numpy as np
+import pandas as pd
+from pathlib import Path
+from stable_baselines3 import PPO
 from application.services.portfolio_service import PortfolioService
 from application.container import container
 from concurrent.futures import ThreadPoolExecutor  # Import the ThreadPoolExecutor
 from application.container import container
+from ta.trend import EMAIndicator, MACD
+from ta.momentum import RSIIndicator
+from ta.volatility import BollingerBands
 
 prediction_cache = {}
 cache_expiry_seconds = 5
@@ -29,12 +37,68 @@ executor = ThreadPoolExecutor(max_workers=3)
 
 print("ZeroMQ server is running...")
 
-def run_prediction_in_background(model_id, data, response_callback):
-    data_str = json.dumps(data)
-    command = ["python", "-m", f"models.{model_id}.publisher", data_str]
-    result = subprocess.run(command, capture_output=True, text=True)
-    response = result.stdout.strip().encode() if result.returncode == 0 else b""
-    response_callback(response)
+MODEL_CACHE = {}
+
+def load_model(model_path):
+  """
+  Load model only once and cache it
+  """
+  # Convert to string path for consistent dictionary key
+  model_path_str = str(model_path)
+  
+  if model_path_str not in MODEL_CACHE:
+    try:
+      MODEL_CACHE[model_path_str] = PPO.load(model_path)
+      print(f"Model loaded from {model_path}")
+    except Exception as e:
+      print(f"Error loading model from {model_path}: {e}")
+      raise
+    
+  return MODEL_CACHE[model_path_str]
+
+def evaluate_with_model(ohlc_json, model):
+  try:
+    data_list = json.loads(ohlc_json)
+
+    df = pd.DataFrame(data_list)
+    df.drop(columns=['time'], errors='ignore', inplace=True)
+
+    numeric_cols = ['open', 'high', 'low', 'close']
+    df[numeric_cols] = df[numeric_cols].apply(pd.to_numeric, errors='coerce')
+
+    if len(df) < 109:
+      print(f"Error: Not enough data (only {len(df)} rows)")
+      sys.exit(1)
+
+    df['EMA_12'] = EMAIndicator(df['close'], window=12).ema_indicator()
+    df['EMA_50'] = EMAIndicator(df['close'], window=50).ema_indicator()
+    df['MACD'] = MACD(df['close']).macd()
+    df['RSI'] = RSIIndicator(df['close']).rsi()
+    bb = BollingerBands(df['close'], window=20)
+    df['BB_Upper'] = bb.bollinger_hband()
+    df['BB_Lower'] = bb.bollinger_lband()
+
+    df.dropna(inplace=True)
+
+    if len(df) < 60:
+      print(f"Error: Invalid data shape after indicators {df.shape}")
+      sys.exit(1)
+
+    df = df.tail(60)
+
+    action_signal, _ = model.predict(df.values.astype(np.float32), deterministic=True)
+    
+    action_map = {0: "hold", 1: "open_long", 2: "open_short"}
+    return action_map.get(int(action_signal), "ERROR")
+
+  except Exception as e:
+    print(f"ERROR: {e}", flush=True)
+
+def run_prediction(model_id, data):
+  model_path = f"/app/models/{model_id}/model"
+  model = load_model(model_path)
+  prediction = evaluate_with_model(data, model)
+  return bytes(prediction, "utf-8")
 
 while True:
   try:
@@ -96,8 +160,7 @@ while True:
                 socket_publisher.send_multipart([model_id.encode(), response])
                 print(f"Published: {response}")
           
-          # Submit to thread pool
-          future = executor.submit(run_prediction_in_background, model_id, market_data, handle_prediction_result)
+          response = run_prediction(model_id, market_data)
 
       elif "backtest" in message_str:
         try:
@@ -121,7 +184,7 @@ while True:
           socket.send_multipart([identity, response])
           print(f"Sent to {identity.hex()}: {response}")
 
-        future = executor.submit(run_prediction_in_background, model_id, market_data, handle_prediction_result)     
+        response = run_prediction(model_id, market_data)
    
       # 🔵 **Handle Client Initialization**
       elif "init" in message_str:
