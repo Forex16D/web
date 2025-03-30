@@ -3,13 +3,14 @@ from pathlib import Path
 import subprocess
 import threading
 import tempfile
+from datetime import datetime
+import calendar
 import zipfile
 import shutil
 import uuid
 import time
 import json
 import os
-
 from application.helpers.server_log_helper import ServerLogHelper
 
 class ModelService:
@@ -44,10 +45,63 @@ class ModelService:
 
     try:
       cursor = conn.cursor(cursor_factory=RealDictCursor)
-      cursor.execute("SELECT * FROM models WHERE active = true")
+      now = datetime.now()
+      first_day = now.replace(day=1).strftime('%Y-%m-%d')
+      last_day = now.replace(day=calendar.monthrange(now.year, now.month)[1]).strftime('%Y-%m-%d')
+      cursor.execute(
+      """
+        SELECT models.*, 
+          COALESCE(SUM(
+            CASE 
+              WHEN orders.created_at BETWEEN '2025-03-01' AND '2025-03-31' 
+              THEN orders.profit 
+              ELSE 0 
+            END
+          ), 0) AS monthly_pnl,
+            CASE 
+              WHEN COUNT(orders.profit) > 0 THEN 
+                (SUM(CASE WHEN orders.profit >= 0 THEN 1 ELSE 0 END) * 100.0 / COUNT(orders.profit))
+              ELSE 
+                0
+        END AS winrate
+        FROM models
+        LEFT JOIN orders ON models.model_id = orders.model_id
+        WHERE models.active = true
+        GROUP BY models.model_id;
+      """, (first_day, last_day))
       models = cursor.fetchall()
 
+      cursor.execute("""
+      SELECT 
+        models.model_id,
+        weeks.week_start,
+        COALESCE(SUM(orders.profit), 0) AS weekly_profit
+      FROM (
+        -- Generate the last 8 weeks
+        SELECT generate_series(
+          DATE_TRUNC('week', NOW()) - INTERVAL '7 weeks', 
+          DATE_TRUNC('week', NOW()), 
+          INTERVAL '1 week'
+        ) AS week_start
+      ) weeks
+      LEFT JOIN models ON true
+      LEFT JOIN orders 
+        ON orders.model_id = models.model_id
+        AND orders.created_at >= weeks.week_start 
+        AND orders.created_at < weeks.week_start + INTERVAL '1 week'
+      WHERE models.active = true
+      GROUP BY models.model_id, weeks.week_start
+      ORDER BY models.model_id, weeks.week_start ASC;
+      """)
+      weekly_profits = cursor.fetchall()
       cursor.close()
+
+      for model in models:
+        model['weekly_profits'] = [
+          weekly_profit for weekly_profit in weekly_profits
+          if weekly_profit['model_id'] == model['model_id']
+        ]
+
       return {"models": models}
     except Exception as e:
       raise RuntimeError(f"Something went wrong: {str(e)}")

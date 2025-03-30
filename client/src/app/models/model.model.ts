@@ -1,3 +1,5 @@
+import { WeeklyProfit } from "./weekly-profit.model"
+
 export interface Model {
   model_id: string
   name: string
@@ -7,5 +9,7 @@ export interface Model {
   created_at: string
   updated_at: string | null
   file_path: string
-  roi: string
+  monthly_pnl: number | null
+  winrate: number | null
+  weekly_profits: WeeklyProfit[]
 }

@@ -5,6 +5,7 @@ import { ChartModule } from 'primeng/chart';
 import { CurrencyPipe } from '@angular/common';
 import { NgClass } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { Model } from '../../models/model.model';
 
 @Component({
   selector: 'app-bot-card',
@@ -14,25 +15,7 @@ import { RouterLink } from '@angular/router';
   providers: [CurrencyPipe],
 })
 export class BotCardComponent {
-
-  @Input() name?: string;
-  @Input() data: {
-    pnl: string;
-    winrate: string;
-    roi: string;
-    balance: string;
-    commission: number | null;
-    symbol: string,
-    model_id: string,
-  } = {
-      pnl: '',
-      winrate: '',
-      roi: '',
-      balance: '',
-      commission: 0,
-      symbol: '',
-      model_id: '',
-    };
+  @Input() model?: Model;
 
   pnlFormatted: string = '-';
   winrateFormatted: string = '-';
@@ -44,6 +27,23 @@ export class BotCardComponent {
 
   ngOnChanges(): void {
     this.transformData();
+  }
+
+  updateGraphData(): void {
+    if (!this.model) return;
+    this.graphData = {
+      labels: this.model.weekly_profits.map(profit => profit.week_start),
+      datasets: [
+        {
+          data: this.model.weekly_profits.map(profit => profit.weekly_profit),
+          borderColor: '#05df72',
+          backgroundColor: '#172425',
+          tension: 0.4,
+          fill: true,
+          borderWidth: 2,
+        }
+      ]
+    };
   }
 
   graphData = {
@@ -98,18 +98,12 @@ export class BotCardComponent {
 
 
   transformData(): void {
-    const pnlValue = parseFloat(this.data.pnl);
-    const winrateValue = parseFloat(this.data.winrate);
-    const roiValue = parseFloat(this.data.roi);
-    const balanceValue = parseFloat(this.data.balance);
-
+    const pnlValue: number = this.model?.monthly_pnl || 0;
+    const winrateValue: number = this.model?.winrate || 0;
+    console.log(winrateValue)
     this.pnlTextColor = pnlValue > 0 ? 'text-green-400' : pnlValue < 0 ? 'text-red-400' : 'text-white';
     this.pnlFormatted = isNaN(pnlValue) ? '-' : pnlValue >= 0 ? `+$${pnlValue}` : `-$${Math.abs(pnlValue)}`;
-    this.winrateFormatted = isNaN(winrateValue) ? '-' : `${winrateValue}%`;
-    this.roiFormatted = isNaN(roiValue) ? '-' : `${roiValue}%`;
-    this.balanceFormatted = isNaN(balanceValue)
-      ? '-'
-      : this.currency.transform(balanceValue, 'USD', 'symbol', '.2-2') || '-';
+    this.winrateFormatted = isNaN(winrateValue) ? '-' : `${Number(winrateValue).toFixed(2)}%`;
   }
 
 }

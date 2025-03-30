@@ -122,7 +122,7 @@ export class BotComponent implements OnInit {
     // Apply performance filter
     if (this.selectedView.value === 'top') {
       // Sort by ROI or winrate descending
-      filtered.sort((a, b) => parseFloat(b.roi) - parseFloat(a.roi));
+      // filtered.sort((a, b) => parseFloat(b.roi) - parseFloat(a.roi));
       filtered = filtered.slice(0, 10); // Top 10 performers
     } else if (this.selectedView.value === 'new') {
       // Assuming there's a created_at field or similar

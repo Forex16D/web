@@ -17,7 +17,8 @@ class ModelController:
     try:
       response = self.model_service.get_active_models()
       return jsonify(response), 200
-    except Exception:
+    except Exception as e:
+      ServerLogHelper.log(e)
       return {"status": 500, "message": "Internal server error"}, 500
   
   def get_model_detail(self, model_id):

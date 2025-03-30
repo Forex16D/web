@@ -95,16 +95,7 @@
     <div *ngIf="filteredModels.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
       <app-bot-card 
         *ngFor="let model of filteredModels.slice(first, first + rows)" 
-        [data]="{
-          pnl: '200',
-          winrate: '1',
-          roi: '1',
-          balance: '100',
-          commission: model.commission,
-          symbol: model.symbol,
-          model_id: model.model_id,
-        }" 
-        [name]="model.name"
+        [model]="model"
         class="transform transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
       >
       </app-bot-card>
