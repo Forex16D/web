@@ -65,6 +65,25 @@ export class ApiService {
     return this.request<T>('DELETE', endpoint, null, customHeaders);
   }
 
+  downloadFile(fileName: string): void {
+    this.http
+      .get(`${this.apiUrl}/download/${fileName}`, {
+        headers: this.getHeaders(),
+        responseType: 'blob',
+      })
+      .pipe(catchError(this.handleError))
+      .subscribe((blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      });
+  }
+
   getStream(endpoint: string, customHeaders?: object): Observable<string> {
     return new Observable<string>((observer) => {
       const token = localStorage.getItem('authToken');

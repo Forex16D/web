@@ -230,7 +230,14 @@ class BillingService:
       
       total_profit_result = cursor.fetchone()
       total_profit = total_profit_result['total_profit'] if total_profit_result else 0
-
+      
+      if total_profit > 20000:
+        total_profit *= 0.95
+      elif total_profit > 5000:
+        total_profit *= 0.93
+      else:
+        total_profit *= 0.90
+      
       # Now, update the user's balance
       cursor.execute("""
         UPDATE users 
@@ -238,7 +245,7 @@ class BillingService:
         WHERE user_id = %s
       """, (total_profit, user_id))
 
-      conn.commit()  # Don't forget to commit the transaction!
+      conn.commit()
 
       return {"total_profit": total_profit}  # Return the calculated profit
 
@@ -307,7 +314,7 @@ class BillingService:
       with conn.cursor() as cursor:
         
         # Fetch bill details
-        cursor.execute("SELECT net_amount, status FROM bills WHERE bill_id = %s", (bill_id,))
+        cursor.execute("SELECT net_amount, status, net_amount_usd FROM bills WHERE bill_id = %s", (bill_id,))
         bill = cursor.fetchone()
         if not bill:
           raise ValueError("Bill not found!")
@@ -318,6 +325,7 @@ class BillingService:
           raise ValueError("Bill already paid!")
 
         amount_bill = bill[0]
+        amount_usd = bill[2]
 
         response = requests.post(
           "https://api.slipok.com/api/line/apikey/41247",
@@ -368,7 +376,7 @@ class BillingService:
         cursor.execute("""
           INSERT INTO receipts (bill_id, user_id, amount_paid, receipt_image, reference_number, payment_date, notes, method)
           VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-        """, (bill_id, user_id, amount_paid, image_path, reference_number, payment_date, notes, "receipt"))
+        """, (bill_id, user_id, amount_usd, image_path, reference_number, payment_date, notes, "receipt"))
 
         # Check if user still has overdue bills
         cursor.execute("""
@@ -507,3 +515,146 @@ class BillingService:
     finally:
       cursor.close()
       self.db_pool.release_connection(conn)
+  
+  def get_withdraw_requests_admin(self):
+    try:
+      conn = self.db_pool.get_connection()
+      cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+      cursor.execute("SELECT * FROM withdraw_requests")
+      withdraw_requests = cursor.fetchall()
+      
+      return {"requests": withdraw_requests}
+    except Exception as e:
+      conn.rollback()  # Rollback on error
+      raise RuntimeError(f"Something went wrong: {str(e)}")
+
+    finally:
+      cursor.close()
+      self.db_pool.release_connection(conn)
+
+  def create_withdraw_request(self, user_id, amount, method, bank_account=None, wallet_address=None):
+    if method not in ('bank', 'crypto'):
+      raise ValueError("Invalid withdrawal method. Choose 'bank' or 'crypto'.")
+
+    if method == 'bank' and not bank_account:
+      raise ValueError("Bank account is required for bank transfers.")
+
+    if method == 'crypto' and not wallet_address:
+      raise ValueError("Wallet address is required for crypto withdrawals.")
+
+
+    conn = None
+    cursor = None
+
+    try:
+      conn = self.db_pool.get_connection()
+      cursor = conn.cursor(cursor_factory=RealDictCursor)
+      
+      cursor.execute(
+      """
+        SELECT 
+            u.balance, 
+            COALESCE(SUM(w.amount), 0) AS pending_amount
+        FROM users u
+        LEFT JOIN withdraw_requests w ON u.user_id = w.user_id AND w.status = 'pending'
+        WHERE u.user_id = %s
+        GROUP BY u.balance
+      """,
+        (user_id,)
+      )
+
+      result = cursor.fetchone()
+      ServerLogHelper.log(f"{result}")
+      if result:
+        balance = result["balance"]
+        pending_amount = float(result["pending_amount"])
+        available_balance = balance - pending_amount
+      else:
+        raise ValueError("User not found")
+      
+      if available_balance < 0:
+        raise ValueError("Insufficient funds")
+
+      wallet_address = None if wallet_address == '' else wallet_address
+      bank_account = None if bank_account == '' else bank_account
+
+      cursor.execute(
+      """
+        INSERT INTO withdraw_requests (user_id, amount, method, bank_account, wallet_address)
+        VALUES (%s, %s, %s, %s, %s)
+      """, (user_id, amount, method, bank_account, wallet_address))
+
+      conn.commit()
+
+      return {"message": "success"}
+    except ValueError as e:
+      if conn:
+        conn.rollback()
+      raise ValueError(str(e))
+    
+    except Exception as e:
+      if conn:
+        conn.rollback()
+      raise RuntimeError(f"Something went wrong: {str(e)}")
+
+    finally:
+      if cursor:
+        cursor.close()
+      if conn:
+        self.db_pool.release_connection(conn)
+        
+  def update_withdraw_request_status(self, withdraw_id, status):
+    conn = None
+    cursor = None
+
+    try:
+      conn = self.db_pool.get_connection()
+      cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+      cursor.execute(
+        """
+        UPDATE withdraw_requests
+        SET status = %s, approved_date = NOW()  
+        WHERE withdraw_id = %s
+        """,
+        (status, withdraw_id)
+      )
+      
+      conn.commit()
+      
+      if status == "approved":
+        cursor.execute(
+          """
+          UPDATE users
+          SET balance = balance - (
+            SELECT amount FROM withdraw_requests WHERE withdraw_id = %s
+          )
+          WHERE user_id = (SELECT user_id FROM withdraw_requests WHERE withdraw_id = %s)
+          RETURNING balance
+          """,
+          (withdraw_id, withdraw_id)
+        )
+        
+        balance = cursor.fetchone()["balance"]
+
+        if balance < 0:
+          raise ValueError("Insufficient funds")
+        conn.commit()
+
+      return {"message": "success"}
+
+    except ValueError as e:
+      if conn:
+        conn.rollback()
+      raise e
+    except Exception as e:
+      if conn:
+        conn.rollback()
+      raise RuntimeError(f"Something went wrong: {str(e)}")
+
+    finally:
+      if cursor:
+        cursor.close()
+      if conn:
+        self.db_pool.release_connection(conn)  

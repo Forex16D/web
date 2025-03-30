@@ -6,7 +6,7 @@ export interface PortfolioResponse {
   model_name: string | null
   name: string
   portfolio_id: string
-  token_id: string | null
+  access_token: string
   user_id: string
   is_expert: boolean
   total_profit: number | null

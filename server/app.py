@@ -1,5 +1,6 @@
+import os
 import threading
-from flask import Flask  # type: ignore
+from flask import Flask, jsonify, send_file # type: ignore
 from flask_cors import CORS  # type: ignore
 from application.services.task_scheduler import run_scheduler
 
@@ -19,11 +20,24 @@ shutdown_event = threading.Event()
 
 def create_app():
   app = Flask(__name__)
+  
+  UPLOAD_FOLDER = "resources"
+  app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+
   CORS(app, resources={r"/*": {"origins": "*"}})
 
   @app.route("/")
   def check():
     return "Flask works!"
+
+  @app.route("/download/<filename>", methods=["GET"])
+  def download_file(filename):
+    file_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+
+    if os.path.exists(file_path):
+        return send_file(file_path, as_attachment=True)
+    else:
+        return jsonify({"error": "File not found"}), 404
 
   app.register_blueprint(auth_routes)
   app.register_blueprint(user_routes)

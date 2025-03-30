@@ -189,9 +189,9 @@ while True:
           print(f"Sent to {identity.hex()}: {response}")
 
         response = run_prediction(model_id, market_data)
-   
+
       # 🔵 **Handle Client Initialization**
-      elif "init" in message_str:
+      elif "init" in message_str or "heartbeat" in message_str:
         portfolio_id = message_str.split(" ")[-1]
         PortfolioService.update_connection_status(container.db_pool, portfolio_id, True)
         identity_to_portfolio[identity] = portfolio_id  # Store identity mapping
@@ -219,18 +219,14 @@ while True:
         response = b"Closing connection..."
         identity_to_portfolio.pop(identity, None)  # Remove mapping
 
-      # 💓 **Handle Heartbeats**
-      elif "heartbeat" in message_str:
-        print(f"Heartbeat received from {identity.hex()}")
-
       # ✅ **Send response back to client** (This is done once prediction is complete)
       if response:
         socket.send_multipart([identity, response])
         print(f"Sent to {identity.hex()}: {response}")
 
         # 🟠 **Publish signals if expert**
-        if "signal_request" in message_str and is_expert:
-          socket_publisher.send_multipart([model_id.encode(), response])
+        if "signal_request" in message_str or "backtest" in message_str and is_expert:
+          socket_publisher.send_multipart([portfolio_id.encode(), response])
           print(f"Published: {response}")
 
     # 🔍 **Detect Disconnected Clients**

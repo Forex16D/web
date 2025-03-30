@@ -1,0 +1,175 @@
+<div class="mx-auto px-4 sm:px-6 lg:px-8">
+  <!-- Hero Section with Gradient Overlay -->
+  <div class="relative flex flex-col min-h-[400px] justify-center items-center rounded-xl overflow-hidden my-8">
+    <!-- Background with gradient overlay -->
+    <div class="absolute inset-0 bg-gradient-to-r from-gray-900/80 to-gray-800/80 z-10"></div>
+
+    <!-- Background image (placeholder - update with your actual background binding) -->
+    <div class="absolute inset-0 bg-cover bg-center" [style.background-image]="'url(assets/images/download-bg.jpg)'">
+    </div>
+
+    <!-- Content -->
+    <div class="relative z-20 text-center px-4">
+      <h1 class="flex flex-col text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight">
+        <span class="mb-2">Download Our Trading Software</span>
+        <span>
+          Powered by
+          <span class="text-green-400 inline-block relative">
+            Advanced AI
+            <span class="absolute bottom-0 left-0 w-full h-1 bg-green-400 opacity-70"></span>
+          </span>
+        </span>
+      </h1>
+
+      <p class="mt-6 text-lg text-gray-200 max-w-xl mx-auto">
+        Choose the version that suits your trading needs and start maximizing your potential today.
+      </p>
+    </div>
+  </div>
+
+  <!-- Download Options Section -->
+  <div class="my-16">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl font-bold mb-4">Select Your Trading Solution</h2>
+      <p class="text-gray-400 max-w-2xl mx-auto">Our software is designed to cater to different trading styles and
+        preferences</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <!-- Standard Version Card -->
+      <div
+        class="p-8 rounded-lg bg-gray-800 transition duration-300 hover:shadow-lg border border-gray-700 flex flex-col h-full">
+        <div class="h-16 w-16 rounded-full bg-green-500/20 flex items-center justify-center mb-6">
+          <i class="pi pi-bolt text-green-400 text-2xl"></i>
+        </div>
+        <h3 class="text-2xl font-bold mb-4">Standard Edition</h3>
+        <p class="text-gray-300 mb-4 text-lg">AI-Powered Trading Expert</p>
+        <div class="flex-grow">
+          <ul class="space-y-3 text-gray-400 mb-6">
+            <li class="flex items-start">
+              <i class="pi pi-check-circle text-green-400 mr-2 mt-1"></i>
+              <span>Advanced AI algorithms for market analysis</span>
+            </li>
+            <li class="flex items-start">
+              <i class="pi pi-check-circle text-green-400 mr-2 mt-1"></i>
+              <span>Real-time trading signals and recommendations</span>
+            </li>
+            <li class="flex items-start">
+              <i class="pi pi-check-circle text-green-400 mr-2 mt-1"></i>
+              <span>Become an expert and share your trading signals</span>
+            </li>
+            <li class="flex items-start">
+              <i class="pi pi-check-circle text-green-400 mr-2 mt-1"></i>
+              <span>Full customization of trading parameters</span>
+            </li>
+            <li class="flex items-start">
+              <i class="pi pi-check-circle text-green-400 mr-2 mt-1"></i>
+              <span>Compatible with MT4/MT5 platforms</span>
+            </li>
+          </ul>
+        </div>
+        <button (click)="downloadStandard()"
+          class="w-full p-button-lg bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300 flex items-center justify-center">
+          <span class="mr-2">Download Standard</span>
+          <i class="pi pi-download"></i>
+        </button>
+      </div>
+
+      <!-- Subscriber Version Card -->
+      <div
+        class="p-8 rounded-lg bg-gray-800 transition duration-300 hover:shadow-lg border border-gray-700 flex flex-col h-full">
+        <div class="h-16 w-16 rounded-full bg-blue-500/20 flex items-center justify-center mb-6">
+          <i class="pi pi-users text-blue-400 text-2xl"></i>
+        </div>
+        <h3 class="text-2xl font-bold mb-4">Subscriber Edition</h3>
+        <p class="text-gray-300 mb-4 text-lg">Expert Signal Subscriber</p>
+        <div class="flex-grow">
+          <ul class="space-y-3 text-gray-400 mb-6">
+            <li class="flex items-start">
+              <i class="pi pi-check-circle text-blue-400 mr-2 mt-1"></i>
+              <span>Subscribe to top-performing trading experts</span>
+            </li>
+            <li class="flex items-start">
+              <i class="pi pi-check-circle text-blue-400 mr-2 mt-1"></i>
+              <span>Automatically copy expert trades in real-time</span>
+            </li>
+            <li class="flex items-start">
+              <i class="pi pi-check-circle text-blue-400 mr-2 mt-1"></i>
+              <span>Simplified interface for easy setup</span>
+            </li>
+            <li class="flex items-start">
+              <i class="pi pi-check-circle text-blue-400 mr-2 mt-1"></i>
+              <span>Risk management settings and controls</span>
+            </li>
+            <li class="flex items-start">
+              <i class="pi pi-check-circle text-blue-400 mr-2 mt-1"></i>
+              <span>Compatible with MT4/MT5 platforms</span>
+            </li>
+          </ul>
+        </div>
+        <button (click)="downloadSubscriber()"
+          class="w-full p-button-lg bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300 flex items-center justify-center">
+          <span class="mr-2">Download Subscriber</span>
+          <i class="pi pi-download"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Installation Guide Section -->
+  <div class="my-16">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl font-bold mb-4">Quick Installation Guide</h2>
+      <p class="text-gray-400 max-w-2xl mx-auto">Follow these simple steps to get started with our trading software</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div class="p-6 rounded-lg bg-gray-800/50 hover:bg-gray-800 transition duration-300">
+        <div class="h-12 w-12 rounded-full bg-purple-500/20 flex items-center justify-center mb-4">
+          <span class="text-purple-400 text-xl font-bold">1</span>
+        </div>
+        <h3 class="text-xl font-bold mb-2">Download</h3>
+        <p class="text-gray-400">Select and download your preferred version of our trading software.</p>
+      </div>
+
+      <div class="p-6 rounded-lg bg-gray-800/50 hover:bg-gray-800 transition duration-300">
+        <div class="h-12 w-12 rounded-full bg-purple-500/20 flex items-center justify-center mb-4">
+          <span class="text-purple-400 text-xl font-bold">2</span>
+        </div>
+        <h3 class="text-xl font-bold mb-2">Install</h3>
+        <p class="text-gray-400">Import the .ex5 file into your MetaTrader platform's "Experts" folder.</p>
+      </div>
+
+      <div class="p-6 rounded-lg bg-gray-800/50 hover:bg-gray-800 transition duration-300">
+        <div class="h-12 w-12 rounded-full bg-purple-500/20 flex items-center justify-center mb-4">
+          <span class="text-purple-400 text-xl font-bold">3</span>
+        </div>
+        <h3 class="text-xl font-bold mb-2">Start Trading</h3>
+        <p class="text-gray-400">Attach the expert advisor to your chart and configure your settings.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA Section -->
+  <div
+    class="flex flex-col items-center py-12 px-4 my-12 bg-gradient-to-r from-gray-900 to-gray-800 rounded-xl text-center">
+    <h2 class="text-3xl md:text-4xl font-bold mb-6">
+      Need <span class="text-green-400">Help?</span>
+    </h2>
+
+    <p class="max-w-2xl mb-8 text-gray-300">
+      Our support team is ready to assist you with any questions about installation or usage.
+    </p>
+
+    <div class="flex gap-4">
+      <p-button styleClass="p-button-lg" routerLink="/support">
+        <span class="mr-2">Contact Support</span>
+        <i class="pi pi-envelope"></i>
+      </p-button>
+
+      <p-button styleClass="p-button-lg p-button-outlined" [outlined]="true" routerLink="/documentation">
+        <span>View Documentation</span>
+      </p-button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,86 @@
+<div class="p-4 md:p-6 w-full min-h-screen bg-gray-900 text-white">
+  <!--* Header section *-->
+  <div class="text-headline4 mb-4 text-2xl font-bold">Withdraw Requests</div>
+  <!--* Toolbar section *-->
+  <p-toolbar styleClass="mb-6 bg-gray-800 border-gray-700">
+    <ng-template pTemplate="start">
+      <p-button label="Refresh" icon="pi pi-sync" class="mr-2" (click)="refreshRequests()"></p-button>
+      <p-button severity="danger" label="Reject All" icon="pi pi-times" outlined [disabled]="!selectedRequests().length"
+        (click)="bulkRejectRequests()">
+      </p-button>
+      <p-button severity="success" label="Approve All" icon="pi pi-check" [disabled]="!selectedRequests().length"
+        (click)="bulkApproveRequests()">
+      </p-button>
+    </ng-template>
+  </p-toolbar>
+
+  <!--* Table section *-->
+  <p-table [value]="requests()" [selection]="selectedRequests()" (selectionChange)="selectedRequests.set($event)"
+    styleClass="p-datatable-gridlines p-datatable-striped bg-gray-800 border-gray-700"
+    [tableStyle]="{ 'min-width': '50rem' }" [rowsPerPageOptions]="[10, 25, 50]" [paginator]="true" [rows]="limit()"
+    [totalRecords]="totalRecords()" [loading]="loading()" [showCurrentPageReport]="true"
+    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} withdraw requests"
+    [first]="(page() - 1) * limit()" (onPage)="onPageChange($event)" paginatorDropdownAppendTo="body">
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="width: 3rem">
+          <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+        </th>
+        <th pSortableColumn="withdraw_id">ID <p-sortIcon field="withdraw_id"></p-sortIcon></th>
+        <th pSortableColumn="user_id">User ID <p-sortIcon field="user_id"></p-sortIcon></th>
+        <th pSortableColumn="amount">Amount <p-sortIcon field="amount"></p-sortIcon></th>
+        <th pSortableColumn="method">Method <p-sortIcon field="method"></p-sortIcon></th>
+        <th pSortableColumn="created_date">Created Date <p-sortIcon field="created_date"></p-sortIcon></th>
+        <th pSortableColumn="status">Status <p-sortIcon field="status"></p-sortIcon></th>
+        <th style="width: 12rem">Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-request>
+      <tr [pSelectableRow]="request">
+        <td>
+          <p-tableCheckbox [value]="request"></p-tableCheckbox>
+        </td>
+        <td><span class="text-white">{{ request.withdraw_id }}</span></td>
+        <td><span class="text-white">{{ request.user_id }}</span></td>
+        <td><span class="text-white">${{ request.amount }}</span></td>
+        <td>
+          <p-tag [value]="request.method" [severity]="request.method === 'bank' ? 'info' : 'warn'">
+          </p-tag>
+        </td>
+        <td><span class="text-white">{{ formatDate(request.created_date) }}</span></td>
+        <td>
+          <p-tag [value]="request.status"
+            [severity]="request.status === 'approved' ? 'success' : request.status === 'rejected' ? 'danger' : 'warn'">
+          </p-tag>
+        </td>
+        <td>
+          <div class="flex justify-start gap-2 items-center" *ngIf="request.status === 'pending'">
+            <p-dropdown [options]="actionOptions" placeholder="Select" optionLabel="label"
+              [(ngModel)]="request.selectedAction" appendTo="body" styleClass="w-24 bg-gray-700">
+            </p-dropdown>
+            <p-button icon="pi pi-send" [disabled]="!request.selectedAction"
+              (click)="submitAction(request.withdraw_id, request.selectedAction?.value)" />
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="8" class="text-center py-4">
+          <div class="flex flex-col items-center justify-center gap-2">
+            <i class="pi pi-money-bill text-5xl text-gray-500"></i>
+            <span>No withdraw requests found</span>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="summary">
+      <div class="flex justify-between items-center">
+        <div>Total Requests: {{ totalRecords() }}</div>
+        <div *ngIf="selectedRequests().length > 0">
+          Selected Requests: {{ selectedRequests().length }}
+        </div>
+      </div>
+    </ng-template>
+  </p-table>
+</div>

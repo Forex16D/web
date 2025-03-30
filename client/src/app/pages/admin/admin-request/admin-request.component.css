@@ -1,0 +1,112 @@
+/* Custom styling for PrimeNG components */
+:host ::ng-deep .p-toolbar {
+  background-color: rgba(31, 41, 55, 0.5) !important;
+  border-color: rgba(75, 85, 99, 0.2) !important;
+  padding: 0.75rem;
+}
+
+:host ::ng-deep .p-table {
+  background-color: transparent;
+  color: white;
+}
+
+:host ::ng-deep .p-datatable {
+  background-color: rgba(31, 41, 55, 0.5);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+:host ::ng-deep .p-datatable .p-datatable-header {
+  background-color: rgba(31, 41, 55, 0.7);
+  border-color: rgba(75, 85, 99, 0.2);
+  color: white;
+}
+
+:host ::ng-deep .p-datatable .p-datatable-thead > tr > th {
+  background-color: rgba(31, 41, 55, 0.7);
+  color: #d1d5db;
+  border-color: rgba(75, 85, 99, 0.2);
+  padding: 0.75rem;
+  font-weight: 500;
+}
+
+:host ::ng-deep .p-datatable .p-datatable-tbody > tr {
+  background-color: rgba(31, 41, 55, 0.5);
+  border-color: rgba(75, 85, 99, 0.2);
+}
+
+:host ::ng-deep .p-datatable .p-datatable-tbody > tr:hover {
+  background-color: rgba(55, 65, 81, 0.7);
+}
+
+:host ::ng-deep .p-datatable .p-datatable-tbody > tr > td {
+  border-color: rgba(75, 85, 99, 0.2);
+  color: #e5e5e5;
+  padding: 0.75rem;
+}
+
+:host ::ng-deep .p-paginator {
+  background-color: rgba(31, 41, 55, 0.5);
+  border-color: rgba(75, 85, 99, 0.2);
+  color: white;
+  padding: 0.5rem;
+}
+
+:host ::ng-deep .p-paginator .p-paginator-element {
+  color: #d1d5db;
+}
+
+:host ::ng-deep .p-paginator .p-paginator-pages .p-paginator-page.p-highlight {
+  background-color: #4ade80;
+  color: #1f2937;
+}
+
+:host ::ng-deep .p-button.p-button-secondary {
+  background-color: #6b7280;
+  border-color: #6b7280;
+}
+
+:host ::ng-deep .p-checkbox .p-checkbox-box.p-highlight,
+:host ::ng-deep .p-checkbox .p-checkbox-box.p-highlight:hover {
+  background-color: #4ade80;
+  border-color: #4ade80;
+}
+:host ::ng-deep .p-checkbox .p-checkbox-icon {
+ color: #ffffff;
+} 
+
+:host ::ng-deep .p-checkbox .p-checkbox-box {
+  background-color: rgba(31, 41, 55, 0.7);
+  border-color: rgba(75, 85, 99, 0.5);
+}
+
+:host ::ng-deep .p-tag {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+}
+
+/* Adding custom fade in animation for rows */
+:host ::ng-deep .p-datatable .p-datatable-tbody > tr {
+  transition: all 0.2s ease;
+}
+
+/* Component container styling */
+:host {
+  display: block;
+  height: 100%;
+}
+
+:host ::ng-deep .p-checkbox .p-checkbox-box.p-highlight .p-checkbox-icon {
+  color: #1f2937; /* Dark text color for contrast against the green background */
+}
+
+:host ::ng-deep .p-checkbox:not(.p-checkbox-disabled) .p-checkbox-box:hover {
+  border-color: #4ade80;
+}
+
+:host ::ng-deep .p-checkbox .p-checkbox-box .p-checkbox-icon {
+  font-size: 0.875rem;
+  font-weight: bold;
+  visibility: visible;
+}

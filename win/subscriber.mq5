@@ -25,27 +25,27 @@ struct WebResponse {
 int OnInit()
 {
   // Authenticate with server
- WebResponse response = webRequest("GET", SERVER_URL + "/v1/mt/auth");
+//  WebResponse response = webRequest("GET", SERVER_URL + "/v1/mt/auth");
   
- if (response.code == 403) {
-   Print("Pay! you prick!");
-   return INIT_FAILED;
- }
+//  if (response.code == 403) {
+//    Print("Pay! you prick!");
+//    return INIT_FAILED;
+//  }
   
- if (response.code != 200) {
-   Print("Request failed. Response code: ", response.code);
-   return INIT_FAILED;
- }
+//  if (response.code != 200) {
+//    Print("Request failed. Response code: ", response.code);
+//    return INIT_FAILED;
+//  }
   
- Print("Request succeeded. Response: ", response.result);
+//  Print("Request succeeded. Response: ", response.result);
   
- expert_id = ExtractJsonValue(response.result, "expert_id");
- portfolio_id = ExtractJsonValue(response.result, "portfolio_id");
+//  expert_id = ExtractJsonValue(response.result, "expert_id");
+//  portfolio_id = ExtractJsonValue(response.result, "portfolio_id");
   
- if (expert_id == "null" || expert_id == "") {
-   Print("You are not currently subscribed to an expert.");
-   return INIT_FAILED;
- }
+//  if (expert_id == "null" || expert_id == "") {
+//    Print("You are not currently subscribed to an expert.");
+ //   return INIT_FAILED;
+//  }
 
   // 🔹 CONNECT THE SUBSCRIBER SOCKET TO THE PUBLISHER
   if (!sub_socket.connect(zmq_sub_address)) {  // Connects to the PUB server

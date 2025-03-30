@@ -64,14 +64,14 @@ export class DashboardComponent implements OnInit {
   portfolios = signal<PortfolioResponse[]>([]);
   withdrawalMethods = [
     { name: 'Bank Transfer', code: 'bank' },
-    { name: 'Credit/Debit Card', code: 'card' },
     { name: 'Cryptocurrency', code: 'crypto' },
-    { name: 'PayPal', code: 'paypal' }
+    // { name: 'Credit/Debit Card', code: 'card' },
+    // { name: 'PayPal', code: 'paypal' }
   ];
   walletBalance = 0;
   commissionIncome = 0;
   acc_profit = 0;
-  withdrawalFee = 1.5;
+  withdrawalFee = 0.5;
 
   // Forms
   portfolioForm = new FormGroup({
@@ -80,7 +80,7 @@ export class DashboardComponent implements OnInit {
   });
 
   withdrawForm = new FormGroup({
-    amount: new FormControl(null, [Validators.required, Validators.min(10), Validators.max(this.walletBalance)]),
+    amount: new FormControl(null),
     method: new FormControl('', Validators.required),
     bankAccount: new FormControl(''),
     walletAddress: new FormControl(''),
@@ -127,6 +127,7 @@ export class DashboardComponent implements OnInit {
   ngOnInit(): void {
     this.getPortfolios()
     this.getBalance()
+    this.withdrawForm.get('walletAddress')?.setValidators([Validators.required, Validators.min(10), Validators.max(this.walletBalance)]);
     this.withdrawForm.get('method')?.valueChanges.subscribe(method => {
       if (method === 'bank') {
         this.withdrawForm.get('bankAccount')?.setValidators([Validators.required, Validators.minLength(8)]);
@@ -267,33 +268,23 @@ export class DashboardComponent implements OnInit {
 
   processWithdrawal(): void {
     this.withdrawSubmitted = true;
-    
+    console.log(this.withdrawForm.get('amount')?.value || 0);
     if (this.withdrawForm.invalid) {
       return;
     }
     
     this.processing = true;
     
-    // Implement your withdrawal processing logic here
-    // For example:
-    // this.walletService.processWithdrawal(this.withdrawForm.value).subscribe(
-    //   response => {
-    //     this.messageService.add({severity: 'success', summary: 'Success', detail: 'Withdrawal processed successfully'});
-    //     this.walletBalance -= this.withdrawForm.get('amount')?.value;
-    //     this.isWithdrawDialogVisible = false;
-    //     this.processing = false;
-    //   },
-    //   error => {
-    //     this.messageService.add({severity: 'error', summary: 'Error', detail: error.message});
-    //     this.processing = false;
-    //   }
-    // );
-    
-    // For demo purposes, simulate API call
-    setTimeout(() => {
-      console.log('Withdrawal processed:', this.withdrawForm.value);
-      this.isWithdrawDialogVisible = false;
-      this.processing = false;
-    }, 1500);
+    this.apiService.post("v1/withdrawals", this.withdrawForm.value).subscribe({
+      next: (response) => {
+        this.messageService.add({severity: 'success', summary: 'Success', detail: 'Withdrawal processed successfully'});
+        this.isWithdrawDialogVisible = false;
+        this.processing = false;
+      },
+      error: (error) => {
+        this.messageService.add({severity: 'error', summary: 'Error', detail: error.message});
+        this.processing = false;
+      }
+    });
   }
 }

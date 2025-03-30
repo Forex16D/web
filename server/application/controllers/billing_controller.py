@@ -54,3 +54,38 @@ class BillingController:
       ServerLogHelper.log(f"General Exception Triggered: {str(e)}")  # Debug log for general exceptions
       return jsonify({"status": 500, "message": f"Internal server error: {str(e)}"}), 500
 
+  def get_withdraw_requests_admin(self):
+    try:
+      response = self.billing_service.get_withdraw_requests_admin()
+      return jsonify(response), 200
+    except Exception as e:
+      ServerLogHelper.error(str(e))
+      return {"status": 500, "message": "Internal server error"}, 500   
+
+  def create_withdraw_request(self, user_id, request):
+    try:
+      data = request.get_json()
+      amount = data.get("amount")
+      method = data.get("method")
+      bank_account = data.get("bankAccount")
+      wallet_address = data.get("walletAddress")
+
+      response = self.billing_service.create_withdraw_request(user_id, amount, method, bank_account, wallet_address)
+
+      return jsonify(response), 200
+    except ValueError as e:
+      return jsonify({"status": 400, "message": str(e)}), 400
+    except Exception as e:
+      ServerLogHelper.log(f"General Exception Triggered: {str(e)}")  # Debug log for general exceptions
+      return jsonify({"status": 500, "message": f"Internal server error: {str(e)}"}), 500
+
+  def update_withdraw_request_status(self, user_id, withdraw_id, action):
+    try:
+      response = self.billing_service.update_withdraw_request_status(withdraw_id, action)
+      return jsonify(response), 200
+    except ValueError as e:
+      return jsonify({"status": 400, "message": f"Bad Request {str(e)}"}), 400
+    except Exception as e:
+      ServerLogHelper.log(f"General Exception Triggered: {str(e)}")  # Debug log for general exceptions
+      return jsonify({"status": 500, "message": f"Internal server error: {str(e)}"}), 500
+

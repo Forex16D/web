@@ -15,6 +15,7 @@ import { BillComponent } from './pages/bill/bill.component';
 import { PaymentComponent } from './pages/payment/payment.component';
 import { CopyTradeComponent } from './pages/copy-trade/copy-trade.component';
 import { TermsAndConditionsComponent } from './pages/terms-and-conditions/terms-and-conditions.component';
+import { DownloadComponent } from './pages/download/download.component';
 
 export const routes: Routes = [
   {
@@ -72,5 +73,9 @@ export const routes: Routes = [
   {
     path: 'terms-and-conditions',
     component: TermsAndConditionsComponent,
+  },
+  {
+    path: 'download',
+    component: DownloadComponent,
   }
 ];

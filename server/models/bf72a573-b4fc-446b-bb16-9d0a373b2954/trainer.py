@@ -9,10 +9,13 @@ from ta.trend import EMAIndicator, MACD, ADXIndicator
 from ta.momentum import RSIIndicator
 from ta.volatility import BollingerBands
 from pathlib import Path
+from datetime import datetime
 
 class StockTradingEnv(gym.Env):
   def __init__(self, data, window_size=60, initial_balance=10000, volume=100):
     super(StockTradingEnv, self).__init__()
+    self.initial_balance = initial_balance
+    self.max_drawdown_pct = 0.1
     self.data = data
     self.window_size = window_size
     self.current_step = window_size
@@ -27,14 +30,22 @@ class StockTradingEnv(gym.Env):
     current_price = self.data['close'].iloc[self.current_step]
     reward = 0
 
-    # Close existing short positions & open long
+    current_drawdown = (self.initial_balance - self.balance) / self.initial_balance
+    if current_drawdown > self.max_drawdown_pct:
+        done = True
+        reward
+
+        # Close existing short positions & open long
     if action == 1 and self.balance >= current_price * self.volume:  
       new_positions = []
       for position in self.positions:
         if position[0] == "sell":  # Closing short
           profit = (position[1] - current_price) * self.volume
           self.balance += profit
-          reward += np.sign(profit) * (abs(profit) ** 0.5)
+          price_data = self.data['close'].iloc[self.current_step-50:self.current_step]
+          returns = price_data.pct_change().dropna()
+          vol = max(0.001, returns.std())
+          reward += profit / (vol * 100)
         else:
           new_positions.append(position)  # Keep other positions
       self.positions = new_positions
@@ -50,7 +61,10 @@ class StockTradingEnv(gym.Env):
         if position[0] == "buy":  # Closing long
           profit = (current_price - position[1]) * self.volume
           self.balance += profit
-          reward += np.sign(profit) * (abs(profit) ** 0.5)
+          price_data = self.data['close'].iloc[self.current_step-50:self.current_step]
+          returns = price_data.pct_change().dropna()
+          vol = max(0.001, returns.std())
+          reward += profit / (vol * 100)
         else:
           new_positions.append(position)
       self.positions = new_positions
@@ -67,13 +81,17 @@ class StockTradingEnv(gym.Env):
             else (p[1] - current_price) * self.volume)
           for p in self.positions
         )
-        reward = np.clip(unrealized_profit * 0.01 + 0.05, -1, 1)
+        position_value = sum(p[1] * self.volume for p in self.positions)
+        reward = np.clip(unrealized_profit / (position_value * 0.1), -1, 1)
 
     # Move to the next step
     self.current_step += 1
     done = self.current_step >= len(self.data) - 1
     truncated = False
-    state = self.data.iloc[self.current_step - self.window_size:self.current_step].values
+    state = self.data.iloc[self.current_step - self.window_size:self.current_step][
+      ['EMA_12', 'EMA_50', 'MACD', 'RSI', 'BB_Upper', 'BB_Lower', 'ADX',
+      'ADX_Positive', 'ADX_Negative', 'open', 'high', 'low', 'close', 'tick_volume']
+    ].values
 
     return state, reward, done, truncated, {}
 
@@ -137,35 +155,50 @@ if __name__ == '__main__':
 
   # data = load_data_from_temp_file(temp_file_path)
 
-  parent_dir = Path(__file__).parent
+  parent_dir = Path(__file__).parent.parent.parent 
 
-  csv_path = parent_dir / "eurusd.csv"
+  csv_path = parent_dir / "train-data" / "usdjpy.csv"
 
   data = load_data_from_csv(csv_path)
   df = create_indicator(data)
   # env = DummyVecEnv([lambda: StockTradingEnv(df[:149002])])
   env = SubprocVecEnv([make_env for _ in range(5)])
 
-  policy_kwargs = dict(net_arch=[128, 64, 32, 32])
+  # policy_kwargs = dict(net_arch=[128, 64, 32, 32])
+  # model = PPO('MlpPolicy',
+  #               env, 
+  #               verbose=1,
+  #               learning_rate=5e-5,  
+  #               gamma=0.975, 
+  #               gae_lambda=0.935,
+  #               ent_coef=0.03,
+  #               n_epochs=10,
+  #               # target_kl=0.01,
+  #               # clip_range_vf=0.4,
+  #               vf_coef=0.325,
+  #               clip_range=0.25,  
+  #               batch_size=256,        
+  #               n_steps=4096,    
+  #               policy_kwargs=policy_kwargs
+  #              )
+  
   model = PPO('MlpPolicy',
-                env, 
-                verbose=1,
-                learning_rate=5e-5,  
-                gamma=0.975, 
-                gae_lambda=0.935,
-                ent_coef=0.03,
-                n_epochs=5,
-                # target_kl=0.01,
-                # clip_range_vf=0.4,
-                vf_coef=0.325,
-                clip_range=0.35,  
-                batch_size=256,        
-                n_steps=4096,    
-                policy_kwargs=policy_kwargs
-               )
+            env,
+            verbose=1,
+            learning_rate=5e-5,       # Slight decrease for stability
+            gamma=0.975,              # Increased slightly for longer-term rewards
+            gae_lambda=0.935,          # Standard value
+            ent_coef=0.03,            # Decreased to focus more on exploitation
+            n_epochs=5,               # Decreased to prevent overfitting
+            vf_coef=0.325,              # Balanced value function importance
+            clip_range=0.25,           # Standard value
+            batch_size=512,           # Increased for better gradient estimates
+            n_steps=2048,             # Decreased to update more frequently
+            policy_kwargs=dict(net_arch=[256, 128, 64, 32])  # Wider network
+           )
 
   model.learn(total_timesteps=320000)
-  print("finished training")
+  print("finished training", datetime.now())
   script_dir = Path(__file__).parent
   file_path = script_dir / "model"
   model.save(str(file_path))

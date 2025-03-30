@@ -48,6 +48,7 @@ export class PortfolioCardComponent {
     model_name: string | null;
     is_expert: boolean;
     connected: boolean;
+    access_token: string;
     total_profit: number | null;
     monthly_pnl: number | null;
     winrate: number | null;
@@ -58,6 +59,7 @@ export class PortfolioCardComponent {
       login: 'login',
       model_name: null,
       is_expert: false,
+      access_token: '',
       connected: false,
       total_profit: null,
       monthly_pnl: 0,

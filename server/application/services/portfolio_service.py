@@ -19,7 +19,8 @@ class PortfolioService:
       cursor = conn.cursor(cursor_factory=RealDictCursor)
       cursor.execute("""
         SELECT 
-            portfolios.*, 
+            portfolios.*,
+            tokens.access_token,
             models.name AS model_name,
             -- Calculate the total profit for the entire month
             COALESCE(SUM(orders.profit), 0) AS total_profit,
@@ -31,7 +32,7 @@ class PortfolioService:
                     ELSE 0 
                 END
             ), 0) AS monthly_pnl,
-            -- Calculate the winrate (percentage of winning orders in the entire month)
+            -- Calculate the winrate
             CASE 
                 WHEN COUNT(orders.profit) > 0 THEN 
                     (SUM(CASE WHEN orders.profit >= 0 THEN 1 ELSE 0 END) * 100.0 / COUNT(orders.profit))
@@ -44,10 +45,12 @@ class PortfolioService:
             models ON portfolios.model_id = models.model_id
         LEFT JOIN 
             orders ON orders.portfolio_id = portfolios.portfolio_id
+        LEFT JOIN
+            tokens ON tokens.portfolio_id = portfolios.portfolio_id
         WHERE 
             portfolios.user_id = %s
         GROUP BY 
-            portfolios.portfolio_id, models.name
+            portfolios.portfolio_id, models.name, tokens.access_token
         ORDER BY 
             portfolios.created_at ASC;
       """, (first_day, last_day, user_id))

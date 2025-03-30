@@ -5,6 +5,7 @@ import { AdminUserComponent } from './admin-user/admin-user.component';
 import { AdminModelComponent } from './admin-model/admin-model.component';
 import { AdminNavbarComponent } from '../../components/admin-navbar/admin-navbar.component';
 import { AdminHomeComponent } from './admin-home/admin-home.component';
+import { AdminRequestComponent } from './admin-request/admin-request.component';
 
 @Component({
   selector: 'app-admin',
@@ -13,6 +14,7 @@ import { AdminHomeComponent } from './admin-home/admin-home.component';
     AdminModelComponent, 
     AdminNavbarComponent,
     AdminHomeComponent,
+    AdminRequestComponent,
     NgIf
   ],
   templateUrl: './admin.component.html',
