@@ -95,7 +95,6 @@ class StockTradingEnv(gym.Env):
 
     return state, reward, done, truncated, {}
 
-
   def reset(self, seed=None, **kwargs):
     if seed is not None:
       np.random.seed(seed)  # Optional: Set the seed for randomness
@@ -128,7 +127,7 @@ def create_indicator(df):
     df['EMA_50'] = EMAIndicator(df['close'], window=50).ema_indicator()
     df['MACD'] = MACD(df['close']).macd()
     df['RSI'] = RSIIndicator(df['close']).rsi()
-    
+
     bb = BollingerBands(df['close'], window=20)
     df['BB_Upper'] = bb.bollinger_hband()
     df['BB_Lower'] = bb.bollinger_lband()
@@ -185,15 +184,15 @@ if __name__ == '__main__':
   model = PPO('MlpPolicy',
             env,
             verbose=1,
-            learning_rate=5e-5,       # Slight decrease for stability
-            gamma=0.975,              # Increased slightly for longer-term rewards
-            gae_lambda=0.935,          # Standard value
-            ent_coef=0.03,            # Decreased to focus more on exploitation
-            n_epochs=5,               # Decreased to prevent overfitting
-            vf_coef=0.325,              # Balanced value function importance
-            clip_range=0.25,           # Standard value
-            batch_size=512,           # Increased for better gradient estimates
-            n_steps=2048,             # Decreased to update more frequently
+            learning_rate=5e-5,
+            gamma=0.975,
+            gae_lambda=0.935,
+            ent_coef=0.03,  
+            n_epochs=5,
+            vf_coef=0.325,
+            clip_range=0.25,
+            batch_size=512,
+            n_steps=2048,
             policy_kwargs=dict(net_arch=[256, 128, 64, 32])  # Wider network
            )
 

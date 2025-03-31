@@ -137,9 +137,9 @@ if __name__ == '__main__':
 
   # data = load_data_from_temp_file(temp_file_path)
 
-  parent_dir = Path(__file__).parent
+  parent_dir = Path(__file__).parent.parent.parent
 
-  csv_path = parent_dir / "eurusd.csv"
+  csv_path = parent_dir / "train-data" / "eurusd.csv"
 
   data = load_data_from_csv(csv_path)
   df = create_indicator(data)

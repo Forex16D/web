@@ -46,57 +46,105 @@
   </button> -->
 </div>
 
-<p-dialog [modal]="true" [(visible)]="isEditVisible" [style]="{ width: '30rem' }">
-  <ng-template pTemplate="header">
-    <h1 class="text-2xl font-medium">Edit Portfolio</h1>
-  </ng-template>
+<p-dialog [modal]="true" [(visible)]="isEditVisible" [style]="{ width: '32rem' }" [draggable]="false"
+  [resizable]="false" styleClass="p-4" header="Edit Portfolio">
 
   <form pFocusTrap [formGroup]="portfolioEditForm" (ngSubmit)="editItem()">
-    <div class="flex items-center gap-4 mb-8">
-      <label for="name" class="w-20 text-sm">Name</label>
-      <input pInputText id="name" class="flex-auto" autocomplete="off" formControlName="name" />
-    </div>
+    <div class="grid grid-cols-1 gap-4">
+      <!-- Name Field -->
+      <div class="field">
+        <label for="name" class="block text-sm font-medium mb-2">Portfolio Name</label>
+        <input pInputText id="name" class="w-full p-2" autocomplete="off" formControlName="name"
+          placeholder="Enter portfolio name" />
+        <small *ngIf="portfolioEditForm.get('name')?.invalid && portfolioEditForm.get('name')?.touched"
+          class="text-red-500 text-xs mt-1">
+          Name is required
+        </small>
+      </div>
 
-    <div class="flex items-center gap-4 mb-8">
-      <label for="login" class="w-20 text-sm">Login</label>
-      <input pInputText id="login" class="flex-auto" autocomplete="off" formControlName="login" />
-    </div>
+      <!-- Login Field -->
+      <div class="field">
+        <label for="login" class="block text-sm font-medium mb-2">Login</label>
+        <input pInputText id="login" class="w-full p-2" autocomplete="off" formControlName="login"
+          placeholder="Enter login ID" />
+      </div>
 
-    <div class="flex items-center gap-4 mb-8">
-      <label for="bot" class="w-20 text-sm">Current Bot</label>
-      <span> {{ portfolioData.model_name }} </span>
-      <p-button routerLink="/bot" label="Browse" size="small"></p-button>
-    </div>
+      <!-- Current Bot Field -->
+      <div class="field">
+        <label class="block text-sm font-medium mb-2">Current Bot</label>
+        <div class="flex items-center gap-2">
+          <div class="bg-zinc-950 border border-gray-500 rounded p-2 flex-grow text-sm">
+            {{ portfolioData.model_name || 'No bot selected' }}
+          </div>
+          <p-button routerLink="/bot" label="Browse" size="small" icon="pi pi-search" iconPos="left">
+          </p-button>
+        </div>
+      </div>
 
-    <div class="flex items-center gap-4 mb-8">
-      <label for="bot" class="w-20 text-sm">Expert</label>
-      <p-dropdown [options]="expertOptions" optionLabel="label" optionValue="value"
-        placeholder="{{ portfolioData.is_expert ? 'Yes' : 'No' }}" formControlName="is_expert">
-      </p-dropdown>
-    </div>
+      <!-- Expert Field -->
+      <div class="field">
+        <label class="block text-sm font-medium mb-2">Expert</label>
+        <div class="flex items-center gap-2">
+          <div class="bg-zinc-950 border border-gray-500 rounded p-2 flex-grow text-sm">
+            {{ portfolioData.expert_id || 'No expert selected' }}
+          </div>
+          <p-button routerLink="/copy-trade" label="Browse" size="small" icon="pi pi-search" iconPos="left">
+          </p-button>
+        </div>
+      </div>
 
-    <div class="flex items-center gap-4 mb-8">
-      <label for="commission" class="w-20 text-sm">Commission</label>
-      <div class="flex-col w-full">
-        <input id="commission" pInputText type="number" class="flex-auto w-full" autocomplete="off"
-          formControlName="commission" min="0" max="1" step="0.01" />
-        <small class="text-gray-500">Please enter a value between 0 and 1</small>
-        <div
-          *ngIf="portfolioEditForm.get('commission')?.invalid && (portfolioEditForm.get('commission')?.dirty || portfolioEditForm.get('commission')?.touched)">
-          <small class="text-red-500" *ngIf="portfolioEditForm.get('commission')?.errors?.['required']">Commission is
-            required</small>
-          <small class="text-red-500" *ngIf="portfolioEditForm.get('commission')?.errors?.['min']">Commission must be at
-            least 0</small>
-          <small class="text-red-500" *ngIf="portfolioEditForm.get('commission')?.errors?.['max']">Commission must be at
-            most 1</small>
+      <!-- Is Expert Field -->
+      <div class="field">
+        <label class="block text-sm font-medium mb-2">Expert Status</label>
+        <p-dropdown [options]="expertOptions" optionLabel="label" optionValue="value"
+          [placeholder]="portfolioData.is_expert ? 'Yes' : 'No'" formControlName="is_expert" styleClass="w-full">
+        </p-dropdown>
+      </div>
+
+      <!-- Commission Field -->
+      <div class="field">
+        <label for="commission" class="block text-sm font-medium mb-2">Commission</label>
+        <div class="flex-col w-full">
+          <div class="p-inputgroup">
+            <input id="commission" pInputText type="number" class="w-full" autocomplete="off"
+              formControlName="commission" min="0" max="1" step="0.01" />
+            <span class="p-inputgroup-addon">%</span>
+          </div>
+          <small class="text-gray-500 text-xs mt-1">Please enter a value between 0 and 1</small>
+          <div
+            *ngIf="portfolioEditForm.get('commission')?.invalid && (portfolioEditForm.get('commission')?.dirty || portfolioEditForm.get('commission')?.touched)">
+            <small class="text-red-500 text-xs" *ngIf="portfolioEditForm.get('commission')?.errors?.['required']">
+              Commission is required
+            </small>
+            <small class="text-red-500 text-xs" *ngIf="portfolioEditForm.get('commission')?.errors?.['min']">
+              Commission must be at least 0
+            </small>
+            <small class="text-red-500 text-xs" *ngIf="portfolioEditForm.get('commission')?.errors?.['max']">
+              Commission must be at most 1
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hidden but secure access token field - keep this hidden from UI but in the form -->
+      <div class="field">
+        <label class="block text-sm font-medium mb-2">Access Token</label>
+        <div class="flex items-center gap-2">
+          <div class="bg-zinc-950 border border-gray-500 rounded p-2 flex-grow text-sm relative overflow-hidden">
+            <input #tokenInput [value]="portfolioData.access_token" readonly
+              class="bg-transparent border-none text-gray-200 w-full outline-none"
+              (click)="selectAllText(tokenInput)" />
+            <small class="block mt-1 text-gray-400 text-xs">Click the field and press Ctrl+C (or ⌘+C) to copy</small>
+          </div>
         </div>
       </div>
     </div>
-    
-    {{ portfolioData.access_token }}
-    <div class="flex justify-end gap-2">
-      <p-button label="Cancel" severity="secondary" text="true" (click)="isEditVisible = false"></p-button>
-      <p-button label="Save" type="submit"></p-button>
+
+    <div class="flex justify-end gap-2 mt-6">
+      <p-button label="Cancel" severity="secondary" outlined="true" (click)="isEditVisible = false">
+      </p-button>
+      <p-button label="Save Changes" type="submit" [disabled]="portfolioEditForm.invalid">
+      </p-button>
     </div>
   </form>
 </p-dialog>

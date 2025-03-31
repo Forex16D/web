@@ -47,6 +47,7 @@ export class PortfolioCardComponent {
     login: string;
     model_name: string | null;
     is_expert: boolean;
+    expert_id: string | null
     connected: boolean;
     access_token: string;
     total_profit: number | null;
@@ -59,6 +60,7 @@ export class PortfolioCardComponent {
       login: 'login',
       model_name: null,
       is_expert: false,
+      expert_id: null,
       access_token: '',
       connected: false,
       total_profit: null,
@@ -297,9 +299,19 @@ export class PortfolioCardComponent {
     });
   }
 
-
   detailItem(): void {
     this.router.navigate([`/portfolio/${this.portfolioData.portfolio_id}`]);
   }
 
+  selectAllText(inputElement: HTMLInputElement): void {
+    inputElement.focus();
+    inputElement.select();
+
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Select All',
+      detail: 'Text selected. Press Ctrl+C (or ⌘+C) to copy',
+      life: 3000
+    });
+  }
 }

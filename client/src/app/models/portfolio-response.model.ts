@@ -9,6 +9,7 @@ export interface PortfolioResponse {
   access_token: string
   user_id: string
   is_expert: boolean
+  expert_id: string | null
   total_profit: number | null
   monthly_pnl: number | null
   winrate: number | null
