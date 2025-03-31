@@ -88,3 +88,17 @@ class PortfolioController:
       return jsonify({"status": 404, "message": "Not found"}), 404
     except Exception:
       return jsonify({"status": 500, "message": "Internal server error"}), 500
+
+  def copy_trade(self, request, expert_id, user_id):
+    try:
+      data = request.get_json()
+      portfolio_id = data.get("portfolio_id")
+
+      response = self.portfolio_service.copy_trade(portfolio_id, expert_id, user_id)
+      return jsonify(response), 200
+    except ValueError as e:
+      ServerLogHelper.error(str(e))
+      return {"status": 400, "message": "Bad Request"}, 400
+    except Exception as e:
+      ServerLogHelper.error(str(e))
+      return {"status": 500, "message": "Internal server error"}, 500      

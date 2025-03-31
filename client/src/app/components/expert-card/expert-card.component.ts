@@ -1,20 +1,36 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit, signal } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { ChartModule } from 'primeng/chart';
 import { CurrencyPipe, NgClass, NgIf } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Expert } from '../../models/expert.model';
+import { DialogModule } from 'primeng/dialog';
+import { DropdownModule } from 'primeng/dropdown';
+import { ApiService } from '../../core/services/api.service';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-expert-card',
   standalone: true,
-  imports: [ButtonModule, TagModule, ChartModule, NgClass, RouterLink, NgIf],
+  imports: [
+    ButtonModule,
+    TagModule,
+    ChartModule,
+    NgClass,
+    RouterLink,
+    NgIf,
+    DialogModule,
+    DropdownModule,
+    ReactiveFormsModule,
+    FormsModule
+  ],
   templateUrl: './expert-card.component.html',
   styleUrls: ['./expert-card.component.css'],
   providers: [CurrencyPipe],
 })
-export class ExpertCardComponent {
+export class ExpertCardComponent implements OnInit{
   @Input() portfolio?: Expert;
 
   pnlFormatted: string = '-';
@@ -22,17 +38,36 @@ export class ExpertCardComponent {
   profitFormatted: string = '-';
   pnlTextColor: string = 'text-white';
 
-  constructor(private currency: CurrencyPipe) { }
+  dialogVisible = false;
+  userPortfolios = signal<any[]>([])
+  selectedPortfolio: any | null =  null;
+
+  constructor(private currency: CurrencyPipe, private apiService: ApiService, private messageService: MessageService) { }
+
+  ngOnInit(): void {
+    this.getPortfolios()
+  }
 
   ngOnChanges(): void {
     this.transformData();
-    
+
     if (this.portfolio && this.portfolio.weekly_profits && this.portfolio.weekly_profits.length > 0) {
       console.log(this.portfolio.weekly_profits);
       this.updateGraphData();
     }
   }
-  
+
+  getPortfolios(): void {
+    this.apiService.get('v1/portfolios').subscribe({
+      next: (response: any) => {
+        this.userPortfolios.set(response);
+        console.log(response);
+      },
+      error: (error) => {
+        console.error('Fetch failed:', error);
+      },
+    });
+  }
 
   updateGraphData(): void {
     if (!this.portfolio) return;
@@ -50,7 +85,7 @@ export class ExpertCardComponent {
       ]
     };
   }
-  
+
 
   graphData = {
     labels: ['A'],
@@ -64,7 +99,7 @@ export class ExpertCardComponent {
         borderWidth: 2,
       }
     ]
-  };  
+  };
 
   options = {
     responsive: true,
@@ -91,6 +126,36 @@ export class ExpertCardComponent {
       }
     }
   };
+
+  onCopyTrade(): void {
+    this.copy_trade();
+    this.dialogVisible = false;
+  }
+
+  copy_trade(): void {
+    const body = {
+      portfolio_id: this.selectedPortfolio?.portfolio_id
+    };
+
+    this.apiService.put(`/v1/portfolios/${this.portfolio?.portfolio_id}/copy`, body).subscribe({
+      next: (response) => {
+        console.log(response);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Copy trade Successfully'
+        });
+      },
+      error: (error) => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'error',
+          detail: 'Copy trade Failed'
+        });
+        console.error('Fetch failed:', error);
+      },
+    });
+  }
 
   onChartHover(event: any) {
     const activePoints = event.chart.getElementsAtEventForMode(

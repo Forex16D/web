@@ -28,6 +28,7 @@
         <th pSortableColumn="user_id">ID <p-sortIcon field="user_id"></p-sortIcon></th>
         <th pSortableColumn="email">Email <p-sortIcon field="email"></p-sortIcon></th>
         <th pSortableColumn="role">Role <p-sortIcon field="role"></p-sortIcon></th>
+        <th pSortableColumn="role">Status <p-sortIcon field="role"></p-sortIcon></th>
         <th style="width: 8rem">Actions</th>
       </tr>
     </ng-template>
@@ -41,12 +42,16 @@
         <td><span class="text-white">{{ user.email }}</span></td>
         <td>
           <p-tag [value]="user.role"
-            [severity]="user.role === 'Admin' ? 'danger' : user.role === 'Moderator' ? 'warn' : 'info'">
+            [severity]="user.role === 'admin' ? 'danger' : 'info'">
+          </p-tag>
+        </td>
+        <td>
+          <p-tag [value]="user.is_banned ? 'banned' : 'active'" [severity]="user.is_banned ? 'danger' : 'success'">
           </p-tag>
         </td>
         <td>
           <div class="flex justify-start gap-2">
-            <p-button icon="pi pi-pencil" (click)="editUser(user.user_id)" />
+            <!-- <p-button icon="pi pi-pencil" (click)="editUser(user.user_id)" /> -->
             <p-button icon="pi pi-trash" severity="danger" (click)="deleteUser(user.user_id)" />
           </div>
         </td>

@@ -28,6 +28,7 @@
         </th>
         <th pSortableColumn="withdraw_id">ID <p-sortIcon field="withdraw_id"></p-sortIcon></th>
         <th pSortableColumn="user_id">User ID <p-sortIcon field="user_id"></p-sortIcon></th>
+        <th pSortableColumn="amount">Account <p-sortIcon field="bank_account"></p-sortIcon></th>
         <th pSortableColumn="amount">Amount <p-sortIcon field="amount"></p-sortIcon></th>
         <th pSortableColumn="method">Method <p-sortIcon field="method"></p-sortIcon></th>
         <th pSortableColumn="created_date">Created Date <p-sortIcon field="created_date"></p-sortIcon></th>
@@ -42,6 +43,7 @@
         </td>
         <td><span class="text-white">{{ request.withdraw_id }}</span></td>
         <td><span class="text-white">{{ request.user_id }}</span></td>
+        <td><span class="text-white">{{ request.bank_account }}</span></td>
         <td><span class="text-white">${{ request.amount }}</span></td>
         <td>
           <p-tag [value]="request.method" [severity]="request.method === 'bank' ? 'info' : 'warn'">

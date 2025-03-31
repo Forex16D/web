@@ -53,7 +53,40 @@
   </div>
 
   <!-- View details button -->
-  <button pButton [routerLink]="['/expert/detail', portfolio?.portfolio_id]" label="View Expert"
-    class="mt-4 w-full text-sm px-4 py-2 rounded shadow-sm">
+  <button pButton label="Copy"
+    class="mt-4 w-full text-sm px-4 py-2 rounded shadow-sm" (click)="dialogVisible=true">
   </button>
 </div>
+
+<p-dialog header="Copy trade" [modal]="true" [(visible)]="dialogVisible" [style]="{ width: '25rem' }">
+  <span class="p-text-secondary block mb-8"> {{ portfolio?.name }} </span>
+  <div class="flex items-center gap-4 mb-4">
+    <label for="portfolio" class="font-semibold w-24">Portfolio</label>
+    <p-dropdown [options]="userPortfolios()" [(ngModel)]="selectedPortfolio" optionLabel="name" [filter]="true"
+      filterBy="name" [showClear]="true" placeholder="Select a Portfolio" appendTo="body">
+
+      <!-- Custom Selected Item Template -->
+      <ng-template pTemplate="selectedItem" let-selectedOption>
+        <div class="flex items-center gap-2">
+          <i class="pi pi-briefcase text-blue-500"></i>
+          <div>{{ selectedOption?.name || 'No Portfolio Selected' }}</div>
+        </div>
+      </ng-template>
+
+      <!-- Custom Item Template -->
+      <ng-template pTemplate="item" let-portfolio>
+        <div class="flex items-center justify-between w-full">
+          <div class="flex items-center gap-2">
+            <i class="pi pi-database text-green-400"></i>
+            <div>{{ portfolio.name }}</div>
+          </div>
+          <!-- <span class="text-xs text-gray-500">{{ portfolio.create_at | date: 'short' }}</span> -->
+        </div>
+      </ng-template>
+    </p-dropdown>
+  </div>
+  <div class="flex justify-end gap-2">
+    <p-button label="Cancel" severity="secondary" text="true" (click)="dialogVisible = false" />
+    <p-button label="Copy" (click)="onCopyTrade()" />
+  </div>
+</p-dialog>

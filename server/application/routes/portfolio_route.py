@@ -45,3 +45,8 @@ def get_total_commission(current_user_id):
 @token_required
 def get_user_balance(current_user_id):
   return portfolio_controller.get_user_balance(current_user_id)
+
+@portfolio_routes.route("/v1/portfolios/<expert_id>/copy", methods=["PUT"])
+@token_required
+def copy_trade(current_user_id, expert_id):
+  return portfolio_controller.copy_trade(request, expert_id, current_user_id)

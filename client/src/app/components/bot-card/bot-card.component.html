@@ -3,9 +3,7 @@
     <i class="pi pi-chart-line"></i>
     <p> {{ model?.name || '-' }} </p>
   </div>
-
-  <div class="flex w-full
-  justify-between gap-4">
+  <div class="flex w-full justify-between gap-4">
     <div class="flex flex-col justify-between">
       <div>
         <div class="flex text-left text-2xl font-semibold" [ngClass]="pnlTextColor">
@@ -18,13 +16,10 @@
       </div>
     </div>
 
-    <div>
-      <p-chart type="line" [data]="graphData" [options]="options" (onHover)="onChartHover($event)" class="h-40" />
-      <div class="text-sm text-gray-400 mt-2">
-      </div>
+    <div class="w-full">
+      <div echarts [options]="lineChart" style="height: 200px; width: 100%;; display: block;"></div>
     </div>
   </div>
-
   <div class="flex justify-between w-full mt-4">
     <div class="text-sm">
       <div class="text-gray-400">

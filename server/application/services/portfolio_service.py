@@ -325,3 +325,32 @@ class PortfolioService:
     finally:
       cursor.close()
       db_pool.release_connection(conn)
+      
+  def copy_trade(self, portfolio_id, expert_id, user_id):
+    try:
+      conn = self.db_pool.get_connection()
+      cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+      cursor.execute("SELECT 1 FROM portfolios WHERE portfolio_id = %s AND is_expert = true", (expert_id,))
+      expert_exists = cursor.fetchone()
+
+      if not expert_exists:
+        return {"error": "Invalid expert ID. The provided expert does not exist."}
+
+      cursor.execute(
+        "UPDATE portfolios SET expert_id = %s WHERE portfolio_id = %s AND user_id = %s",
+        (expert_id, portfolio_id, user_id)
+      )
+      conn.commit()
+
+      return {"message": "Copy trade successfully!"}
+    
+    except Exception as e:
+      conn.rollback()
+      return {"error": f"Something went wrong: {str(e)}"}
+
+    finally:
+      if cursor:
+        cursor.close()
+      if conn:
+        self.db_pool.release_connection(conn)

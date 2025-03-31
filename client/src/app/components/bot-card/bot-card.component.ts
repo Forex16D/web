@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { AfterViewInit, Component, Input, OnInit } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { ChartModule } from 'primeng/chart';
@@ -7,15 +7,23 @@ import { NgClass } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Model } from '../../models/model.model';
 
+import * as echarts from 'echarts/core';
+import { LineChart } from 'echarts/charts';
+import { EChartsOption } from 'echarts/types/dist/shared';
+import { NgxEchartsDirective } from 'ngx-echarts';
+
+echarts.use([LineChart]);
 @Component({
   selector: 'app-bot-card',
-  imports: [ButtonModule, TagModule, ChartModule, NgClass, RouterLink],
+  imports: [ButtonModule, TagModule, ChartModule, NgClass, RouterLink, NgxEchartsDirective],
   templateUrl: './bot-card.component.html',
   styleUrl: './bot-card.component.css',
   providers: [CurrencyPipe],
 })
-export class BotCardComponent {
+export class BotCardComponent implements OnInit, AfterViewInit {
   @Input() model?: Model;
+
+  lineChart: EChartsOption = {};
 
   pnlFormatted: string = '-';
   winrateFormatted: string = '-';
@@ -23,68 +31,74 @@ export class BotCardComponent {
   balanceFormatted: string = '-';
   pnlTextColor: string = 'text-white';
 
-  constructor(private currency: CurrencyPipe) { }
+  constructor() { }
 
-  ngOnChanges(): void {
-    this.transformData();
+  ngOnInit(): void {
+    this.updatePnlFormatted()
+    this.updateWinrateFormatted()
   }
 
-  updateGraphData(): void {
+  ngAfterViewInit(): void {
+    this.updateChartData();
+  }
+
+  updatePnlFormatted(): void {
     if (!this.model) return;
-    this.graphData = {
-      labels: this.model.weekly_profits.map(profit => profit.week_start),
-      datasets: [
-        {
-          data: this.model.weekly_profits.map(profit => profit.weekly_profit),
-          borderColor: '#05df72',
-          backgroundColor: '#172425',
-          tension: 0.4,
-          fill: true,
-          borderWidth: 2,
+    const pnl = this.model.monthly_pnl || 0;
+    this.pnlFormatted = pnl >= 0 ? `+$${pnl.toFixed(2)}` : `-$${Math.abs(pnl).toFixed(2)}`;
+    this.pnlTextColor = pnl >= 0 ? 'text-green-500' : 'text-red-500';
+  }
+
+  updateWinrateFormatted(): void {
+    if (!this.model || !this.model.winrate) return;
+    this.winrateFormatted = `${Number(this.model.winrate).toFixed(2)}%`;
+  }
+
+
+  updateChartData(): void {
+    if (!this.model) return;
+    
+    const data = this.model.weekly_profits?.map(profit => profit.weekly_profit) || [-1, 65, 59, 80];
+    const labels = this.model.weekly_profits?.map(profit => profit.week_start) || ['January', 'February', 'March', 'April'];
+    
+    this.lineChart = {
+      grid: {
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0
+      },
+      xAxis: {
+        type: 'category',
+        data: labels,
+        show: false
+      },
+      yAxis: {
+        type: 'value',
+        show: false
+      },
+      series: [{
+        data: data,
+        type: 'line',
+        smooth: true,
+        symbol: 'none',
+        lineStyle: {
+          color: '#05df72',
+          width: 2
+        },
+        areaStyle: {
+          color: '#172425'
         }
-      ]
+      }],
+      tooltip: {
+        trigger: 'axis',
+        formatter: (params: any) => {
+          const value = params[0].value;
+          return `${params[0].name}: ${value >= 0 ? '+' : ''}$${value.toFixed(2)}`;
+        }
+      }
     };
   }
-
-  graphData = {
-    labels: ['January', 'February', 'March', 'April'],
-    datasets: [
-      {
-        data: [-1, 65, 59, 80],
-        borderColor: '#05df72',
-        backgroundColor: '#172425',
-        tension: 0.4,
-        fill: true,
-        borderWidth: 2,
-      }
-    ]
-  };
-
-  options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false // Hides the legend
-      }
-    },
-    scales: {
-      x: {
-        display: false
-      },
-      y: {
-        display: false
-      }
-    },
-    layout: {
-      padding: 0 // No padding around the chart
-    },
-    elements: {
-      point: {
-        radius: 0 // Removes points
-      }
-    }
-  };
 
   onChartHover(event: any) {
     const activePoints = event.chart.getElementsAtEventForMode(event.event, 'nearest', { intersect: true }, true);
@@ -95,15 +109,4 @@ export class BotCardComponent {
       console.log(`Hovered over: ${label} - ${value}`);
     }
   }
-
-
-  transformData(): void {
-    const pnlValue: number = this.model?.monthly_pnl || 0;
-    const winrateValue: number = this.model?.winrate || 0;
-    console.log(winrateValue)
-    this.pnlTextColor = pnlValue > 0 ? 'text-green-400' : pnlValue < 0 ? 'text-red-400' : 'text-white';
-    this.pnlFormatted = isNaN(pnlValue) ? '-' : pnlValue >= 0 ? `+$${pnlValue}` : `-$${Math.abs(pnlValue)}`;
-    this.winrateFormatted = isNaN(winrateValue) ? '-' : `${Number(winrateValue).toFixed(2)}%`;
-  }
-
 }
