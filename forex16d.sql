@@ -78,16 +78,13 @@ SET default_table_access_method = heap;
 
 CREATE TABLE public.bills (
     bill_id integer NOT NULL,
-    portfolio_id character varying NOT NULL,
-    model_id character varying NOT NULL,
-    total_profit double precision NOT NULL,
-    commission double precision NOT NULL,
     net_amount double precision NOT NULL,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     due_date timestamp with time zone,
     status public.bill_status,
     net_amount_usd double precision,
-    exchange_rate double precision
+    exchange_rate double precision,
+    user_id character varying NOT NULL
 );
 
 
@@ -202,10 +199,11 @@ CREATE TABLE public.receipts (
     user_id character varying NOT NULL,
     amount_paid double precision NOT NULL,
     payment_date timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    reference_number character varying(100) NOT NULL,
+    reference_number character varying(100),
     receipt_image character varying(255),
     notes text,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    method character varying,
     CONSTRAINT receipts_amount_paid_check CHECK ((amount_paid > (0)::double precision))
 );
 
@@ -267,6 +265,49 @@ CREATE TABLE public.users (
 ALTER TABLE public.users OWNER TO admin;
 
 --
+-- Name: withdraw_requests; Type: TABLE; Schema: public; Owner: admin
+--
+
+CREATE TABLE public.withdraw_requests (
+    withdraw_id bigint NOT NULL,
+    user_id character varying NOT NULL,
+    amount numeric(15,2) NOT NULL,
+    method character varying NOT NULL,
+    bank_account character varying,
+    wallet_address character varying,
+    status character varying DEFAULT 'pending'::character varying NOT NULL,
+    created_date timestamp with time zone DEFAULT now() NOT NULL,
+    approved_date timestamp with time zone,
+    CONSTRAINT withdraw_requests_check CHECK (((((method)::text = 'bank'::text) AND (bank_account IS NOT NULL) AND (wallet_address IS NULL)) OR (((method)::text = 'crypto'::text) AND (wallet_address IS NOT NULL) AND (bank_account IS NULL)))),
+    CONSTRAINT withdraw_requests_method_check CHECK (((method)::text = ANY ((ARRAY['bank'::character varying, 'crypto'::character varying])::text[]))),
+    CONSTRAINT withdraw_requests_status_check CHECK (((status)::text = ANY ((ARRAY['pending'::character varying, 'approved'::character varying, 'rejected'::character varying])::text[])))
+);
+
+
+ALTER TABLE public.withdraw_requests OWNER TO admin;
+
+--
+-- Name: withdraw_requests_withdraw_id_seq; Type: SEQUENCE; Schema: public; Owner: admin
+--
+
+CREATE SEQUENCE public.withdraw_requests_withdraw_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.withdraw_requests_withdraw_id_seq OWNER TO admin;
+
+--
+-- Name: withdraw_requests_withdraw_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: admin
+--
+
+ALTER SEQUENCE public.withdraw_requests_withdraw_id_seq OWNED BY public.withdraw_requests.withdraw_id;
+
+
+--
 -- Name: bills bill_id; Type: DEFAULT; Schema: public; Owner: admin
 --
 
@@ -278,6 +319,13 @@ ALTER TABLE ONLY public.bills ALTER COLUMN bill_id SET DEFAULT nextval('public.b
 --
 
 ALTER TABLE ONLY public.receipts ALTER COLUMN receipt_id SET DEFAULT nextval('public.receipts_receipt_id_seq'::regclass);
+
+
+--
+-- Name: withdraw_requests withdraw_id; Type: DEFAULT; Schema: public; Owner: admin
+--
+
+ALTER TABLE ONLY public.withdraw_requests ALTER COLUMN withdraw_id SET DEFAULT nextval('public.withdraw_requests_withdraw_id_seq'::regclass);
 
 
 --
@@ -345,6 +393,22 @@ ALTER TABLE ONLY public.users
 
 
 --
+-- Name: withdraw_requests withdraw_requests_pkey; Type: CONSTRAINT; Schema: public; Owner: admin
+--
+
+ALTER TABLE ONLY public.withdraw_requests
+    ADD CONSTRAINT withdraw_requests_pkey PRIMARY KEY (withdraw_id);
+
+
+--
+-- Name: bills bills_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: admin
+--
+
+ALTER TABLE ONLY public.bills
+    ADD CONSTRAINT bills_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(user_id) ON DELETE SET NULL;
+
+
+--
 -- Name: tokens fk_portfolio; Type: FK CONSTRAINT; Schema: public; Owner: admin
 --
 
@@ -398,6 +462,14 @@ ALTER TABLE ONLY public.portfolios
 
 ALTER TABLE ONLY public.portfolios
     ADD CONSTRAINT portfolios_expert_id_fkey FOREIGN KEY (expert_id) REFERENCES public.portfolios(portfolio_id) ON DELETE SET NULL;
+
+
+--
+-- Name: withdraw_requests withdraw_requests_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: admin
+--
+
+ALTER TABLE ONLY public.withdraw_requests
+    ADD CONSTRAINT withdraw_requests_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(user_id) ON DELETE CASCADE;
 
 
 --
