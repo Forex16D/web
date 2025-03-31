@@ -167,22 +167,14 @@ void sendData()
     Print("User is banned, stopping EA!");
     ExpertRemove();
   }
-  // Set up trade request
  
-  // Handle trade execution
   string action = ExtractJsonValue(response, "action");
 //  string symbol = ExtractJsonValue(response, "symbol");
-  Print(action);
-  if (action == "open_long" || action == "open_short")
+
+  if (action == "open_long" || action == "open_short") {
+    ExecuteCloseOrder(action, Symbol());
     ExecuteTrade(action, Symbol());
-  
-  else if (action == "close_buy" || action == "close_sell")
-  {
-    ENUM_POSITION_TYPE closeType = (response == "close_buy") ? POSITION_TYPE_BUY : POSITION_TYPE_SELL;
-    ExecuteCloseOrder(closeType, Symbol());
   }
-  else
-    return;
 }
 
 void OnDeinit(const int reason)
@@ -300,90 +292,87 @@ void ExecuteTrade(string action, string symbol)
   }
 }
 
-void ExecuteCloseOrder(ENUM_POSITION_TYPE closeType, string symbol)
+void ExecuteCloseOrder(string action, string symbol)
 {
     // Validate input
-    if (symbol == "" || (closeType != POSITION_TYPE_BUY && closeType != POSITION_TYPE_SELL)) {
-        Print("❌ Invalid input parameters for closing order");
-        return;
+  if (symbol == "" || (action != "open_long" && action != "open_short")) {
+    Print("❌ Invalid input parameters for closing order");
+    return;
+  }
+    
+  // Determine position type to close based on action
+  ENUM_POSITION_TYPE closeType = (action == "open_long") ? POSITION_TYPE_SELL : POSITION_TYPE_BUY;
+    
+  // Array to store closed positions
+  ClosedPosition closedPositions[];
+  ArrayResize(closedPositions, 0);
+    
+  CTrade trade;
+    
+  // Configure trade object for error handling
+  trade.SetDeviationInPoints(10);  // Set acceptable price deviation
+  // Track total closed positions
+  int closedCount = 0;
+  // Iterate through positions
+  for (int i = 0; i < PositionsTotal(); i++) {
+    // Select position by index - corrected for MQL5
+    if (!PositionSelect(PositionGetSymbol(i))) {
+      Print("⚠️ Failed to select position at index ", i);
+      continue;
     }
-
-    // Array to store closed positions
-    ClosedPosition closedPositions[];
-    ArrayResize(closedPositions, 0);
-    
-    CTrade trade;
-    
-    // Configure trade object for error handling
-    trade.SetDeviationInPoints(10);  // Set acceptable price deviation
-
-    // Track total closed positions
-    int closedCount = 0;
-
-    // Iterate through positions
-    for (int i = 0; i < PositionsTotal(); i++) {
-        // Select position by index - corrected for MQL5
-        if (!PositionSelect(PositionGetSymbol(i))) {
-            Print("⚠️ Failed to select position at index ", i);
-            continue;
-        }
-
-        // Check if position matches the specified symbol and type
-        if (PositionGetString(POSITION_SYMBOL) != symbol || 
-            PositionGetInteger(POSITION_TYPE) != closeType) {
-            continue;
-        }
-
-        ulong ticket = PositionGetInteger(POSITION_TICKET);
+    // Check if position matches the specified symbol and type
+    if (PositionGetString(POSITION_SYMBOL) != symbol || 
+      PositionGetInteger(POSITION_TYPE) != closeType) {
+      continue;
+    }
+    ulong ticket = PositionGetInteger(POSITION_TICKET);
         
-        // Attempt to close position
-        if (trade.PositionClose(ticket)) {
-            // Resize array and add new closed position
-            ArrayResize(closedPositions, ArraySize(closedPositions) + 1);
-            int lastIndex = ArraySize(closedPositions) - 1;
+    // Attempt to close position
+    if (trade.PositionClose(ticket)) {
+      // Resize array and add new closed position
+      ArrayResize(closedPositions, ArraySize(closedPositions) + 1);
+      int lastIndex = ArraySize(closedPositions) - 1;
             
-            closedPositions[lastIndex].order_id = ticket;
-            closedPositions[lastIndex].symbol = symbol;
-            closedPositions[lastIndex].volume = PositionGetDouble(POSITION_VOLUME);
-            closedPositions[lastIndex].entry_price = PositionGetDouble(POSITION_PRICE_OPEN);
-            closedPositions[lastIndex].order_type = (closeType == POSITION_TYPE_BUY) ? "BUY" : "SELL";
+      closedPositions[lastIndex].order_id = ticket;
+      closedPositions[lastIndex].symbol = symbol;
+      closedPositions[lastIndex].volume = PositionGetDouble(POSITION_VOLUME);
+      closedPositions[lastIndex].entry_price = PositionGetDouble(POSITION_PRICE_OPEN);
+      closedPositions[lastIndex].order_type = (closeType == POSITION_TYPE_SELL) ? "SELL" : "BUY";
             
-            closedCount++;
-        } else {
-            Print("❌ Failed to close position: ", ticket, 
-                  " Error: ", trade.ResultRetcode(), " ", trade.ResultRetcodeDescription());
-        }
-    }
-
-    // Process closed positions
-    if (closedCount > 0) {
-        // Select deals from last 30 days
-        datetime startTime = TimeCurrent() - (30 * 86400);
-        HistorySelect(startTime, TimeCurrent());
-
-        // Iterate through closed positions
-        for (int i = 0; i < ArraySize(closedPositions); i++) {
-            // Find corresponding deal in history
-            for (int j = HistoryDealsTotal() - 1; j >= 0; j--) {
-                ulong dealTicket = HistoryDealGetTicket(j);
-                
-                if (HistoryDealGetInteger(dealTicket, DEAL_POSITION_ID) == closedPositions[i].order_id) {
-                    // Populate additional details
-                    closedPositions[i].exit_price = HistoryDealGetDouble(dealTicket, DEAL_PRICE);
-                    closedPositions[i].profit = HistoryDealGetDouble(dealTicket, DEAL_PROFIT);
-                    closedPositions[i].created_at = (datetime)HistoryDealGetInteger(dealTicket, DEAL_TIME);
-                    
-                    // Send order to database
-                    SendOrderToDatabase(closedPositions[i]);
-                    
-                    Print("✅ Closed order sent to database: ", closedPositions[i].order_id);
-                    break;
-                }
-            }
-        }
+      closedCount++;
     } else {
-        Print("⚠️ No positions found to close for symbol: ", symbol);
+      Print("❌ Failed to close position: ", ticket, 
+                " Error: ", trade.ResultRetcode(), " ", trade.ResultRetcodeDescription());
     }
+  }
+  // Process closed positions
+  if (closedCount > 0) {
+    // Select deals from last 30 days
+    datetime startTime = TimeCurrent() - (30 * 86400);
+    HistorySelect(startTime, TimeCurrent());
+    // Iterate through closed positions
+    for (int i = 0; i < ArraySize(closedPositions); i++) {
+      // Find corresponding deal in history
+      for (int j = HistoryDealsTotal() - 1; j >= 0; j--) {
+        ulong dealTicket = HistoryDealGetTicket(j);
+                
+        if (HistoryDealGetInteger(dealTicket, DEAL_POSITION_ID) == closedPositions[i].order_id) {
+          // Populate additional details
+          closedPositions[i].exit_price = HistoryDealGetDouble(dealTicket, DEAL_PRICE);
+          closedPositions[i].profit = HistoryDealGetDouble(dealTicket, DEAL_PROFIT);
+          closedPositions[i].created_at = (datetime)HistoryDealGetInteger(dealTicket, DEAL_TIME);
+                    
+          // Send order to database
+          SendOrderToDatabase(closedPositions[i]);
+                    
+          Print("✅ Closed order sent to database: ", closedPositions[i].order_id);
+          break;
+        }
+      }
+    }
+  } else {
+    Print("⚠️ No positions found to close for symbol: ", symbol);
+  }
 }
 
 void SendOrderToDatabase(ClosedPosition &position)

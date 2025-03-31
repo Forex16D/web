@@ -8,7 +8,7 @@ input string zmq_sub_address = "tcp://127.0.0.1:5555";
 
 input double lot_size = 0.01;
 input int magic_number = 1987;
-input string token="MjJhYjg5YTgtMzkzYy00MmEyLThlOTAtYzY3NTRmOTgyZDM4OjA3NTJkMDcxLTc3NjctNDViMS04ZDlkLWYyNGM4OGQyNDdjOTowNzZmY2QzOS1lNmRhLTRkYmMtYjc3Yy1iZmNhMzgxNGYxYmI6MTc0MTAwNzkxNy64Su9hFmtZfGxb4b_F4f8szzR2GqW14sRVXJtnha7qwg==";
+input string token="MDVmMDBlNDEtODFlOC00ZDJjLThlNjEtNDkwZGY3NDUxNmVjOmVhYzMyMmJkLTUxNDktNGIxYi1hM2ZlLWY5MzI4MGIwODg2Nzo1NjQ2MGYwMi01M2RlLTQwZWQtODk4ZS0yMjIxNzkxODg5NWM6MTc0Mjc5ODk4Ny6KTWzslZMjnC86wX3oQT-IegGveHThXDgZIIbApXWrDw==";
 
 string portfolio_id;
 string expert_id;
@@ -22,30 +22,41 @@ struct WebResponse {
   int code;
 };
 
+struct ClosedPosition {
+  ulong order_id;
+  string order_type;
+  string symbol;
+  double volume;
+  double entry_price;
+  double exit_price;
+  double profit;
+  datetime created_at;
+};
+
 int OnInit()
 {
   // Authenticate with server
-//  WebResponse response = webRequest("GET", SERVER_URL + "/v1/mt/auth");
+  WebResponse response = webRequest("GET", SERVER_URL + "/v1/mt/auth");
   
-//  if (response.code == 403) {
-//    Print("Pay! you prick!");
-//    return INIT_FAILED;
-//  }
+  if (response.code == 403) {
+    Print("Pay! you prick!");
+    return INIT_FAILED;
+  }
   
-//  if (response.code != 200) {
-//    Print("Request failed. Response code: ", response.code);
-//    return INIT_FAILED;
-//  }
+  if (response.code != 200) {
+    Print("Request failed. Response code: ", response.code);
+    return INIT_FAILED;
+  }
   
-//  Print("Request succeeded. Response: ", response.result);
+  Print("Request succeeded. Response: ", response.result);
   
-//  expert_id = ExtractJsonValue(response.result, "expert_id");
-//  portfolio_id = ExtractJsonValue(response.result, "portfolio_id");
-  
-//  if (expert_id == "null" || expert_id == "") {
-//    Print("You are not currently subscribed to an expert.");
- //   return INIT_FAILED;
-//  }
+  expert_id = ExtractJsonValue(response.result, "expert_id");
+  portfolio_id = ExtractJsonValue(response.result, "portfolio_id");
+
+  if (expert_id == "null" || expert_id == "") {
+    Print("You are not currently subscribed to an expert.");
+    return INIT_FAILED;
+  }
 
   // 🔹 CONNECT THE SUBSCRIBER SOCKET TO THE PUBLISHER
   if (!sub_socket.connect(zmq_sub_address)) {  // Connects to the PUB server
@@ -56,7 +67,7 @@ int OnInit()
   Print("Connected SUB socket to ZeroMQ at ", zmq_sub_address);
 
   // 🔹 SUBSCRIBE TO THE ASSIGNED EXPERT_ID
-  if (!sub_socket.subscribe(expert_id)) {
+  if (!sub_socket.subscribe("")) {
     Print("Failed to subscribe to expert ID: ", expert_id);
     return INIT_FAILED;
   }
@@ -85,7 +96,6 @@ int OnInit()
   return INIT_SUCCEEDED;
 }
 
-
 void OnDeinit(const int reason)
 {
   EventKillTimer();
@@ -95,45 +105,38 @@ void OnDeinit(const int reason)
 }
 
 void OnTick() {
-
-}
-
-void OnTimer() {
   ZmqMsg topic, received_msg;
 
-
-  if (!sub_socket.recv(topic, ZMQ_DONTWAIT)) return;
-
-  if (!sub_socket.recv(received_msg, ZMQ_DONTWAIT)) return;
+  // 🔹 Ensure both messages are received properly
+  if (!sub_socket.recv(topic, ZMQ_DONTWAIT) || !sub_socket.recv(received_msg, ZMQ_DONTWAIT)) {
+    return;
+  }
 
   string received_expert_id = topic.getData();
   string message = received_msg.getData();
-  
+
+  // 🔹 If needed, filter messages for the current expert ID
+  if (received_expert_id != expert_id) return;
+
   PrintFormat("expert_id: %s\nmessage: %s", received_expert_id, message);
-    // 🔹 Ignore messages not meant for this expert_id
-//  if (received_expert_id != expert_id) return;
 
-  Print("Received Signal: ", message);
 
-  // Parse JSON message
-  string signal = ExtractJsonValue(message, "signal");
-  string symbol = ExtractJsonValue(message, "symbol");
-  double price = StringToDouble(ExtractJsonValue(message, "price"));
+  string action = ExtractJsonValue(message, "action");
 
-  ExecuteTrade(signal, symbol, price);
+  if (action == "open_long" || action == "open_short") {
+    string symbol = Symbol();
+    ExecuteCloseOrder(action, symbol);
+    ExecuteTrade(action, symbol);
+  }
 }
+
+void OnTimer() {
+
+}
+
 
 void OnTrade()
   {
-   
-  }
-
-
-void OnTradeTransaction(const MqlTradeTransaction& trans,
-                        const MqlTradeRequest& request,
-                        const MqlTradeResult& result)
-  {
-
    
   }
 
@@ -192,7 +195,7 @@ string ExtractJsonValue(string json, string key)
   return value;
 }
 
-void ExecuteTrade(string action, string symbol, double price)
+void ExecuteTrade(string action, string symbol)
 {
   MqlTradeRequest request;
   MqlTradeResult result;
@@ -203,7 +206,7 @@ void ExecuteTrade(string action, string symbol, double price)
   double ask_price = SymbolInfoDouble(symbol, SYMBOL_ASK);
 
   // Determine the correct price
-  double order_price = (action == "BUY") ? ask_price : bid_price;
+  double order_price = (action == "open_long") ? ask_price : bid_price;
   order_price = NormalizeDouble(order_price, _Digits);
 
   // Validate the price
@@ -216,7 +219,7 @@ void ExecuteTrade(string action, string symbol, double price)
   request.symbol = symbol;
   request.magic = magic_number;
   request.volume = lot_size;
-  request.type = (action == "BUY") ? ORDER_TYPE_BUY : ORDER_TYPE_SELL;
+  request.type = (action == "open_long") ? ORDER_TYPE_BUY : ORDER_TYPE_SELL;
   request.price = order_price;
   request.deviation = 30; // Increased slippage
   request.type_filling = SymbolInfoInteger(symbol, SYMBOL_FILLING_MODE); // Use broker-supported filling mode
@@ -228,4 +231,127 @@ void ExecuteTrade(string action, string symbol, double price)
   } else {
     Print("Trade executed: ", action, " ", symbol, " @ ", order_price);
   }
+}
+
+void ExecuteCloseOrder(string action, string symbol)
+{
+    // Validate input
+  if (symbol == "" || (action != "open_long" && action != "open_short")) {
+    Print("❌ Invalid input parameters for closing order");
+    return;
+  }
+    
+  // Determine position type to close based on action
+  ENUM_POSITION_TYPE closeType = (action == "open_long") ? POSITION_TYPE_SELL : POSITION_TYPE_BUY;
+    
+  // Array to store closed positions
+  ClosedPosition closedPositions[];
+  ArrayResize(closedPositions, 0);
+    
+  CTrade trade;
+    
+  // Configure trade object for error handling
+  trade.SetDeviationInPoints(10);  // Set acceptable price deviation
+  // Track total closed positions
+  int closedCount = 0;
+  // Iterate through positions
+  for (int i = 0; i < PositionsTotal(); i++) {
+    // Select position by index - corrected for MQL5
+    if (!PositionSelect(PositionGetSymbol(i))) {
+      Print("⚠️ Failed to select position at index ", i);
+      continue;
+    }
+    // Check if position matches the specified symbol and type
+    if (PositionGetString(POSITION_SYMBOL) != symbol || 
+      PositionGetInteger(POSITION_TYPE) != closeType) {
+      continue;
+    }
+    ulong ticket = PositionGetInteger(POSITION_TICKET);
+        
+    // Attempt to close position
+    if (trade.PositionClose(ticket)) {
+      // Resize array and add new closed position
+      ArrayResize(closedPositions, ArraySize(closedPositions) + 1);
+      int lastIndex = ArraySize(closedPositions) - 1;
+            
+      closedPositions[lastIndex].order_id = ticket;
+      closedPositions[lastIndex].symbol = symbol;
+      closedPositions[lastIndex].volume = PositionGetDouble(POSITION_VOLUME);
+      closedPositions[lastIndex].entry_price = PositionGetDouble(POSITION_PRICE_OPEN);
+      closedPositions[lastIndex].order_type = (closeType == POSITION_TYPE_SELL) ? "SELL" : "BUY";
+            
+      closedCount++;
+    } else {
+      Print("❌ Failed to close position: ", ticket, 
+                " Error: ", trade.ResultRetcode(), " ", trade.ResultRetcodeDescription());
+    }
+  }
+  // Process closed positions
+  if (closedCount > 0) {
+    // Select deals from last 30 days
+    datetime startTime = TimeCurrent() - (30 * 86400);
+    HistorySelect(startTime, TimeCurrent());
+    // Iterate through closed positions
+    for (int i = 0; i < ArraySize(closedPositions); i++) {
+      // Find corresponding deal in history
+      for (int j = HistoryDealsTotal() - 1; j >= 0; j--) {
+        ulong dealTicket = HistoryDealGetTicket(j);
+                
+        if (HistoryDealGetInteger(dealTicket, DEAL_POSITION_ID) == closedPositions[i].order_id) {
+          // Populate additional details
+          closedPositions[i].exit_price = HistoryDealGetDouble(dealTicket, DEAL_PRICE);
+          closedPositions[i].profit = HistoryDealGetDouble(dealTicket, DEAL_PROFIT);
+          closedPositions[i].created_at = (datetime)HistoryDealGetInteger(dealTicket, DEAL_TIME);
+                    
+          // Send order to database
+          SendOrderToDatabase(closedPositions[i]);
+                    
+          Print("✅ Closed order sent to database: ", closedPositions[i].order_id);
+          break;
+        }
+      }
+    }
+  } else {
+    Print("⚠️ No positions found to close for symbol: ", symbol);
+  }
+}
+
+void SendOrderToDatabase(ClosedPosition &position)
+{
+    // Validate input
+    if (position.order_id == 0) {
+        Print("❌ Invalid position data");
+        return;
+    }
+
+    // Ensure global variables are defined (portfolio_id, model_id, token)
+    string portfolioId = (portfolio_id == "") ? "DEFAULT" : portfolio_id;
+    string modelId = (expert_id == "") ? "DEFAULT_MODEL" : expert_id;
+    string authToken = (token == "") ? "NONE" : token;
+
+    // Construct JSON payload with error handling
+    string jsonData = StringFormat(
+        "{\"type\":\"order\", \"order_id\":%lu, \"portfolio_id\":\"%s\", \"model_id\":\"%s\", \"order_type\":\"%s\", \"symbol\":\"%s\", \"profit\":%.2f, \"volume\":%.2f, \"entry_price\":%.5f, \"exit_price\":%.5f, \"token\":\"%s\", \"created_at\":%d}",
+        position.order_id, 
+        portfolioId, 
+        modelId, 
+        position.order_type, 
+        position.symbol, 
+        position.profit, 
+        position.volume, 
+        position.entry_price, 
+        position.exit_price, 
+        authToken, 
+        position.created_at
+    );
+
+    // ZeroMQ message sending with error handling
+    ZmqMsg requestMsg(jsonData);
+    
+    if (ack_socket.send(requestMsg, ZMQ_DONTWAIT)) {
+        Print("✅ Order data sent successfully: ", position.order_id);
+    } else {
+        int errorCode = GetLastError();
+        Print("❌ Failed to send order data. Error Code: ", errorCode);
+    }
 }

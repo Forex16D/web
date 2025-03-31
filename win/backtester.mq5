@@ -68,6 +68,7 @@ int OnInit()
 
 void OnTick()
 {
+
   datetime current_bar_time = iTime(Symbol(), timeframe, 0);
 
   if (current_bar_time != last_bar_time)
@@ -112,7 +113,7 @@ string getLastNBarOHLC(int N, string symbol)
 void sendData()
 {
   string ohlc_data = getLastNBarOHLC(109, Symbol());
-  string json_data = StringFormat("{\"type\":\"backtest\", \"portfolio_id\":\"%s\", \"model_id\":\"%s\", \"is_expert\":\"%s\", \"market_data\":\"%s\"}", "b58da0de-08f8-47bc-89df-1d98958cffed", model_id, "false", ohlc_data);
+  string json_data = StringFormat("{\"type\":\"backtest\", \"portfolio_id\":\"%s\", \"model_id\":\"%s\", \"is_expert\":\"%s\", \"market_data\":\"%s\"}", "b58da0de-08f8-47bc-89df-1d98958cffed", model_id, "true", ohlc_data);
 
   // Send the data via ZeroMQ
   ZmqMsg request_msg(json_data);
@@ -145,8 +146,6 @@ void sendData()
     ExecuteCloseOrder(action, Symbol());
     ExecuteTrade(action, Symbol());
   }
-  else
-    return;
 }
 
 void OnDeinit(const int reason)
