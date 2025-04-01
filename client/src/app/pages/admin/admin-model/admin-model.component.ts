@@ -19,6 +19,7 @@ import { Observable, Subject } from 'rxjs';
 import { DialogModule } from 'primeng/dialog';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { DropdownModule } from 'primeng/dropdown';
 
 @Component({
   selector: 'app-admin-model',
@@ -38,6 +39,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
     ReactiveFormsModule,
     FormsModule,
     ConfirmDialogModule,
+    DropdownModule,
   ],
   templateUrl: './admin-model.component.html',
   styleUrl: './admin-model.component.css'
@@ -61,12 +63,17 @@ export class AdminModelComponent implements OnInit {
   
   searchQuery: string = '';
   searchSubject = new Subject<string>();
+  autoTrainOptions = [
+    {label: "Yes", value: true}, 
+    {label: "No", value: false}
+  ]
 
   modelEditForm = new FormGroup({
     model_id: new FormControl('', [Validators.required]),
     name: new FormControl('', [Validators.required, Validators.minLength(1), Validators.maxLength(20)]),
     symbol: new FormControl(''),
     commission: new FormControl('', [Validators.required, Validators.pattern('^[0-9]+(\\.[0-9]+)?$')]),
+    auto_train: new FormControl(false)
   });
 
   constructor(
@@ -300,7 +307,8 @@ export class AdminModelComponent implements OnInit {
       model_id: model.model_id.toString(),
       name: model.name,
       symbol: model.symbol || '',
-      commission: model.commission?.toString() || ''
+      commission: model.commission?.toString() || '',
+      auto_train: model.auto_train
     });
 
     this.modelEditForm.get('model_id')?.disable();
@@ -351,9 +359,7 @@ export class AdminModelComponent implements OnInit {
       acceptButtonStyleClass: 'p-button-success',
       rejectButtonStyleClass: 'p-button-secondary p-button-text',
       accept: () => {
-        const date = new Date(Date.now());
-        const formatted_date = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`;
-        const body = { "start_date": formatted_date };
+        const body = { "auto_train": model.auto_train };
         model.running = true;
         this.apiService.post(`v1/models/${model.model_id}/train`, body).subscribe({
           next: (response) => {

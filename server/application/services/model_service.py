@@ -11,6 +11,7 @@ import uuid
 import time
 import json
 import os
+from tvDatafeed import TvDatafeed, Interval
 from application.helpers.server_log_helper import ServerLogHelper
 
 class ModelService:
@@ -224,6 +225,7 @@ class ModelService:
     name = request.json.get("name")
     commission = request.json.get("commission")
     symbol = request.json.get("symbol").upper()
+    auto_train = request.json.get("auto_train")
     
     if not name or not commission:
       raise ValueError("Missing required fields.")
@@ -231,12 +233,11 @@ class ModelService:
     conn = self.db_pool.get_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
 
-
     try:
       cursor.execute(""" UPDATE models 
-        SET name = %s, commission = %s, symbol = %s, updated_at = NOW()
+        SET name = %s, commission = %s, symbol = %s, auto_train = %s, updated_at = NOW()
         WHERE model_id = %s 
-      """, (name, commission, symbol, model_id))
+      """, (name, commission, symbol, auto_train, model_id))
       conn.commit()
       return {"message": "Model updated successfully!"}
     except Exception as e:
@@ -247,22 +248,47 @@ class ModelService:
       cursor.close()
       self.db_pool.release_connection(conn)
 
-  def train_model(self, model_id):
-    try:
-      path = Path(f"./models/{model_id}")
-      if not path.exists():
-        raise ValueError("Model directory not found.")
+  def auto_train_all_models(self):
+    conn = self.db_pool.get_connection()
 
-      module_path = Path(f"models.{model_id}.trainer")
+    try:
+      cursor = conn.cursor(cursor_factory=RealDictCursor)
+      cursor.execute("SELECT model_id FROM models WHERE auto_train = true")
+      models = cursor.fetchall()
+      cursor.close()
+
+      if not models:
+        return {"message": "No models found for auto-training."}
+
+      for model in models:
+        model_id = model["model_id"]
+        self.train_model(model_id, auto=True)
+
+      return {"message": f"Auto-training started for {len(models)} models."}
+
+    except Exception as e:
+      raise RuntimeError(f"Something went wrong: {str(e)}")
+    finally:
+      self.db_pool.release_connection(conn)
+
+
+  def train_model(self, model_id, auto=False):
+    try:
+      module_path = f"models.{model_id}.trainer"
 
       # Load model and train
-      subprocess.run(["python3", str(module_path)], check=True)
+      if (auto):
+        self.evaluation_process = subprocess.Popen(["python3", "-m", module_path, "auto"])
+      else:
+        self.evaluation_process = subprocess.Popen(["python3", "-m", module_path])
+        
+      self.current_evaluation_model = model_id
 
       return {"message": "Model trained successfully!"}
     except Exception as e:
       raise RuntimeError(f"Something went wrong: {str(e)}")
 
-  def train_model(self, model_id, start_date, bars=100000):
+  def train_model_database(self, model_id, start_date, bars=100000):
     try:
       path = Path(f"./models/{model_id}")
       if not path.exists():

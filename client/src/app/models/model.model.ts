@@ -11,5 +11,6 @@ export interface Model {
   file_path: string
   monthly_pnl: number | null
   winrate: number | null
+  auto_train: boolean
   weekly_profits: WeeklyProfit[]
 }

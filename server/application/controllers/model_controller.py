@@ -72,9 +72,12 @@ class ModelController:
   def train_model(self, model_id, request): 
     try:
       data = request.get_json()
-      start_date = data.get("start_date")
-      bars = data.get("bars")
-      response = self.model_service.train_model(model_id, start_date, bars)
+      auto = data.get("auto_train")
+      auto = False
+      if auto == "True":
+        auto = True
+
+      response = self.model_service.train_model(model_id, auto)
       return jsonify(response), 200
     except Exception as e:
       ServerLogHelper.error(str(e))

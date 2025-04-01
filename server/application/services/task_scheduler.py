@@ -20,10 +20,14 @@ def check_unpaid_bills():
 def pay_expert():
   container.bill_service.pay_all_expert()
 
+def auto_train_models():
+  container.model_service.auto_train_all_models()
+
 def run_scheduler():
-  schedule.every().day.at("00:00").do(pay_expert)
-  schedule.every().day.at("00:00").do(monthly_billing_task)
-  schedule.every().day.at("00:00").do(check_unpaid_bills)
+  schedule.every().day.at("07:00").do(pay_expert)
+  schedule.every().day.at("07:0").do(monthly_billing_task)
+  schedule.every().day.at("07:00").do(check_unpaid_bills)
+  schedule.every().saturday.at("05:00").do(auto_train_models)
 
   while True:
     schedule.run_pending()
