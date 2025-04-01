@@ -10,6 +10,12 @@ from ta.momentum import RSIIndicator
 from ta.volatility import BollingerBands
 from pathlib import Path
 from datetime import datetime
+from tvDatafeed import TvDatafeed, Interval
+from dotenv import load_dotenv
+import sys
+import os
+
+load_dotenv()
 
 class StockTradingEnv(gym.Env):
   def __init__(self, data, window_size=60, initial_balance=10000, volume=100):
@@ -104,10 +110,26 @@ class StockTradingEnv(gym.Env):
     self.positions = []
     return self.data.iloc[self.current_step - self.window_size:self.current_step].values, {}
 
-def load_data_from_temp_file(temp_path):
-  with open(temp_path, "r", encoding="utf-8") as f:
-    data = json.load(f)
-  return pd.DataFrame(data)
+def get_new_data():
+  username = os.getenv("TV_EMAIL")
+  password = os.getenv("TV_PASSWORD")
+
+  tv = TvDatafeed(username, password)
+  symbol = "EURUSD"
+  exchange = "OANDA"  
+  interval = Interval.in_1_hour
+
+  df = tv.get_hist(symbol=symbol, exchange=exchange, interval=interval, n_bars=6000)
+
+  if df is None or df.empty:
+    print("Error: No data received from TradingView")
+    return None  # This causes problems
+
+  df.reset_index(drop=True, inplace=True)
+  df.rename(columns={"volume": "tick_volume"}, inplace=True)
+  df = df.drop(columns=['symbol'])
+
+  return df
 
 def load_data_from_csv(csv_path):
   df = pd.read_csv(csv_path, header=None)
@@ -146,20 +168,20 @@ def make_env():
   
 if __name__ == '__main__':
 
-  # if len(sys.argv) != 2:
-  #   print("Usage: python3 train_model.py <temp_file_path>")
-  #   sys.exit(1)
+  option = None
 
-  # temp_file_path = sys.argv[1]
+  if len(sys.argv) > 1:
+    option = sys.argv[1]
 
-  # data = load_data_from_temp_file(temp_file_path)
+  if (option == "auto"):
+    data = get_new_data()
+  else:
+    parent_dir = Path(__file__).parent.parent.parent
+    csv_path = parent_dir / "train-data" / "eurusd.csv"
+    data = load_data_from_csv(csv_path)
 
-  parent_dir = Path(__file__).parent.parent.parent 
-
-  csv_path = parent_dir / "train-data" / "usdjpy.csv"
-
-  data = load_data_from_csv(csv_path)
   df = create_indicator(data)
+
   # env = DummyVecEnv([lambda: StockTradingEnv(df[:149002])])
   env = SubprocVecEnv([make_env for _ in range(5)])
 

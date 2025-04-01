@@ -73,9 +73,6 @@ class ModelController:
     try:
       data = request.get_json()
       auto = data.get("auto_train")
-      auto = False
-      if auto == "True":
-        auto = True
 
       response = self.model_service.train_model(model_id, auto)
       return jsonify(response), 200

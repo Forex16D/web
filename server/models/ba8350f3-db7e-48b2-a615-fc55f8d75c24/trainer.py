@@ -1,5 +1,4 @@
 from flask import json # type: ignore
-import sys
 import gymnasium as gym
 import numpy as np
 import pandas as pd
@@ -12,6 +11,7 @@ from ta.volatility import BollingerBands
 from pathlib import Path
 from tvDatafeed import TvDatafeed, Interval
 from dotenv import load_dotenv
+import sys
 import os
 
 load_dotenv()
@@ -106,12 +106,14 @@ def get_new_data():
 
   if df is None or df.empty:
     print("Error: No data received from TradingView")
-    return None
+    return None  # This causes problems
 
   df.reset_index(drop=True, inplace=True)
   df.rename(columns={"volume": "tick_volume"}, inplace=True)
   df = df.drop(columns=['symbol'])
-  print(df)
+
+  return df
+
 
 def load_data_from_csv(csv_path):
   df = pd.read_csv(csv_path, header=None)
@@ -145,18 +147,10 @@ def create_indicator(df):
 
     return df[['EMA_12', 'EMA_50', 'MACD', 'RSI', 'BB_Upper', 'BB_Lower', 'ADX', 'ADX_Positive', 'ADX_Negative',  'open', 'high', 'low', 'close', 'tick_volume']]
 
-# def make_env():
-#   return StockTradingEnv(df[:149002])
+def make_env():
+  return StockTradingEnv(df[:149002])
 
 if __name__ == '__main__':
-
-  # if len(sys.argv) != 2:
-  #   print("Usage: python3 train_model.py <temp_file_path>")
-  #   sys.exit(1)
-
-  # temp_file_path = sys.argv[1]
-
-  # data = load_data_from_temp_file(temp_file_path)
 
   option = None
 
@@ -170,8 +164,8 @@ if __name__ == '__main__':
     csv_path = parent_dir / "train-data" / "eurusd.csv"
     data = load_data_from_csv(csv_path)
 
-  # df = create_indicator(data)
-  # print(df)
+  df = create_indicator(data)
+
   # # env = DummyVecEnv([lambda: StockTradingEnv(df[:149002])])
   # env = SubprocVecEnv([make_env for _ in range(5)])
 
