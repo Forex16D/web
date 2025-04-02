@@ -3,7 +3,6 @@ import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { ChartModule } from 'primeng/chart';
 import { CurrencyPipe, NgClass, NgIf } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { Expert } from '../../models/expert.model';
 import { DialogModule } from 'primeng/dialog';
 import { DropdownModule } from 'primeng/dropdown';
@@ -19,7 +18,6 @@ import { MessageService } from 'primeng/api';
     TagModule,
     ChartModule,
     NgClass,
-    RouterLink,
     NgIf,
     DialogModule,
     DropdownModule,

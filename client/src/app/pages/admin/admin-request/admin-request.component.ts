@@ -40,7 +40,6 @@ interface WithdrawResponse {
     FormsModule,
     NgIf,
     ConfirmDialogModule,
-    DatePipe
   ],
   templateUrl: './admin-request.component.html',
   styleUrls: ['./admin-request.component.css'],

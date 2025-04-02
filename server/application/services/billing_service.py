@@ -308,6 +308,23 @@ class BillingService:
       cursor.close()
       self.db_pool.release_connection(conn)
 
+  def get_orders(self, bill_id):
+    try:
+      conn = self.db_pool.get_connection()
+      cursor = conn.cursor(cursor_factory=RealDictCursor)
+      
+      cursor.execute("""
+        SELECT *
+        FROM orders
+        WHERE bill_id = %s 
+      """, (bill_id))
+      orders = cursor.fetchall()
+
+      return {"orders": orders}
+    finally:
+      cursor.close()
+      self.db_pool.release_connection(conn)
+    
   def pay_bill(self, user_id, bill_id, image_file, notes):
     conn = None
     try:

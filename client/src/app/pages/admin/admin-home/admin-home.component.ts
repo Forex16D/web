@@ -13,7 +13,7 @@ import {
 import { CanvasRenderer } from 'echarts/renderers';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
-import { DecimalPipe, NgClass, NgIf } from '@angular/common';
+import { DecimalPipe, NgIf } from '@angular/common';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TableModule } from 'primeng/table';
 import { ApiService } from '../../../core/services/api.service';
@@ -42,7 +42,6 @@ echarts.use([
     SkeletonModule,
     ProgressSpinnerModule,
     TableModule,
-    NgClass,
     NgIf,
   ],
 })

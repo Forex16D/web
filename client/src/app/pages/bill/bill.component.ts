@@ -1,6 +1,6 @@
-import { DatePipe } from '@angular/common';
+import { DatePipe, NgClass, NgIf, SlicePipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { DatePickerModule } from 'primeng/datepicker';
@@ -15,6 +15,7 @@ import { ToolbarModule } from 'primeng/toolbar';
 import { TextareaModule } from 'primeng/textarea';
 import { ApiService } from '../../core/services/api.service';
 import { TooltipModule } from 'primeng/tooltip';
+import { response } from 'express';
 
 interface Bill {
   bill_id: number;
@@ -28,6 +29,19 @@ interface Bill {
   total_profit?: number;
   model_id?: string;
   portfolio_id?: string;
+}
+
+interface Order {
+  order_id: string;
+  portfolio_id: string;
+  model_id: string;
+  created_at: Date;
+  order_type: string;
+  symbol: string;
+  profit: number;
+  volume: number;
+  entry_price: number;
+  exit_price: number;
 }
 
 @Component({
@@ -49,7 +63,10 @@ interface Bill {
     DatePickerModule,
     TextareaModule,
     TooltipModule,
-  ]
+    SlicePipe,
+    NgClass,
+    NgIf,
+  ],
 })
 export class BillComponent implements OnInit {
   bills: Bill[] = [];
@@ -59,6 +76,10 @@ export class BillComponent implements OnInit {
   currentBillId: number = 0;
   currentMonthTotal: number = 0;
   pendingPayments: number = 0;
+
+  selectedBill: any = null;
+  relatedOrders: Order[] = [];
+  displayOrdersDialog: boolean = false;
 
   statusOptions = [
     { label: 'Pending', value: 'Pending' },
@@ -90,7 +111,7 @@ export class BillComponent implements OnInit {
 
   loadBills(): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.apiService.get('/v1/bills').subscribe({
+      this.apiService.get('v1/bills').subscribe({
         next: (response: any) => {
           this.bills = response.bills;
           resolve(); // Resolves the Promise after loading bills
@@ -101,6 +122,24 @@ export class BillComponent implements OnInit {
         }
       });
     });
+  }
+
+  showDetails(bill: any) {
+    this.selectedBill = bill;
+    this.loadRelatedOrders(bill.bill_id);
+    this.displayOrdersDialog = true;
+  }
+
+  loadRelatedOrders(billId: number) {
+    this.apiService.get(`v1/bills/${billId}/orders`).subscribe({
+      next: (response: any) => {
+        this.relatedOrders = response.orders;
+        console.log(this.relatedOrders)
+      },
+      error: (error) => {
+        console.error(error);
+      }
+    })
   }
 
   getStatusSeverity(status: string): "success" | "info" | "warn" | "danger" | "secondary" | "contrast" | undefined {
@@ -150,10 +189,6 @@ export class BillComponent implements OnInit {
         window.location.href = `/payment?bill_id=${bill.bill_id}`;
       }
     });
-  }
-
-  showDetails(bill: Bill): void {
-    
   }
 
   filterBills(event: any): void {

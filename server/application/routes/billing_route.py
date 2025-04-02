@@ -16,6 +16,11 @@ def get_bills(current_user_id):
 def get_bill(current_user_id, bill_id):
   return bill_controller.get_bill(current_user_id, bill_id)
 
+@bill_routes.route("/v1/bills/<bill_id>/orders", methods=["GET"])
+@token_required
+def get_orders(current_user_id, bill_id):
+  return bill_controller.get_orders(bill_id)
+
 @bill_routes.route("/v1/payments", methods=["POST"])
 @token_required
 def pay_bill(current_user_id):

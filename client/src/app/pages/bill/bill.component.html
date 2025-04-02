@@ -1,4 +1,4 @@
-<div class="flex flex-1 flex-col items-center w-full max-w-7xl mx-auto px-4">
+<div class="flex flex-1 flex-col items-center w-full mx-auto px-4">
   <div class="w-full mb-2">
     <h1 class="text-headline4 font-medium"><i class="pi pi-receipt text-green-400" style="font-size: 32px"></i> Bills</h1>
 
@@ -80,3 +80,89 @@
     </p-table>
   </div>
 </div>
+
+<!-- Orders Dialog -->
+<p-dialog 
+  [(visible)]="displayOrdersDialog" 
+  [style]="{width: '90%', maxWidth: '1200px'}" 
+  [modal]="true" 
+  [draggable]="false" 
+  [resizable]="false"
+  header="Bill Details">
+  
+  <div *ngIf="selectedBill" class="mb-4 p-4 bg-gray-800 rounded-lg">
+    <h2 class="text-xl font-medium text-white mb-2">Bill #{{ selectedBill.bill_id }}</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="flex flex-col">
+        <span class="text-gray-300">Created:</span>
+        <span class="font-medium text-white">{{ selectedBill.created_at | date:'MMM dd, yyyy' }}</span>
+      </div>
+      <div class="flex flex-col">
+        <span class="text-gray-300">Due Date:</span>
+        <span class="font-medium text-white">{{ selectedBill.due_date | date:'MMM dd, yyyy' }}</span>
+      </div>
+      <div class="flex flex-col">
+        <span class="text-gray-300">Amount:</span>
+        <span class="font-medium text-white">${{ selectedBill.net_amount_usd }}</span>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="text-lg font-medium mb-2">Associated Orders</h3>
+  
+  <!-- Orders Table -->
+  <p-table 
+    [value]="relatedOrders" 
+    [paginator]="true" 
+    [rows]="5" 
+    [rowsPerPageOptions]="[5,10,20]"
+    styleClass="p-datatable-sm p-datatable-gridlines p-datatable-striped"
+    [tableStyle]="{'min-width': '50rem'}"
+    [scrollable]="true" 
+    paginatorDropdownAppendTo="body"
+    scrollHeight="400px">
+    
+    <ng-template pTemplate="header">
+      <tr>
+        <th pSortableColumn="order_id" style="min-width: 100px">Order ID <p-sortIcon field="order_id"></p-sortIcon></th>
+        <th pSortableColumn="created_at" style="min-width: 120px">Created At <p-sortIcon field="created_at"></p-sortIcon></th>
+        <th pSortableColumn="symbol" style="min-width: 100px">Symbol <p-sortIcon field="symbol"></p-sortIcon></th>
+        <th pSortableColumn="order_type" style="min-width: 100px">Type <p-sortIcon field="order_type"></p-sortIcon></th>
+        <th pSortableColumn="volume" style="min-width: 80px">Volume <p-sortIcon field="volume"></p-sortIcon></th>
+        <th pSortableColumn="entry_price" style="min-width: 100px">Entry Price <p-sortIcon field="entry_price"></p-sortIcon></th>
+        <th pSortableColumn="exit_price" style="min-width: 100px">Exit Price <p-sortIcon field="exit_price"></p-sortIcon></th>
+        <th pSortableColumn="profit" style="min-width: 100px">Profit <p-sortIcon field="profit"></p-sortIcon></th>
+      </tr>
+    </ng-template>
+    
+    <ng-template pTemplate="body" let-order>
+      <tr>
+        <td>{{ order.order_id?.toString().slice(0, 8) }}...</td>
+        <td>{{ order.created_at | date:'short' }}</td>
+        <td>{{ order.symbol }}</td>
+        <td>
+          <p-tag 
+            [severity]="order.order_type.toLowerCase() === 'buy' ? 'success' : 'danger'" 
+            [value]="order.order_type">
+          </p-tag>
+        </td>
+        <td>{{ order.volume }}</td>
+        <td>${{ order.entry_price.toFixed(2) }}</td>
+        <td>${{ order.exit_price ? order.exit_price.toFixed(2) : '-' }}</td>
+        <td [ngClass]="{'text-green-500': order.profit > 0, 'text-red-500': order.profit < 0}">
+          ${{ order.profit.toFixed(2) }}
+        </td>
+      </tr>
+    </ng-template>
+    
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="8" class="text-center py-4">No orders associated with this bill.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <ng-template pTemplate="footer">
+    <button pButton label="Close" icon="pi pi-times" (click)="displayOrdersDialog = false" class="p-button-outlined"></button>
+  </ng-template>
+</p-dialog>
