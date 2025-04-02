@@ -219,7 +219,6 @@ class BillingService:
       first_day = now.replace(day=1).strftime('%Y-%m-%d')
       last_day = now.replace(day=calendar.monthrange(now.year, now.month)[1]).strftime('%Y-%m-%d')
 
-      # First, fetch the total profit
       cursor.execute("""
         SELECT COALESCE(SUM(orders.profit * portfolios.commission), 0) AS total_profit
         FROM orders
@@ -231,6 +230,9 @@ class BillingService:
       total_profit_result = cursor.fetchone()
       total_profit = total_profit_result['total_profit'] if total_profit_result else 0
       
+      if total_profit <= 0:
+        return {"total_profit": 0, "message": "No positive profit to distribute."}
+      
       if total_profit > 20000:
         total_profit *= 0.95
       elif total_profit > 5000:
@@ -238,7 +240,7 @@ class BillingService:
       else:
         total_profit *= 0.90
       
-      # Now, update the user's balance
+      # Update user's balance
       cursor.execute("""
         UPDATE users 
         SET balance = balance + %s
@@ -247,10 +249,9 @@ class BillingService:
 
       conn.commit()
 
-      return {"total_profit": total_profit}  # Return the calculated profit
+      return {"total_profit": total_profit}
 
     except Exception as e:
-      # Handle any potential errors
       conn.rollback()  # Rollback in case of error
       return {"error": str(e)}
 

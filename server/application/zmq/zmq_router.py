@@ -50,7 +50,7 @@ def load_model(model_path):
       print(f"Model loaded from {model_path}")
     except Exception as e:
       print(f"Error loading model from {model_path}: {e}")
-      raise
+      return
 
   return MODEL_CACHE[model_path_str]
 
