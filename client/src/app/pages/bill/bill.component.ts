@@ -14,6 +14,7 @@ import { TagModule } from 'primeng/tag';
 import { ToolbarModule } from 'primeng/toolbar';
 import { TextareaModule } from 'primeng/textarea';
 import { ApiService } from '../../core/services/api.service';
+import { TooltipModule } from 'primeng/tooltip';
 
 interface Bill {
   bill_id: number;
@@ -47,6 +48,7 @@ interface Bill {
     ReactiveFormsModule,
     DatePickerModule,
     TextareaModule,
+    TooltipModule,
   ]
 })
 export class BillComponent implements OnInit {
@@ -148,6 +150,10 @@ export class BillComponent implements OnInit {
         window.location.href = `/payment?bill_id=${bill.bill_id}`;
       }
     });
+  }
+
+  showDetails(bill: Bill): void {
+    
   }
 
   filterBills(event: any): void {

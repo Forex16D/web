@@ -147,16 +147,7 @@ export class PaymentComponent implements OnInit {
       });
       return;
     }
-    
-    if (this.walletBalance < this.amount_usd) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Insufficient Funds',
-        detail: `Your balance ($${this.walletBalance.toFixed(2)}) is lower than the required amount ($${this.amount_usd.toFixed(2)}).`
-      });
-      return;
-    }
-    
+
     if (this.paymentMethod === 'receipt' && !this.receiptImage) {
       this.messageService.add({
         severity: 'error',
@@ -164,7 +155,16 @@ export class PaymentComponent implements OnInit {
         detail: 'Please upload a receipt to proceed with the payment.'
       });
       return;
-    }    
+    } 
+
+    if (this.paymentMethod !== 'receipt' && this.walletBalance < this.amount_usd) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Insufficient Funds',
+        detail: `Your balance ($${this.walletBalance.toFixed(2)}) is lower than the required amount ($${this.amount_usd.toFixed(2)}).`
+      });
+      return;
+    }
 
     this.isSubmitting = true;
     // Create FormData for file upload

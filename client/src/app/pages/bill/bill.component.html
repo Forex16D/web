@@ -62,10 +62,12 @@
             <p-tag [severity]="getStatusSeverity(bill.status)" [value]="bill.status"></p-tag>
           </td>
           <td>
-            <div class="flex gap-2">
+            <div class="flex">
               <button pButton icon="pi pi-credit-card" class="p-button-rounded p-button-text p-button-info p-button-sm"
                 (click)="makePayment(bill)" [disabled]="bill.status.toLowerCase() === 'paid'" 
-                pTooltip="Make Payment" tooltipPosition="top"></button>
+                pTooltip="Payment"></button>
+              <button pButton icon="pi pi-info-circle" class="p-button-rounded p-button-text p-button-info p-button-sm"
+                (click)="showDetails(bill)" pTooltip="Details"></button>
             </div>
           </td>
         </tr>
