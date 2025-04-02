@@ -12,3 +12,4 @@ stable-baselines3[extra]
 gymnasium[box2d]
 torch
 schedule
+requests
