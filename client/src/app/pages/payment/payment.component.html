@@ -9,46 +9,38 @@
         <!-- Payment Method Selection -->
         <div class="border border-gray-700 rounded-lg bg-gray-800 p-4 mb-4">
           <div class="text-sm text-gray-400 uppercase tracking-wider mb-4">Payment Method</div>
-          
+
           <div class="grid grid-cols-2 gap-4">
             <!-- Wallet Payment Option -->
-            <div 
-              (click)="selectPaymentMethod('wallet')"
-              [ngClass]="{
+            <div (click)="selectPaymentMethod('wallet')" [ngClass]="{
                 'border-blue-400': paymentMethod === 'wallet', 
                 'border-gray-700': paymentMethod !== 'wallet'
-              }"
-              class="cursor-pointer border rounded-lg p-4 transition-all duration-200 
+              }" class="cursor-pointer border rounded-lg p-4 transition-all duration-200 
                      hover:border-blue-400 flex flex-col items-center justify-center">
-              <i class="pi pi-wallet text-4xl mb-2" 
-                 [ngClass]="paymentMethod === 'wallet' ? 'text-blue-400' : 'text-gray-500'"></i>
-              <div class="text-sm" 
-                   [ngClass]="paymentMethod === 'wallet' ? 'text-white' : 'text-gray-400'">
+              <i class="pi pi-wallet text-4xl mb-2"
+                [ngClass]="paymentMethod === 'wallet' ? 'text-blue-400' : 'text-gray-500'"></i>
+              <div class="text-sm" [ngClass]="paymentMethod === 'wallet' ? 'text-white' : 'text-gray-400'">
                 Wallet Payment
               </div>
               <div *ngIf="paymentMethod === 'wallet'" class="text-xs text-gray-500 mt-1">
                 Available Balance: ${{ walletBalance.toFixed(2) }}
               </div>
             </div>
-            
+
             <!-- Receipt Upload Option -->
-            <div 
-              (click)="selectPaymentMethod('receipt')"
-              [ngClass]="{
+            <div (click)="selectPaymentMethod('receipt')" [ngClass]="{
                 'border-blue-400': paymentMethod === 'receipt', 
                 'border-gray-700': paymentMethod !== 'receipt'
-              }"
-              class="cursor-pointer border rounded-lg p-4 transition-all duration-200 
+              }" class="cursor-pointer border rounded-lg p-4 transition-all duration-200 
                      hover:border-blue-400 flex flex-col items-center justify-center">
-              <i class="pi pi-image text-4xl mb-2" 
-                 [ngClass]="paymentMethod === 'receipt' ? 'text-blue-400' : 'text-gray-500'"></i>
-              <div class="text-sm" 
-                   [ngClass]="paymentMethod === 'receipt' ? 'text-white' : 'text-gray-400'">
+              <i class="pi pi-image text-4xl mb-2"
+                [ngClass]="paymentMethod === 'receipt' ? 'text-blue-400' : 'text-gray-500'"></i>
+              <div class="text-sm" [ngClass]="paymentMethod === 'receipt' ? 'text-white' : 'text-gray-400'">
                 Upload Receipt
               </div>
             </div>
           </div>
-          
+
           <!-- Wallet Payment Additional Details -->
           <div *ngIf="paymentMethod === 'wallet'" class="mt-4">
             <div class="border-t border-gray-700 pt-4">
@@ -62,32 +54,57 @@
               </div>
               <div class="flex justify-between items-center mt-2">
                 <span class="text-sm text-gray-400">Remaining Balance</span>
-                <span class="text-md font-bold" 
-                      [ngClass]="walletBalance >= amount_usd ? 'text-green-400' : 'text-red-400'">
+                <span class="text-md font-bold"
+                  [ngClass]="walletBalance >= amount_usd ? 'text-green-400' : 'text-red-400'">
                   ${{ (walletBalance - amount_usd).toFixed(2) }}
                 </span>
               </div>
             </div>
           </div>
-          
+
           <!-- Receipt Upload Additional Details -->
           <div *ngIf="paymentMethod === 'receipt'" class="mt-4">
+            <!-- Bank Account Information Section -->
+            <div *ngIf="paymentMethod === 'receipt'" class="border border-gray-700 rounded-lg bg-gray-800 p-4 mb-4">
+              <div class="text-sm text-gray-400 uppercase tracking-wider mb-2">Payment Recipient</div>
+
+              <div class="flex flex-col">
+                <!-- Bank Logo and Name -->
+                <div class="flex items-center mb-3">
+                  <i class="pi pi-building text-blue-400 text-xl mr-2"></i>
+                  <h3 class="text-lg font-medium text-white">KasikornThai Bank</h3>
+                </div>
+
+                <!-- Account Number with Copy Button -->
+                <div class="flex items-center justify-between bg-gray-900 rounded-md p-3 mb-3">
+                  <div>
+                    <div class="text-xs text-gray-500">Account Number</div>
+                    <div class="text-xl font-mono font-bold text-white tracking-wider">128-8-17567-1</div>
+                  </div>
+                </div>
+
+                <!-- Account Name -->
+                <div class="bg-gray-900 rounded-md p-3">
+                  <div class="text-xs text-gray-500">Account Name</div>
+                  <div class="text-md text-white">Nathanon Supasethiran</div>
+                </div>
+              </div>
+            </div>
             <div class="border-t border-gray-700 pt-4">
-              <p-fileUpload #fileUpload mode="basic" chooseLabel="Select Receipt Image" 
-                accept="image/*" [maxFileSize]="5000000" [auto]="false" 
-                (onSelect)="onFileSelect($event)" [showUploadButton]="false" [showCancelButton]="false"
-                *ngIf="!imagePreview">
+              <p-fileUpload #fileUpload mode="basic" chooseLabel="Select Receipt Image" accept="image/*"
+                [maxFileSize]="5000000" [auto]="false" (onSelect)="onFileSelect($event)" [showUploadButton]="false"
+                [showCancelButton]="false" *ngIf="!imagePreview">
               </p-fileUpload>
-              
+
               <!-- Image Preview -->
               <div *ngIf="imagePreview" class="relative">
-                <p-image [src]="imagePreview" [preview]="true" [alt]="'Receipt'" 
-                         [width]="'100%'" [height]="'auto'"></p-image>
-                <button pButton icon="pi pi-times" 
-                        class="p-button-rounded p-button-danger p-button-sm absolute top-2 right-2"
-                        (click)="clearImage()"></button>
+                <p-image [src]="imagePreview" [preview]="true" [alt]="'Receipt'" [width]="'100%'"
+                  [height]="'auto'"></p-image>
+                <button pButton icon="pi pi-times"
+                  class="p-button-rounded p-button-danger p-button-sm absolute top-2 right-2"
+                  (click)="clearImage()"></button>
               </div>
-              
+
               <div class="text-xs text-gray-500 mt-2">
                 <p>Upload a clear image of your payment receipt.</p>
                 <p>Max file size: 5MB. Supported formats: JPG, PNG.</p>
@@ -100,10 +117,7 @@
           <!-- Payment Details -->
           <div class="w-full">
             <h2 class="text-xl font-medium mb-4">Payment Details</h2>
-            <h1 class="text-xl font-medium mb-4">PAY HERE</h1>
-            <h2 class="text-xl font-medium mb-4">KasikornThai</h2>
-            <h2 class="text-xl font-medium mb-4">128-8-17567-1</h2>
-            
+
             <!-- Payment Type -->
             <div class="mb-4">
               <span class="text-lg font-medium">
@@ -167,8 +181,7 @@
         <!-- Action Buttons -->
         <div class="flex justify-end gap-3 mt-6">
           <p-button label="Cancel" icon="pi pi-times" severity="secondary" (click)="cancelPayment()"></p-button>
-          <p-button label="Submit Payment" icon="pi pi-check" (click)="submitPayment()"
-            [disabled]="isSubmitting || paymentForm.invalid || 
+          <p-button label="Submit Payment" icon="pi pi-check" (click)="submitPayment()" [disabled]="isSubmitting || paymentForm.invalid || 
                        (paymentMethod === 'receipt' && !imagePreview) || 
                        (paymentMethod === 'wallet' && walletBalance < amount_usd)">
             <span *ngIf="isSubmitting" class="ml-2">

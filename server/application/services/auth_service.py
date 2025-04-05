@@ -15,10 +15,7 @@ class AuthService:
     self.db_pool = db_pool
     self.hasher = hasher
 
-  def login(self, data):
-    email = data.get("email").lower()
-    password = data.get("password")
-    remember = data.get("remember")
+  def login(self, email, password, remember):
     
     if not email or not password:
       raise ValueError("Missing required information.")
@@ -51,11 +48,8 @@ class AuthService:
       cursor.close()
       self.db_pool.release_connection(conn)
 
-  def register(self, data): 
-    email = data.get("email").lower()
-    password = data.get("password")
-    confirm_password = data.get("confirmPassword")
-    
+  def register(self, email, password, confirm_password): 
+
     if not email or not password or not confirm_password:
       raise ValueError("Missing required information.")
     

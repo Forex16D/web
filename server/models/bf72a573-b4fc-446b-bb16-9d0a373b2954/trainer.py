@@ -35,60 +35,73 @@ class StockTradingEnv(gym.Env):
   def step(self, action):
     current_price = self.data['close'].iloc[self.current_step]
     reward = 0
+    realized_reward = 0
+    holding_reward = 0
 
     current_drawdown = (self.initial_balance - self.balance) / self.initial_balance
     if current_drawdown > self.max_drawdown_pct:
-        done = True
-        reward
+      done = True
+      reward
+      # Early exit if drawdown is exceeded
+      return None, reward, True, False, {}
 
-        # Close existing short positions & open long
-    if action == 1 and self.balance >= current_price * self.volume:  
+    if action == 1 and self.balance >= current_price * self.volume:
       new_positions = []
       for position in self.positions:
         if position[0] == "sell":  # Closing short
           profit = (position[1] - current_price) * self.volume
-          self.balance += profit
+          
+          entry_price = position[1]
+          cost_basis = entry_price * self.volume
+          profit = (entry_price - current_price) * self.volume
+          self.balance += cost_basis + profit
+
           price_data = self.data['close'].iloc[self.current_step-50:self.current_step]
           returns = price_data.pct_change().dropna()
           vol = max(0.001, returns.std())
-          reward += profit / (vol * 100)
+          r = profit / (vol * 100)
+          realized_reward += r
         else:
-          new_positions.append(position)  # Keep other positions
+          new_positions.append(position)
       self.positions = new_positions
-      
-      # Open a long position
+
       self.positions.append(["buy", current_price, self.current_step])
       self.balance -= current_price * self.volume
 
-    # Close existing long positions & open short
-    elif action == 2 and self.balance >= current_price * self.volume:  
+    elif action == 2 and self.balance >= current_price * self.volume:
       new_positions = []
       for position in self.positions:
         if position[0] == "buy":  # Closing long
           profit = (current_price - position[1]) * self.volume
-          self.balance += profit
+
+          entry_price = position[1]
+          cost_basis = entry_price * self.volume
+          profit = (current_price - entry_price) * self.volume
+          self.balance += cost_basis + profit
+
           price_data = self.data['close'].iloc[self.current_step-50:self.current_step]
           returns = price_data.pct_change().dropna()
           vol = max(0.001, returns.std())
-          reward += profit / (vol * 100)
+          r = profit / (vol * 100)
+          realized_reward += r
         else:
           new_positions.append(position)
       self.positions = new_positions
-      
-      # Open a short position
+
       self.positions.append(["sell", current_price, self.current_step])
       self.balance -= current_price * self.volume
 
-    # Hold & Calculate Unrealized Profit
-    else:
-      if self.positions:
-        unrealized_profit = sum(
-          ((current_price - p[1]) * self.volume if p[0] == "buy" 
-            else (p[1] - current_price) * self.volume)
-          for p in self.positions
-        )
-        position_value = sum(p[1] * self.volume for p in self.positions)
-        reward = np.clip(unrealized_profit / (position_value * 0.1), -1, 1)
+    if self.positions:
+      unrealized_profit = sum(
+        ((current_price - p[1]) * self.volume if p[0] == "buy" 
+          else (p[1] - current_price) * self.volume)
+        for p in self.positions
+      )
+      position_value = sum(p[1] * self.volume for p in self.positions)
+      holding_reward = np.clip(unrealized_profit / (position_value * 0.1), -1, 1)
+
+    # Combine all rewards
+    reward = realized_reward + holding_reward
 
     # Move to the next step
     self.current_step += 1
@@ -123,7 +136,7 @@ def get_new_data():
 
   if df is None or df.empty:
     print("Error: No data received from TradingView")
-    return None  # This causes problems
+    return None
 
   df.reset_index(drop=True, inplace=True)
   df.rename(columns={"volume": "tick_volume"}, inplace=True)
@@ -183,42 +196,24 @@ if __name__ == '__main__':
   df = create_indicator(data)
 
   # env = DummyVecEnv([lambda: StockTradingEnv(df[:149002])])
-  env = SubprocVecEnv([make_env for _ in range(5)])
+  env = SubprocVecEnv([make_env for _ in range(12)])
 
-  # policy_kwargs = dict(net_arch=[128, 64, 32, 32])
-  # model = PPO('MlpPolicy',
-  #               env, 
-  #               verbose=1,
-  #               learning_rate=5e-5,  
-  #               gamma=0.975, 
-  #               gae_lambda=0.935,
-  #               ent_coef=0.03,
-  #               n_epochs=10,
-  #               # target_kl=0.01,
-  #               # clip_range_vf=0.4,
-  #               vf_coef=0.325,
-  #               clip_range=0.25,  
-  #               batch_size=256,        
-  #               n_steps=4096,    
-  #               policy_kwargs=policy_kwargs
-  #              )
-  
   model = PPO('MlpPolicy',
             env,
             verbose=1,
-            learning_rate=5e-5,
-            gamma=0.975,
-            gae_lambda=0.935,
-            ent_coef=0.03,  
-            n_epochs=5,
-            vf_coef=0.325,
-            clip_range=0.25,
-            batch_size=512,
+            learning_rate=8e-5,
+            gamma=0.98,
+            gae_lambda=0.945,
+            ent_coef=0.01,  
+            n_epochs=10,
+            vf_coef=0.5,
+            clip_range=0.2,
+            batch_size=1024,
             n_steps=2048,
-            policy_kwargs=dict(net_arch=[256, 128, 64, 32])  # Wider network
+            policy_kwargs=dict(net_arch=[256, 128, 64])
            )
 
-  model.learn(total_timesteps=320000)
+  model.learn(total_timesteps=1000000)
   print("finished training", datetime.now())
   script_dir = Path(__file__).parent
   file_path = script_dir / "model"

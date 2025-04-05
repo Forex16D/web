@@ -13,3 +13,4 @@ gymnasium[box2d]
 torch
 schedule
 requests
+flasgger

@@ -70,10 +70,20 @@ class MtService:
       conn = self.db_pool.get_connection()
       cursor = conn.cursor(cursor_factory=RealDictCursor)
 
+      cursor.execute("""
+        SELECT commission FROM models WHERE model_id = %s
+        UNION
+        SELECT commission FROM portfolios WHERE portfolio_id = %s
+      """,
+      (data["model_id"], data["model_id"])
+      )
+
+      commission = cursor.fetchone()
+
       query = """
       INSERT INTO orders 
-      (order_id, portfolio_id, model_id, order_type, symbol, profit, volume, entry_price, exit_price, created_at) 
-      VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW());
+      (order_id, portfolio_id, model_id, order_type, symbol, profit, volume, entry_price, exit_price, created_at, comission) 
+      VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), %s);
       """
 
       cursor.execute(query, (
@@ -85,7 +95,8 @@ class MtService:
         data["profit"], 
         data["volume"], 
         data["entry_price"], 
-        data["exit_price"]
+        data["exit_price"],
+        commission
       ))
 
       conn.commit()

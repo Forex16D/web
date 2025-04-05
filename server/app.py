@@ -1,5 +1,6 @@
 import os
 import threading
+from flasgger import Swagger
 from flask import Flask, jsonify, send_file # type: ignore
 from flask_cors import CORS  # type: ignore
 from application.services.task_scheduler import run_scheduler
@@ -20,9 +21,19 @@ shutdown_event = threading.Event()
 
 def create_app():
   app = Flask(__name__)
-  
+  swagger = Swagger(app)
+
   UPLOAD_FOLDER = "resources"
   app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+  app.config['SWAGGER'] = {
+    'ui_params': {
+      "docExpansion": "none",
+      "sorter": "alpha",
+      "jsonEditor": True,
+      "defaultModelRendering": 'schema',
+      "showRequestHeaders": True
+    }
+  }
 
   CORS(app, resources={r"/*": {"origins": "*"}})
 

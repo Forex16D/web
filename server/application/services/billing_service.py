@@ -121,18 +121,18 @@ class BillingService:
       cursor.execute("""
         SELECT SUM(total_profit) 
         FROM (
-          SELECT 
-            (orders.profit - orders.profit * COALESCE(models.commission, p2.commission, 0)) AS total_profit
-          FROM orders
-          RIGHT JOIN portfolios AS p1 ON orders.portfolio_id = p1.portfolio_id
-          LEFT JOIN models ON orders.model_id = models.model_id
-          LEFT JOIN portfolios AS p2 ON orders.model_id = p2.portfolio_id  -- Used only for commission
-          WHERE p1.user_id = %s
-          AND orders.created_at BETWEEN %s AND %s
-          AND bill_id IS NULL
+            SELECT 
+                (orders.profit - orders.profit * COALESCE(orders.commission, 0)) AS total_profit
+            FROM orders
+            RIGHT JOIN portfolios AS p1 ON orders.portfolio_id = p1.portfolio_id
+            WHERE p1.user_id = %s
+            AND orders.created_at BETWEEN %s AND %s
+            AND bill_id IS NULL
         ) AS subquery;
       """, (user_id, first_day, last_day))
+
       net_amount_usd = cursor.fetchone()["sum"] or 0
+
       
       if net_amount_usd <= 0:
         return None

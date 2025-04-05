@@ -7,7 +7,11 @@ class AuthController:
   def login(self, request): 
     try:
       data = request.get_json()
-      token = self.auth_service.login(data)
+      email = data.get("email").lower()
+      password = data.get("password")
+      remember = data.get("remember")
+
+      token = self.auth_service.login(email, password, remember)
       return jsonify(token), 200
     except ValueError as e:
       if "Missing" in str(e):
@@ -26,7 +30,11 @@ class AuthController:
   def register(self, request): 
     try:
       data = request.get_json()
-      response = self.auth_service.register(data)
+      email = data.get("email").lower()
+      password = data.get("password")
+      confirm_password = data.get("confirmPassword")
+  
+      response = self.auth_service.register(email, password, confirm_password)
       return jsonify(response), 201
 
     except ValueError as e:

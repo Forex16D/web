@@ -42,6 +42,7 @@ interface Order {
   volume: number;
   entry_price: number;
   exit_price: number;
+  commission: number;
 }
 
 @Component({

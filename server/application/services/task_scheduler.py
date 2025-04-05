@@ -18,7 +18,7 @@ def check_unpaid_bills():
   ServerLogHelper.log("Unpaid bills checked.")
 
 def pay_expert():
-  container.bill_service.pay_all_expert()
+  container.billing_service.pay_all_expert()
 
 def auto_train_models():
   container.model_service.auto_train_all_models()

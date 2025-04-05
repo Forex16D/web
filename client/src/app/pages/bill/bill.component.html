@@ -132,6 +132,8 @@
         <th pSortableColumn="entry_price" style="min-width: 100px">Entry Price <p-sortIcon field="entry_price"></p-sortIcon></th>
         <th pSortableColumn="exit_price" style="min-width: 100px">Exit Price <p-sortIcon field="exit_price"></p-sortIcon></th>
         <th pSortableColumn="profit" style="min-width: 100px">Profit <p-sortIcon field="profit"></p-sortIcon></th>
+        <th pSortableColumn="commission" style="min-width: 100px">Commission <p-sortIcon field="commission"></p-sortIcon></th>
+        <th pSortableColumn="total" style="min-width: 100px">Total <p-sortIcon field="total"></p-sortIcon></th>
       </tr>
     </ng-template>
     
@@ -152,6 +154,8 @@
         <td [ngClass]="{'text-green-500': order.profit > 0, 'text-red-500': order.profit < 0}">
           ${{ order.profit.toFixed(2) }}
         </td>
+        <td>{{ (order.commission * 100) }}%</td>
+        <td>{{ (order.profit - order.profit * order.commission) }}</td>
       </tr>
     </ng-template>
     
