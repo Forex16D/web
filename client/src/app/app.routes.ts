@@ -16,6 +16,7 @@ import { PaymentComponent } from './pages/payment/payment.component';
 import { CopyTradeComponent } from './pages/copy-trade/copy-trade.component';
 import { TermsAndConditionsComponent } from './pages/terms-and-conditions/terms-and-conditions.component';
 import { DownloadComponent } from './pages/download/download.component';
+import { getPrerenderParams } from '../server';
 
 export const routes: Routes = [
   {
@@ -51,7 +52,8 @@ export const routes: Routes = [
   },
   {
     path: 'bot/detail/:model_id',
-    component: BotDetailComponent
+    component: BotDetailComponent,
+    data: {prerender: false}    
   },
   {
     path: 'price-chart',
@@ -60,7 +62,7 @@ export const routes: Routes = [
   {
     path: 'portfolio/:portfolio_id',
     component: PortfolioDetailComponent,
-  },  
+  },
   {
     path: 'bills',
     component: BillComponent,
@@ -79,3 +81,4 @@ export const routes: Routes = [
     component: DownloadComponent,
   }
 ];
+

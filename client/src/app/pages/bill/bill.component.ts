@@ -1,4 +1,4 @@
-import { DatePipe, NgClass, NgIf, SlicePipe } from '@angular/common';
+import { DatePipe, NgClass, NgIf } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ConfirmationService, MessageService } from 'primeng/api';
@@ -15,7 +15,6 @@ import { ToolbarModule } from 'primeng/toolbar';
 import { TextareaModule } from 'primeng/textarea';
 import { ApiService } from '../../core/services/api.service';
 import { TooltipModule } from 'primeng/tooltip';
-import { response } from 'express';
 
 interface Bill {
   bill_id: number;
@@ -64,7 +63,6 @@ interface Order {
     DatePickerModule,
     TextareaModule,
     TooltipModule,
-    SlicePipe,
     NgClass,
     NgIf,
   ],

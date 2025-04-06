@@ -32,9 +32,9 @@ services:
     image: postgres:latest
     container_name: forex16d-postgres
     environment:
-      POSTGRES_DB: forex16d
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: ${DATABASE}
+      POSTGRES_USER: ${USERNAME}
+      POSTGRES_PASSWORD: ${PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
