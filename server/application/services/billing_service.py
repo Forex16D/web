@@ -132,6 +132,7 @@ class BillingService:
       """, (user_id, first_day, last_day))
 
       net_amount_usd = cursor.fetchone()["sum"] or 0
+      ServerLogHelper.log(net_amount_usd)
 
       
       if net_amount_usd <= 0:

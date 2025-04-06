@@ -1,4 +1,4 @@
-<ng-container>
+<ng-container *ngIf="isBrowser; else loadingScreen">
   <p-toast />
   <p-confirmDialog [style]="{width: '30rem'}" [baseZIndex]="10000" rejectButtonStyleClass="p-button-text">
   </p-confirmDialog>
@@ -8,3 +8,9 @@
   </div>
   <app-footer></app-footer>
 </ng-container>
+
+<ng-template #loadingScreen>
+  <div class="flex items-center justify-center h-screen w-screen bg-gray-100 text-xl font-semibold">
+    Loading...
+  </div>
+</ng-template>

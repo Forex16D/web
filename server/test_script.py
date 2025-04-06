@@ -1,7 +1,7 @@
 from application.container import container
 
 bill_service = container.billing_service
-container.bill_service.pay_all_expert()
+# container.billing_service.pay_all_expert()
 bill_service.bill_all()
 
 
