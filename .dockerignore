@@ -7,4 +7,5 @@ README.md
 .gitignore
 .venv
 .env.template
+*.pyc
 __pycache__
