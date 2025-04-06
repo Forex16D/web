@@ -271,7 +271,6 @@ class ModelService:
     finally:
       self.db_pool.release_connection(conn)
 
-
   def train_model(self, model_id, auto=False):
     try:
       module_path = f"models.{model_id}.trainer"
